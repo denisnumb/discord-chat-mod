@@ -71,9 +71,11 @@ public class MinecraftUtils {
                 continue;
             String localePath = String.format("/assets/%s/lang/%s.json", modInfo.getNamespace(), Config.modLocale);
             Path path = modList.getModFileById(modInfo.getNamespace()).getFile().findResource(localePath);
+            if (!Files.exists(path))
+                continue;
             try {
                 languageData.putAll(new Gson().fromJson(Files.readString(path), new TypeToken<Map<String, String>>(){}.getType()));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.error("Failed to load localization {}", localePath);
             }
         }
