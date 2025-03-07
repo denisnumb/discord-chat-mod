@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.network;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
-import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPacket;
+import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -15,7 +15,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public class ModNetworking {
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1").executesOn(HandlerThread.NETWORK).optional();
+        final PayloadRegistrar registrar = event.registrar("2").executesOn(HandlerThread.NETWORK).optional();
 
         registrar.playToServer(
                 RequestDiscordMentionsPacket.TYPE,
@@ -26,8 +26,8 @@ public class ModNetworking {
         );
 
         registrar.playToClient(
-                DiscordMentionsPacket.TYPE,
-                DiscordMentionsPacket.STREAM_CODEC,
+                DiscordMentionsPartPacket.TYPE,
+                DiscordMentionsPartPacket.STREAM_CODEC,
                 new MainThreadPayloadHandler<>(
                         PacketHandler::handleDiscordMentionsPacket
                 )

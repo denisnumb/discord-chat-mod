@@ -1,9 +1,8 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageScreen;
-import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotSender;
+import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.ClickEvent;
@@ -52,7 +51,7 @@ public abstract class ScreenMixin {
 
         if (screenshotFile.exists() && screenshotFile.getName().endsWith(".png")){
             try {
-                ScreenshotSender.sendScreenshot(Files.readAllBytes(screenshotFile.toPath()));
+                ScreenshotTransceiver.sendScreenshot(Files.readAllBytes(screenshotFile.toPath()));
             } catch (Exception e) {
                 player.sendSystemMessage(
                         Component.literal(
