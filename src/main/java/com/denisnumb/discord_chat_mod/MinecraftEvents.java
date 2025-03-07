@@ -5,6 +5,7 @@ import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
+import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +24,7 @@ import java.util.Map;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.GOLD;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.PURPLE;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
+import static com.denisnumb.discord_chat_mod.advancement.AdvancementParser.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendEmbedMessage;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendShortEmbedMessage;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
@@ -104,19 +106,22 @@ public class MinecraftEvents {
         String title = displayInfo.getTitle().getString();
         String description = displayInfo.getDescription().getString();
 
-        var advancementFile = getAdvancementFile(advancementResourceLocation);
-        if (advancementFile != null){
-            title = getTranslate(advancementId.getNamespace(), getAdvancementField(advancementFile, "title"), title);
-            description = getTranslate(advancementId.getNamespace(), getAdvancementField(advancementFile, "description"), description);
+        var advancementJson = getAdvancementFileAsJsonObject(advancementResourceLocation);
+        if (advancementJson != null){
+            title = getTranslatedAdvancementTitle(advancementJson, title);
+            description = getTranslatedAdvancementDescription(advancementJson, description);
         }
 
         int color = displayInfo.getFrame() == FrameType.CHALLENGE ? PURPLE : GOLD;
+        String formattedTitle = MarkdownParser.parseMarkdown(title).stream().allMatch(MarkdownToken::hasNoMarkdown)
+                ? "**`" + title + "`**"
+                : title;
 
         sendEmbedMessage(
                 String.format(
                     message,
                     "**" + event.getEntity().getName().getString() + "**",
-                    "**`" + title + "`**"
+                    formattedTitle
                 ),
                 description,
                 color

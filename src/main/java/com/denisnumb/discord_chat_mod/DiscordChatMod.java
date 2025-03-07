@@ -18,6 +18,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -25,6 +27,7 @@ import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.GREEN;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.RED;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.loadLocalization;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
@@ -38,13 +41,19 @@ public class DiscordChatMod
     public static JDA jda;
     public static MinecraftServer server;
     public static GuildMessageChannel discordChannel;
-    public static final Map<String, Map<String, String>> localeStorage = new HashMap<>();
+    public static final Map<String, String> languageData = new HashMap<>();
 
 
     public DiscordChatMod()
     {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+    }
+
+    private void commonSetup(final FMLCommonSetupEvent event)
+    {
+        loadLocalization();
     }
 
     @SubscribeEvent

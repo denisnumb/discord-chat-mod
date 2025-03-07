@@ -5,7 +5,7 @@ import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownTellRawConverter;
 import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponentEvent;
+import com.denisnumb.discord_chat_mod.markdown.tellraw.ComponentEvent;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
@@ -54,8 +54,8 @@ public class DiscordEvents extends ListenerAdapter {
             add(new TellRawComponent(userName)
                     .setColor(roleColor)
                     .setInsertion("@" + userName)
-                    .addClickEvent(new TellRawComponentEvent("suggest_command", "/mention " + userName))
-                    .addHoverEvent(new TellRawComponentEvent("show_text", member.getUser().getEffectiveName())));
+                    .addClickEvent(new ComponentEvent("suggest_command", "/mention " + userName))
+                    .addHoverEvent(new ComponentEvent("show_text", member.getUser().getEffectiveName())));
             add(new TellRawComponent("> "));
         }};
 
@@ -90,8 +90,8 @@ public class DiscordEvents extends ListenerAdapter {
                     add(new TellRawComponent(file.getFileName() + (++index < attachments.size() ? "\n" : ""))
                             .setItalic()
                             .setColor(getHexColor(CHAT_LINK_COLOR))
-                            .addClickEvent(new TellRawComponentEvent("open_url", file.getUrl()))
-                            .addHoverEvent(new TellRawComponentEvent("show_text", file.getUrl())));
+                            .addClickEvent(new ComponentEvent("open_url", file.getUrl()))
+                            .addHoverEvent(new ComponentEvent("show_text", file.getUrl())));
                 }
             }};
             commands.add(prepareTellRawCommand(basePart, attachmentPart));
@@ -102,7 +102,7 @@ public class DiscordEvents extends ListenerAdapter {
                 StickerItem sticker = message.getStickers().get(0);
                 add(new TellRawComponent(String.format(getTranslate(STICKER, "*sticker* (%s)"), sticker.getName()))
                         .setItalic()
-                        .addClickEvent(new TellRawComponentEvent("open_url", sticker.getIconUrl()))
+                        .addClickEvent(new ComponentEvent("open_url", sticker.getIconUrl()))
                 );
             }};
             commands.add(prepareTellRawCommand(basePart, stickerPart));

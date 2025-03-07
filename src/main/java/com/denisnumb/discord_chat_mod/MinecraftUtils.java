@@ -1,29 +1,28 @@
 package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.logging.LogUtils;
 import net.minecraft.locale.Language;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.forgespi.language.IModInfo;
 import org.slf4j.Logger;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.prepareTellRawCommand;
-import static net.minecraft.util.datafix.fixes.BlockEntitySignTextStrictJsonFix.GSON;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -55,66 +54,28 @@ public class MinecraftUtils {
         return Language.getInstance().getLanguageData().get(key);
     }
 
-    public static String getTranslate(String namespace, String key, String defaultValue) {
-        return getLocalization(namespace, Config.modLocale).getOrDefault(key, defaultValue);
-    }
-
     public static String getTranslate(String key, String defaultValue) {
-        return getLocalization(MODID, Config.modLocale).getOrDefault(key, defaultValue);
+        return languageData.getOrDefault(key, defaultValue);
     }
 
     public static String getTranslate(String key) {
-        return getLocalization(MODID, Config.modLocale).get(key);
+        return languageData.containsKey(key)
+                ? languageData.get(key)
+                : Language.getInstance().getLanguageData().get(key);
     }
 
-    public static Map<String, String> getLocalization(String namespace, String locale)
-    {
-        if (namespace.equals("minecraft"))
-            namespace = MODID;
-
-        if (localeStorage.containsKey(namespace))
-            return localeStorage.get(namespace);
-
-        if (namespace.equals(MODID) && locale.equals("en_us")){
-            localeStorage.put(namespace, Language.getInstance().getLanguageData());
-            return getLocalization(namespace, locale);
-        }
-
-        try {
-            ResourceLocation resourceLocation = new ResourceLocation(namespace, String.format("lang/%s.json", locale));
-            Optional<Resource> resource = server.getResourceManager().getResource(resourceLocation);
-            InputStreamReader reader = new InputStreamReader(resource.get().open(), StandardCharsets.UTF_8);
-            localeStorage.put(namespace, GSON.fromJson(reader, new TypeToken<Map<String, String>>(){}.getType()));
-        } catch (Exception e) {
-            LOGGER.error("Failed to load localization {}", namespace + "/" + String.format("lang/%s.json", locale));
-            if (namespace.equals(MODID))
-                return getLocalization(namespace, "en_us");
-            localeStorage.put(namespace, Collections.emptyMap());
-        }
-        return getLocalization(namespace, locale);
-    }
-
-    public static String getAdvancementField(JsonObject jsonObject, String key) {
-        if (jsonObject.has("display")) {
-            JsonObject display = jsonObject.getAsJsonObject("display");
-            if (display.has(key)) {
-                JsonObject description = display.getAsJsonObject(key);
-                if (description.has("translate")) {
-                    return description.get("translate").getAsString();
-                }
+    public static void loadLocalization() {
+        ModList modList = ModList.get();
+        for (IModInfo modInfo : modList.getMods()){
+            if (modInfo.getNamespace().equals("minecraft"))
+                continue;
+            String localePath = String.format("/assets/%s/lang/%s.json", modInfo.getNamespace(), Config.modLocale);
+            Path path = modList.getModFileById(modInfo.getNamespace()).getFile().findResource(localePath);
+            try {
+                languageData.putAll(new Gson().fromJson(Files.readString(path), new TypeToken<Map<String, String>>(){}.getType()));
+            } catch (IOException e) {
+                LOGGER.error("Failed to load localization {}", localePath);
             }
-        }
-        return null;
-    }
-
-    public static JsonObject getAdvancementFile(ResourceLocation resourceLocation)
-    {
-        try {
-            Optional<Resource> resource = server.getResourceManager().getResource(resourceLocation);
-            InputStreamReader reader = new InputStreamReader(resource.get().open(), StandardCharsets.UTF_8);
-            return GSON.fromJson(reader, JsonObject.class);
-        } catch (Exception e) {
-            return null;
         }
     }
 

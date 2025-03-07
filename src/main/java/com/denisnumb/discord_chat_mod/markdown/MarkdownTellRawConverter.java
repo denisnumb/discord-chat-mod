@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod.markdown;
 
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponentEvent;
+import com.denisnumb.discord_chat_mod.markdown.tellraw.ComponentEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,13 +48,13 @@ public class MarkdownTellRawConverter{
             setPartStyles(part, token);
 
             if (token.obfuscated)
-                part.hoverEvent = new TellRawComponentEvent("show_text", textPart);
+                part.hoverEvent = new ComponentEvent("show_text", textPart);
 
             if (token.isUrl()){
                 part.color = getHexColor(CHAT_LINK_COLOR);
-                part.clickEvent = new TellRawComponentEvent("open_url", token.url);
+                part.clickEvent = new ComponentEvent("open_url", token.url);
                 String hoverValue = token.obfuscated ? String.format("%s (%s)", textPart, token.url) : token.url;
-                part.hoverEvent = new TellRawComponentEvent("show_text", hoverValue);
+                part.hoverEvent = new ComponentEvent("show_text", hoverValue);
             }
         }
 

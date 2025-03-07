@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.network.screenshot;
 
 import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponentEvent;
+import com.denisnumb.discord_chat_mod.markdown.tellraw.ComponentEvent;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;
 import com.denisnumb.discord_chat_mod.network.ModNetworking;
 import net.dv8tion.jda.api.entities.Message;
@@ -51,8 +51,8 @@ public class ScreenshotTransceiver {
                 add(new TellRawComponent("<" + player.getName().getString() + "> "));
                 add(new TellRawComponent(getTranslate(SCREENSHOT, "Screenshot"))
                         .setColor(getHexColor(CHAT_LINK_COLOR))
-                        .addClickEvent(new TellRawComponentEvent("open_url", message.getAttachments().get(0).getUrl()))
-                        .addHoverEvent(new TellRawComponentEvent("show_text", message.getAttachments().get(0).getUrl()))
+                        .addClickEvent(new ComponentEvent("open_url", message.getAttachments().get(0).getUrl()))
+                        .addHoverEvent(new ComponentEvent("show_text", message.getAttachments().get(0).getUrl()))
                 );
             }}));
         });

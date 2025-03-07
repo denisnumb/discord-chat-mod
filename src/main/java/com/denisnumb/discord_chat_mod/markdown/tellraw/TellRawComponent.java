@@ -20,9 +20,9 @@ public class TellRawComponent {
     @SerializedName("color")
     public String color;
     @SerializedName("hoverEvent")
-    public TellRawComponentEvent hoverEvent;
+    public ComponentEvent hoverEvent;
     @SerializedName("clickEvent")
-    public TellRawComponentEvent clickEvent;
+    public ComponentEvent clickEvent;
 
     public TellRawComponent(String text){
         this.text = text;
@@ -63,12 +63,12 @@ public class TellRawComponent {
         return this;
     }
 
-    public TellRawComponent addHoverEvent(TellRawComponentEvent hoverEvent){
+    public TellRawComponent addHoverEvent(ComponentEvent hoverEvent){
         this.hoverEvent = hoverEvent;
         return this;
     }
 
-    public TellRawComponent addClickEvent(TellRawComponentEvent clickEvent){
+    public TellRawComponent addClickEvent(ComponentEvent clickEvent){
         this.clickEvent = clickEvent;
         return this;
     }
