@@ -42,19 +42,19 @@ public class ScreenshotPartPacket {
 
     public static void handle(ScreenshotPartPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
-        context.enqueueWork(() -> {
-            ServerPlayer player = context.getSender();
-            if (player != null){
-                if (isDiscordConnected())
-                    ScreenshotReceiver.receivePart(packet, player);
-                else if (packet.partIndex == 0){
-                    player.sendSystemMessage(
-                            Component.literal(getTranslate(SERVER_IS_NOT_CONNECTED_TO_DISCORD, "Server is not connected to Discord"))
-                                    .withStyle(ChatFormatting.RED)
-                    );
-                }
+
+        ServerPlayer player = context.getSender();
+        if (player != null){
+            if (isDiscordConnected())
+                ScreenshotTransceiver.receivePart(packet, player);
+            else if (packet.partIndex == 0){
+                context.enqueueWork(() -> player.sendSystemMessage(
+                        Component.literal(getTranslate(SERVER_IS_NOT_CONNECTED_TO_DISCORD, "Server is not connected to Discord"))
+                                .withStyle(ChatFormatting.RED)
+                ));
             }
-        });
+        }
+
         context.setPacketHandled(true);
     }
 }

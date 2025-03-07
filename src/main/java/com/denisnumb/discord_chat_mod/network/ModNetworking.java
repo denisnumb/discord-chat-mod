@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.network;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
-import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPacket;
+import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +16,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 @Mod.EventBusSubscriber(modid = DiscordChatMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModNetworking {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder.named(
                     new ResourceLocation(DiscordChatMod.MODID, "main"))
             .serverAcceptedVersions(status -> true)
@@ -36,10 +36,10 @@ public class ModNetworking {
                     .consumerMainThread(RequestDiscordMentionsPacket::handle)
                     .add();
 
-            CHANNEL.messageBuilder(DiscordMentionsPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                    .encoder(DiscordMentionsPacket::encode)
-                    .decoder(DiscordMentionsPacket::new)
-                    .consumerMainThread(DiscordMentionsPacket::handle)
+            CHANNEL.messageBuilder(DiscordMentionsPartPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                    .encoder(DiscordMentionsPartPacket::encode)
+                    .decoder(DiscordMentionsPartPacket::new)
+                    .consumerMainThread(DiscordMentionsPartPacket::handle)
                     .add();
 
             CHANNEL.messageBuilder(ScreenshotPartPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
