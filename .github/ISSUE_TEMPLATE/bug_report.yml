@@ -32,6 +32,12 @@ body:
       required: true
   - type: textarea
     attributes:
+      label: "Mod List"
+      description: "If you have other mods installed, please attach the list here"
+    validations:
+      required: false
+  - type: textarea
+    attributes:
       label: "latest.log file"
       description: "Attach your latest.log file"
     validations:
