@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands;
 
+import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
 import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
 import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
@@ -19,6 +20,7 @@ import java.util.List;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.SERVER_IS_NOT_CONNECTED_TO_DISCORD;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.UNKNOWN_MENTION;
+import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.prepareDiscordTextMessage;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.prepareTellRawCommand;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
 
@@ -64,7 +66,8 @@ public class MentionCommand {
                                                     );
                                                 }})
                                         );
-                                        discordChannel.sendMessage(String.format("`<%s>` %s", player.getName().getString(), member.mentionString)).queue();
+                                        prepareDiscordTextMessage(String.format("`<%s>` %s", player.getName().getString(), member.mentionString))
+                                                .ifPresent(DiscordUtils::sendMessage);
                                     }
                                     return 1;
                                 })

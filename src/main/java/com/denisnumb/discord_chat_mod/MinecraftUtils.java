@@ -13,7 +13,6 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.forgespi.language.IModInfo;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -33,7 +32,8 @@ public class MinecraftUtils {
 
     public static void logErrorToServer(String message) {
         LOGGER.error(message);
-        executeServerCommand(buildLogMessageCommand(message, RED));
+        if (Config.logDiscordErrorsToServerChat)
+            executeServerCommand(buildLogMessageCommand(message, RED));
     }
 
     private static String buildLogMessageCommand(String message, int color) {
@@ -43,7 +43,7 @@ public class MinecraftUtils {
            add(new TellRawComponent(message).setColor(hexColor));
         }};
 
-        return prepareTellRawCommand(components);
+        return prepareTellRawCommand(Config.discordErrorsChatPlayerSelector, components);
     }
 
     public static String getTranslateClient(String key, String defaultValue){
@@ -70,10 +70,10 @@ public class MinecraftUtils {
             if (modInfo.getNamespace().equals("minecraft"))
                 continue;
             String localePath = String.format("/assets/%s/lang/%s.json", modInfo.getNamespace(), Config.modLocale);
-            Path path = modList.getModFileById(modInfo.getNamespace()).getFile().findResource(localePath);
-            if (!Files.exists(path))
-                continue;
             try {
+                Path path = modList.getModFileById(modInfo.getNamespace()).getFile().findResource(localePath);
+                if (!Files.exists(path))
+                    continue;
                 languageData.putAll(new Gson().fromJson(Files.readString(path), new TypeToken<Map<String, String>>(){}.getType()));
             } catch (Exception e) {
                 LOGGER.error("Failed to load localization {}", localePath);
