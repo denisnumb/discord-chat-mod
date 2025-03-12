@@ -2,6 +2,7 @@ package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.commands.MentionCommand;
 import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
@@ -26,10 +27,9 @@ import static com.denisnumb.discord_chat_mod.ColorUtils.Color.GOLD;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.PURPLE;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.advancement.AdvancementParser.*;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendEmbedMessage;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendShortEmbedMessage;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
 
 @EventBusSubscriber(modid = DiscordChatMod.MODID)
@@ -56,7 +56,8 @@ public class MinecraftEvents {
                    put(member.mentionString, member);
             }};
 
-            discordChannel.sendMessage(String.format("`<%s>` %s", event.getPlayer().getName().getString(), message)).queue();
+            prepareDiscordTextMessage(String.format("`<%s>` %s", event.getPlayer().getName().getString(), message))
+                    .ifPresent(DiscordUtils::sendMessage);
         }
 
         event.setMessage(

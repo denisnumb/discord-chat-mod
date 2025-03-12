@@ -15,4 +15,10 @@ public class ModLanguageKey {
     public static final String SCREENSHOT = "discord_chat_mod.command.send_screenshot.screenshot";
     public static final String CLICK_TO_OPEN_IMAGE = "discord_chat_mod.command.click_to_open_image";
     public static final String STICKER = "discord_chat_mod.command.sticker";
+    public static final String PREPARE_MESSAGE_ERROR = "discord_chat_mod.error.prepare_message_error";
+    public static final String SEND_EMBED_ERROR = "discord_chat_mod.error.send_embed_error";
+    public static final String SEND_MESSAGE_ERROR = "discord_chat_mod.error.send_message_error";
+    public static final String INVALID_CHANNEL_ERROR = "discord_chat_mod.error.invalid_channel_error";
+    public static final String MISSING_PERMISSIONS_ERROR = "discord_chat_mod.error.missing_permissions_error";
+
 }

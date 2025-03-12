@@ -5,6 +5,8 @@ import com.denisnumb.discord_chat_mod.discord.DiscordEvents;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -22,8 +24,10 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import org.slf4j.Logger;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.GREEN;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.RED;
@@ -88,7 +92,6 @@ public class DiscordChatMod
     }
 
     private static void initJDA(){
-
         try {
             jda = JDABuilder.create(Config.discordBotToken,
                             GatewayIntent.MESSAGE_CONTENT,
@@ -101,14 +104,33 @@ public class DiscordChatMod
                     .build();
 
             jda.awaitReady();
-            discordChannel = jda.getChannelById(GuildMessageChannel.class, Config.discordChannelId);
 
-            if (discordChannel == null)
-                throw new NullPointerException("Invalid Discord Channel ID");
+            try{
+                discordChannel = jda.getChannelById(GuildMessageChannel.class, Config.discordChannelId);
+                if (discordChannel == null)
+                    throw new IllegalArgumentException();
+            } catch (IllegalArgumentException e){
+                throw new IllegalArgumentException(
+                        getTranslate(
+                                INVALID_CHANNEL_ERROR,
+                                "The specified Discord channel ID is invalid or the bot does not have access to the specified channel"
+                        )
+                );
+            }
 
-            if (Config.enablePinnedStatusMessage)
-                initServerStatusMessage();
+            Member selfMember = discordChannel.getGuild().getSelfMember();
+            EnumSet<Permission> missingPermissions = requiredPermissions.stream()
+                    .filter(perm -> !selfMember.hasPermission(discordChannel, perm))
+                    .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
 
+            if (!missingPermissions.isEmpty()){
+                throw new IllegalStateException(String.format(
+                        getTranslate(MISSING_PERMISSIONS_ERROR, "The bot does not have enough rights to work correctly! Missing:\n%s"),
+                        String.join("\n", missingPermissions.stream().map(Permission::getName).toList())
+                ));
+            }
+
+            initServerStatusController();
             LOGGER.info("Discord connected");
         } catch (Exception e) {
             logErrorToServer(String.format("DiscordConnectError: %s", e.getMessage()));
