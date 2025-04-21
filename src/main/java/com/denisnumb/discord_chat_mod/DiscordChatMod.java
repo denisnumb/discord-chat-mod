@@ -97,7 +97,8 @@ public class DiscordChatMod
                             GatewayIntent.MESSAGE_CONTENT,
                             GatewayIntent.GUILD_MEMBERS,
                             GatewayIntent.GUILD_PRESENCES,
-                            GatewayIntent.GUILD_MESSAGES)
+                            GatewayIntent.GUILD_MESSAGES,
+                            GatewayIntent.GUILD_EXPRESSIONS)
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .addEventListeners(new DiscordEvents())

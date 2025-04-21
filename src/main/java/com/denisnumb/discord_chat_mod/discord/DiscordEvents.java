@@ -70,7 +70,7 @@ public class DiscordEvents extends ListenerAdapter {
 
             List<TellRawComponent> textPart;
             try {
-                textPart = new MarkdownTellRawConverter(MarkdownParser.parseMarkdown(message.getContentRaw()), mentions).convertMarkdownTokensToTellRaw();
+                textPart = new MarkdownTellRawConverter(MarkdownParser.parseMarkdown(message.getContentDisplay()), mentions).convertMarkdownTokensToTellRaw();
             } catch (Exception ignored) {
                 String content = message.getContentRaw();
                 for (var entry : mentions.entrySet())
