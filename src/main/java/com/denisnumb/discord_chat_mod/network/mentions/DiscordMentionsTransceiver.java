@@ -30,8 +30,8 @@ public class DiscordMentionsTransceiver {
         lastMentionsRequestFromPlayer.replace(player, sendTime);
 
         byte[] data = gson.toJson(ChannelMembersProvider.getMemberData(discordChannel), gsonType).getBytes();
-        BigPacketsTransceiver.send(data, sendTime, (sendTime1, partIndex, totalParts, part) ->
-                ModNetworking.sendToPlayer(new DiscordMentionsPartPacket(sendTime1, partIndex, totalParts, part), player)
+        BigPacketsTransceiver.send(data, (partIndex, totalParts, part) ->
+                ModNetworking.sendToPlayer(new DiscordMentionsPartPacket(sendTime, partIndex, totalParts, part), player)
         );
     }
 

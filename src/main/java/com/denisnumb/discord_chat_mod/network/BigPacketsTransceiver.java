@@ -5,19 +5,19 @@ import java.util.*;
 public class BigPacketsTransceiver {
     @FunctionalInterface
     public interface SendFunction {
-        void send(long sendTime, int partIndex, int totalParts, byte[] part);
+        void send(int partIndex, int totalParts, byte[] part);
     }
 
     private static final int MAX_PART_SIZE = 32000;
 
-    public static void send(byte[] data, long sendTime, SendFunction sendFunction) {
+    public static void send(byte[] data, SendFunction sendFunction) {
         int totalParts = (int) Math.ceil(data.length / (double) MAX_PART_SIZE);
 
         for (int i = 0; i < totalParts; i++) {
             int start = i * MAX_PART_SIZE;
             int end = Math.min(start + MAX_PART_SIZE, data.length);
             byte[] part = Arrays.copyOfRange(data, start, end);
-            sendFunction.send(sendTime, i, totalParts, part);
+            sendFunction.send(i, totalParts, part);
         }
     }
 
@@ -28,10 +28,10 @@ public class BigPacketsTransceiver {
             int totalParts,
             byte[] partData
     ) {
-        receivedParts.putIfAbsent(sendTime, new ArrayList<>());
-        receivedParts.get(sendTime).add(partIndex, partData);
+        receivedParts.computeIfAbsent(sendTime, t -> new ArrayList<>(Collections.nCopies(totalParts, null)));
+        receivedParts.get(sendTime).set(partIndex, partData);
 
-        if (receivedParts.get(sendTime).size() == totalParts) {
+        if (receivedParts.get(sendTime).stream().noneMatch(Objects::isNull)) {
             byte[] data = mergeParts(receivedParts.get(sendTime));
             receivedParts.remove(sendTime);
             return Optional.of(data);

@@ -2,11 +2,13 @@ package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
 import com.google.gson.Gson;
+import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
@@ -15,6 +17,8 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
@@ -87,7 +91,7 @@ public class DiscordUtils {
         sendMessage(messageCreateAction, false);
     }
 
-    public static Optional<Message> sendMessageComplete(MessageCreateAction messageCreateAction) {
+    public static Either<Message, Optional<ErrorResponseException>> sendMessageComplete(MessageCreateAction messageCreateAction) {
         return sendMessage(messageCreateAction, true);
     }
 
@@ -106,7 +110,7 @@ public class DiscordUtils {
             return Optional.empty();
         try {
             if (complete){
-                Optional<Message> message = sendMessage(discordChannel.sendMessageEmbeds(embed), true);
+                Optional<Message> message = sendMessage(discordChannel.sendMessageEmbeds(embed), true).left();
                 if (message.isPresent())
                     return message;
             } else
@@ -121,20 +125,24 @@ public class DiscordUtils {
         return Optional.empty();
     }
 
-    private static Optional<Message> sendMessage(MessageCreateAction messageCreateAction, boolean complete) {
+    private static Either<Message, Optional<ErrorResponseException>> sendMessage(MessageCreateAction messageCreateAction, boolean complete) {
         try {
             if (complete)
-                return Optional.of(messageCreateAction.complete());
+                return Either.left(messageCreateAction.complete());
             else
                 messageCreateAction.queue();
         } catch (ErrorResponseException e) {
-            logErrorToServer(getTranslate(SEND_MESSAGE_ERROR, "Error sending message! Make sure the bot has permission to embed links and attach files."));
+            logErrorToServer(String.format(
+                    getTranslate(SEND_MESSAGE_ERROR, "Error sending message!\nCause: %s\nMake sure the bot has permission to embed links and attach files."),
+                    e.getMeaning())
+            );
             e.printStackTrace();
+            return Either.right(Optional.of(e));
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
         }
 
-        return Optional.empty();
+        return Either.right(Optional.empty());
     }
 
     @SafeVarargs
@@ -150,5 +158,20 @@ public class DiscordUtils {
             commandJson.addAll(part);
 
         return "/tellraw " + selector + " " + gson.toJson(commandJson);
+    }
+
+    public static String replaceEmojiCodesToDiscordMentions(String text){
+        Pattern emojiPattern = Pattern.compile(":[a-zA-Z0-9_]{2,}:");
+        Matcher matcher = emojiPattern.matcher(text);
+
+        while (matcher.find()) {
+            String emojiString = matcher.group();
+            List<RichCustomEmoji> foundEmojis = discordChannel.getGuild()
+                    .getEmojisByName(emojiString.replace(":", ""), true);
+            if (!foundEmojis.isEmpty())
+                text = text.replace(emojiString, foundEmojis.get(0).getAsMention());
+        }
+
+        return text;
     }
 }

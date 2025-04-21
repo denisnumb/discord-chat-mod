@@ -55,7 +55,7 @@ public class MinecraftEvents {
                    put(member.mentionString, member);
             }};
 
-            prepareDiscordTextMessage(String.format("`<%s>` %s", event.getPlayer().getName().getString(), message))
+            prepareDiscordTextMessage(String.format("`<%s>` %s", event.getPlayer().getName().getString(), replaceEmojiCodesToDiscordMentions(message)))
                     .ifPresent(DiscordUtils::sendMessage);
         }
 

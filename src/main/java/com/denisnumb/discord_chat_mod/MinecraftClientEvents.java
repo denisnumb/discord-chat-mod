@@ -37,7 +37,7 @@ public class MinecraftClientEvents {
                                 "send_screenshot " + screenshotFile.getAbsolutePath()
                         )).withHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
-                                Component.literal(getTranslateClient(CLICK_TO_SEND_SCREENSHOT_HINT, "Click to send screenshot to Discord"))
+                                Component.literal(getTranslateClient(CLICK_TO_SEND_SCREENSHOT_HINT, "Click to send screenshot to Discord (Sending may take a few seconds)"))
                         ))
         );
 
