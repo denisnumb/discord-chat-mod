@@ -107,12 +107,12 @@ public abstract class ChatComponentMixin {
         });
     }
 
-    @ModifyConstant(method = "addMessageToQueue", constant = @Constant(intValue = 100))
+    @ModifyConstant(method = "addMessageToQueue", constant = @Constant(intValue = 100), require = 0)
     private int modifyAddMessageToQueueMessageLimit(int original) {
         return MAX_MESSAGES;
     }
 
-    @ModifyConstant(method = "addMessageToDisplayQueue", constant = @Constant(intValue = 100))
+    @ModifyConstant(method = "addMessageToDisplayQueue", constant = @Constant(intValue = 100), require = 0)
     private int modifyAddMessageToDisplayQueueMessageLimit(int original) {
         return MAX_MESSAGES;
     }
