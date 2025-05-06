@@ -70,7 +70,8 @@ public abstract class ChatComponentMixin {
 
     @ModifyConstant(
             method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V",
-            constant = @Constant(intValue = 100)
+            constant = @Constant(intValue = 100),
+            require = 0
     )
     private int modifyAddMessageMessageLimit(int original){
         return MAX_MESSAGES;
