@@ -11,5 +11,6 @@ public enum MarkdownStyle{
     STRIKETHROUGH,
     OBFUSCATED,
     URL,
-    DISCORD_MENTION
+    DISCORD_MENTION,
+    EMOJI
 }

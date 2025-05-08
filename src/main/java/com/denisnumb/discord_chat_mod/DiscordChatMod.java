@@ -51,7 +51,8 @@ public class DiscordChatMod
     {
         modEventBus.addListener(this::commonSetup);
         NeoForge.EVENT_BUS.register(this);
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)
@@ -93,7 +94,7 @@ public class DiscordChatMod
 
     private static void initJDA(){
         try {
-            jda = JDABuilder.create(Config.discordBotToken,
+            jda = JDABuilder.create(Config.DISCORD_BOT_TOKEN.get(),
                             GatewayIntent.MESSAGE_CONTENT,
                             GatewayIntent.GUILD_MEMBERS,
                             GatewayIntent.GUILD_PRESENCES,
@@ -107,7 +108,7 @@ public class DiscordChatMod
             jda.awaitReady();
 
             try{
-                discordChannel = jda.getChannelById(GuildMessageChannel.class, Config.discordChannelId);
+                discordChannel = jda.getChannelById(GuildMessageChannel.class, Config.DISCORD_CHANNEL_ID.get());
                 if (discordChannel == null)
                     throw new IllegalArgumentException();
             } catch (IllegalArgumentException e){

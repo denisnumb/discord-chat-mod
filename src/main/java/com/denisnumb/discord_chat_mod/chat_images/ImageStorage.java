@@ -35,6 +35,8 @@ public class ImageStorage {
     public static final float MAX_HEIGHT = 72.0f;
 
     public static final Map<String, AbstractImage> IMAGE_CACHE = new HashMap<>();
+//    public static final ResourceLocation SPOILER_PLACEHOLDER
+//            = ResourceLocation.fromNamespaceAndPath(DiscordChatMod.MODID, "textures/gui/spoiler_placeholder.png");
     public static final Set<String> HANDLED_URLS = new HashSet<>();
     private static CompletableFuture<LoadResult> lastTask = CompletableFuture.completedFuture(null);
 

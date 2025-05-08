@@ -15,6 +15,10 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 base {
@@ -84,8 +88,12 @@ dependencies {
     shadow("com.fasterxml.jackson.core:jackson-core:2.15.2") {transitive = false }
     shadow("com.fasterxml.jackson.core:jackson-annotations:2.15.2") {transitive = false }
     shadow("org.apache.commons:commons-collections4:4.4") {transitive = false }
+    shadow("org.json:json:20231013") { transitive = false }
+    shadow(files("libs/emoji-java-5.1.1.jar"))
 
     additionalRuntimeClasspath "net.dv8tion:JDA:5.2.2"
+    additionalRuntimeClasspath "org.json:json:20231013"
+    additionalRuntimeClasspath(files("libs/emoji-java-5.1.1.jar"))
 }
 
 tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar){
@@ -102,6 +110,8 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
     relocate("kotlin", "com.shadow.kotlin")
     relocate("okhttp3", "com.shadow.okhttp3")
     relocate("okio", "com.shadow.okio")
+    relocate("com.vdurmont", "com.shadow.com.vdurmont")
+    relocate("org.json", "com.shadow.org.json")
 }
 
 

@@ -26,11 +26,11 @@ import static com.denisnumb.discord_chat_mod.MinecraftUtils.executeServerCommand
 public class DiscordEvents extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (!event.getMessage().getChannelId().equals(Config.discordChannelId)
+        if (!event.getMessage().getChannelId().equals(Config.DISCORD_CHANNEL_ID.get())
                 || event.getAuthor().getId().equals(jda.getSelfUser().getId()))
             return;
 
-        if (Config.logDiscordMessages)
+        if (Config.LOG_DISCORD_MESSAGES.get())
             System.out.printf("[Discord] <%s> %s%n", event.getAuthor().getEffectiveName(), event.getMessage().getContentDisplay());
 
         if (server.getPlayerCount() == 0)
@@ -70,7 +70,9 @@ public class DiscordEvents extends ListenerAdapter {
 
             List<TellRawComponent> textPart;
             try {
-                textPart = new MarkdownTellRawConverter(MarkdownParser.parseMarkdown(message.getContentDisplay()), mentions).convertMarkdownTokensToTellRaw();
+                textPart = new MarkdownTellRawConverter(
+                        MarkdownParser.parseMarkdown(message.getContentDisplay()), mentions
+                ).convertMarkdownTokensToTellRaw();
             } catch (Exception ignored) {
                 String content = message.getContentRaw();
                 for (var entry : mentions.entrySet())

@@ -58,7 +58,7 @@ public class ServerStatusController {
     public static void updateServerStatusMessageToUnavailable(){
         if (scheduler != null)
             scheduler.close();
-        if (!isDiscordConnected() || !Config.enablePinnedStatusMessage || serverStatusMessage == null)
+        if (!isDiscordConnected() || !Config.ENABLE_PINNED_STATUS_MESSAGE.get() || serverStatusMessage == null)
             return;
         editMessageEmbeds(serverStatusMessage, buildEmbed(getTranslate(SERVER_UNAVAILABLE, "Server is unavailable"), RED));
     }
@@ -70,7 +70,7 @@ public class ServerStatusController {
     }
 
     private static void updateServerStatus(){
-        if (Config.enablePinnedStatusMessage && serverStatusMessage != null)
+        if (Config.ENABLE_PINNED_STATUS_MESSAGE.get() && serverStatusMessage != null)
             editMessageEmbeds(serverStatusMessage, createServerStatusMessageEmbed());
         jda.getPresence().setActivity(Activity.customStatus(getOnlineCountString()));
     }

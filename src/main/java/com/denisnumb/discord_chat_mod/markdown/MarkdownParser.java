@@ -55,6 +55,8 @@ public class MarkdownParser{
             } else if (style == MarkdownStyle.DISCORD_MENTION){
                 token = new MarkdownToken(matchedText);
                 token.isMention = true;
+            } else if (style == MarkdownStyle.EMOJI) {
+                token = new MarkdownToken(matchedText);
             } else {
                 token = new MarkdownToken(matchedText, innerText);
                 setTokenStyles(token, style);

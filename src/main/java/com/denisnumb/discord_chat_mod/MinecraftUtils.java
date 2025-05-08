@@ -33,7 +33,7 @@ public class MinecraftUtils {
 
     public static void logErrorToServer(String message) {
         LOGGER.error(message);
-        if (Config.logDiscordErrorsToServerChat)
+        if (Config.LOG_DISCORD_ERRORS_TO_SERVER_CHAT.get())
             executeServerCommand(buildLogMessageCommand(message, RED));
     }
 
@@ -44,7 +44,7 @@ public class MinecraftUtils {
            add(new TellRawComponent(message).setColor(hexColor));
         }};
 
-        return prepareTellRawCommand(Config.discordErrorsChatPlayerSelector, components);
+        return prepareTellRawCommand(Config.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR.get(), components);
     }
 
     public static String getTranslateClient(String key, String defaultValue){
@@ -70,7 +70,7 @@ public class MinecraftUtils {
         for (IModInfo modInfo : modList.getMods()){
             if (modInfo.getNamespace().equals("minecraft"))
                 continue;
-            String localePath = String.format("/assets/%s/lang/%s.json", modInfo.getNamespace(), Config.modLocale);
+            String localePath = String.format("/assets/%s/lang/%s.json", modInfo.getNamespace(), Config.MOD_LOCALE.get());
             try {
                 Path path = modList.getModFileById(modInfo.getNamespace()).getFile().findResource(localePath);
                 if (!Files.exists(path))
