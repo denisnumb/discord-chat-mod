@@ -2,11 +2,14 @@ package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.network.ModNetworking;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
+import com.vdurmont.emoji.EmojiParser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.ScreenshotEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -46,6 +49,19 @@ public class MinecraftClientEvents {
                         .append(screenshotName)
                         .append(clickToSendComponent)
         );
+    }
+
+    @SubscribeEvent
+    public static void onChatMessage(ClientChatReceivedEvent event){
+        if (Config.TRANSLATE_UNICODE_EMOJIS_TO_ALIASES.get()){
+            if (!EmojiParser.extractEmojis(event.getMessage().getString()).isEmpty()){
+                MutableComponent withReplacedEmojis = Component.empty();
+                for (Component comp : event.getMessage().toFlatList())
+                    withReplacedEmojis.append(Component.literal(EmojiParser.parseToAliases(comp.getString())).withStyle(comp.getStyle()));
+
+                event.setMessage(withReplacedEmojis);
+            }
+        }
     }
 
     @SubscribeEvent

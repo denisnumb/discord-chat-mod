@@ -15,6 +15,7 @@ public class MarkdownPattern{
     public static final Pattern OBFUSCATED = Pattern.compile("(?<!\\\\)\\|(?<!\\\\)\\|(.+?)(?<!\\\\)\\|(?<!\\\\)\\|");
     public static final Pattern URL = Pattern.compile("(https?://\\S+)");
     public static final Pattern DISCORD_MENTION = Pattern.compile("(?<!\\\\)<((?<!\\\\)([@#][!&]?\\d+)|(:.+?:\\d+))(?<!\\\\)>");
+    public static final Pattern EMOJI = Pattern.compile(":[a-zA-Z0-9_]+:");
 
     public static final HashMap<Pattern, MarkdownStyle> withStyle = new HashMap<>() {{
         put(LINK, MarkdownStyle.LINK);
@@ -28,6 +29,7 @@ public class MarkdownPattern{
         put(OBFUSCATED, MarkdownStyle.OBFUSCATED);
         put(URL, MarkdownStyle.URL);
         put(DISCORD_MENTION, MarkdownStyle.DISCORD_MENTION);
+        put(EMOJI, MarkdownStyle.EMOJI);
     }};
 
     public static boolean isStyleExceptAnother(MarkdownStyle style, MarkdownStyle another){

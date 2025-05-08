@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.Config;
 import com.denisnumb.discord_chat_mod.chat_images.model.*;
 import com.google.common.collect.Lists;
 import net.minecraft.client.GuiMessage;
@@ -38,9 +39,6 @@ public abstract class ChatComponentMixin {
     @Shadow @Final private List<GuiMessage> allMessages;
     @Shadow public abstract int getLinesPerPage();
 
-    @Unique
-    private static final int MAX_MESSAGES = 500;
-
     // get all message click event urls
     @Unique
     private List<String> discord_minecraft_chat$getComponentUrls(Component component){
@@ -74,7 +72,7 @@ public abstract class ChatComponentMixin {
             require = 0
     )
     private int modifyAddMessageMessageLimit(int original){
-        return MAX_MESSAGES;
+        return Config.MAX_CHAT_HISTORY.get();
     }
 
     @Inject(
@@ -88,7 +86,7 @@ public abstract class ChatComponentMixin {
             )
     )
     private void removeOldFromTrimmedMessages(Component message, MessageSignature signature, int addedTime, GuiMessageTag tag, boolean onlyTrimmed, CallbackInfo ci) {
-        while(trimmedMessages.size() > MAX_MESSAGES) {
+        while(trimmedMessages.size() > Config.MAX_CHAT_HISTORY.get()) {
             int parentAddedTime = trimmedMessages.get(trimmedMessages.size() - 1).addedTime();
 
             do trimmedMessages.remove(trimmedMessages.size() - 1);
@@ -106,7 +104,7 @@ public abstract class ChatComponentMixin {
             )
     )
     private void removeOldFromAllMessages(Component message, MessageSignature signature, int addedTime, GuiMessageTag tag, boolean onlyTrimmed, CallbackInfo ci) {
-        while(allMessages.size() > MAX_MESSAGES) {
+        while(allMessages.size() > Config.MAX_CHAT_HISTORY.get()) {
             int parentAddedTime = allMessages.get(allMessages.size() - 1).addedTime();
 
             do allMessages.remove(allMessages.size() - 1);
