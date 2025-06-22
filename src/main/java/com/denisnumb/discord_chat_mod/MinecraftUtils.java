@@ -1,11 +1,18 @@
 package com.denisnumb.discord_chat_mod;
 
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,35 +23,46 @@ import org.slf4j.Logger;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.prepareTellRawCommand;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static void executeServerCommand(String command) {
-        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command);
+    public static void sendMessageToPlayersBySelector(Component message, String selector) {
+        CommandSourceStack fakeSource = server.createCommandSourceStack()
+                .withSuppressedOutput()
+                .withPermission(4);
+
+        try {
+            EntitySelectorParser parser = new EntitySelectorParser(new StringReader(selector), true);
+            EntitySelector entitySelector = parser.parse();
+
+            for (ServerPlayer player : entitySelector.findPlayers(fakeSource))
+                player.sendSystemMessage(ComponentUtils.updateForEntity(null, message, player, 0), false);
+        } catch (CommandSyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void sendMessageToAllPlayers(Component message){
+        sendMessageToPlayersBySelector(message, "@a");
     }
 
     public static void logErrorToServer(String message) {
         LOGGER.error(message);
         if (Config.LOG_DISCORD_ERRORS_TO_SERVER_CHAT.get())
-            executeServerCommand(buildLogMessageCommand(message, RED));
+            sendMessageToPlayersBySelector(buildLogMessageComponent(message, RED), Config.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR.get());
     }
 
-    private static String buildLogMessageCommand(String message, int color) {
-        String hexColor = getHexColor(color);
-        ArrayList<TellRawComponent> components = new ArrayList<>() {{
-           add(new TellRawComponent("[discord_chat_mod] ").setBold().setColor(hexColor));
-           add(new TellRawComponent(message).setColor(hexColor));
-        }};
-
-        return prepareTellRawCommand(Config.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR.get(), components);
+    private static Component buildLogMessageComponent(String message, int color) {
+        return Component.empty()
+                .append(Component.literal("[discord_chat_mod] ")
+                        .withStyle(style -> style.withBold(true))
+                )
+                .append(Component.literal(message)).withColor(color);
     }
 
     public static String getTranslateClient(String key, String defaultValue){

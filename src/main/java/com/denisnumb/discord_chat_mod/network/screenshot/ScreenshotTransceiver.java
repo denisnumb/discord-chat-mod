@@ -1,7 +1,5 @@
 package com.denisnumb.discord_chat_mod.network.screenshot;
 
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.ComponentEvent;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;
 import com.mojang.datafixers.util.Either;
 import net.dv8tion.jda.api.entities.Message;
@@ -9,7 +7,9 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -25,7 +25,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHAT_LINK_COLOR;
-import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
@@ -85,14 +84,14 @@ public class ScreenshotTransceiver {
     }
 
     private static void handleSuccessful(Message message, Player player) {
-        executeServerCommand(prepareTellRawCommand(new ArrayList<>() {{
-            add(new TellRawComponent("<" + player.getName().getString() + "> "));
-            add(new TellRawComponent(getTranslate(SCREENSHOT, "Screenshot"))
-                    .setColor(getHexColor(CHAT_LINK_COLOR))
-                    .addClickEvent(new ComponentEvent("open_url", message.getAttachments().getFirst().getUrl()))
-                    .addHoverEvent(new ComponentEvent("show_text", message.getAttachments().getFirst().getUrl()))
-            );
-        }}));
+        sendMessageToAllPlayers(
+                Component.literal("<" + player.getName().getString() + "> ")
+                        .append(Component.literal(getTranslate(SCREENSHOT, "Screenshot")).withStyle(style ->
+                                style.withColor(CHAT_LINK_COLOR)
+                                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, message.getAttachments().getFirst().getUrl()))
+                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(message.getAttachments().getFirst().getUrl())))
+                        ))
+        );
     }
 
     private static void handleError(Optional<ErrorResponseException> errorOpt, Player player) {

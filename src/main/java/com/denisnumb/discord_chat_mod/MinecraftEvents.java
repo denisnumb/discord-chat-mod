@@ -1,9 +1,12 @@
 package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.commands.MentionCommand;
+import com.denisnumb.discord_chat_mod.commands.SayCommand;
+import com.denisnumb.discord_chat_mod.commands.TellrawCommand;
 import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
@@ -22,7 +25,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.GOLD;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.PURPLE;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
@@ -37,12 +39,14 @@ public class MinecraftEvents {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         MentionCommand.register(event.getDispatcher());
+        SayCommand.register(event.getDispatcher());
+        TellrawCommand.register(event.getDispatcher(), event.getBuildContext());
     }
 
     @SubscribeEvent
     public static void onChatMessage(ServerChatEvent event) {
         String message = event.getRawText();
-        Map<String, DiscordMemberData> mentions = Map.of();
+        Map<String, DiscordMentionData> mentions = Map.of();
 
         if (isDiscordConnected()) {
             List<DiscordMemberData> memberData = ChannelMembersProvider.getMemberData(discordChannel);
@@ -53,7 +57,7 @@ public class MinecraftEvents {
 
             mentions = new HashMap<>(){{
                for (DiscordMemberData member : memberData)
-                   put(member.mentionString, member);
+                   put(member.mentionString, new DiscordMentionData(member));
             }};
 
             prepareDiscordTextMessage(String.format("`<%s>` %s", event.getPlayer().getName().getString(), replaceEmojiCodesToDiscordMentions(message)))

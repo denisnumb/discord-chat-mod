@@ -8,12 +8,19 @@ import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHANNEL_MENTION_CO
 import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
 
 public class DiscordMentionData {
+    public DiscordMemberData memberData;
     public String name;
     public String prettyMention;
     public String color;
 
     public DiscordMentionData(Member member){
         this(member.getEffectiveName(), "@" + member.getEffectiveName(), getHexColor(member.getColor()));
+        this.memberData = new DiscordMemberData(member.getEffectiveName(),
+                member.getUser().getEffectiveName(),
+                member.getUser().getName(),
+                member.getAsMention(),
+                member.getColor()
+        );
     }
 
     public DiscordMentionData(Role role){
@@ -22,6 +29,11 @@ public class DiscordMentionData {
 
     public DiscordMentionData(GuildChannel channel){
         this(channel.getName(), "#" + channel.getName(), getHexColor(CHANNEL_MENTION_COLOR));
+    }
+
+    public DiscordMentionData(DiscordMemberData memberData){
+        this(memberData.guildNickname, memberData.prettyMention, memberData.color);
+        this.memberData = memberData;
     }
 
     public DiscordMentionData(String name, String prettyMention, String color){

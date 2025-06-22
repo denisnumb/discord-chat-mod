@@ -3,25 +3,27 @@ package com.denisnumb.discord_chat_mod.discord;
 import com.denisnumb.discord_chat_mod.Config;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
-import com.denisnumb.discord_chat_mod.markdown.MarkdownTellRawConverter;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.ComponentEvent;
+import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.STICKER;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.prepareTellRawCommand;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.executeServerCommand;
+import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.replaceDiscordEmojiMentionsToEmojiNames;
 
 public class DiscordEvents extends ListenerAdapter {
     @Override
@@ -36,27 +38,32 @@ public class DiscordEvents extends ListenerAdapter {
         if (server.getPlayerCount() == 0)
             return;
 
-        for (String command : prepareTellRawCommands(event.getMessage()))
-            executeServerCommand(command);
+        for (Component component : prepareMessages(event.getMessage()))
+            sendMessageToAllPlayers(component);
     }
 
-    private static @NotNull List<String> prepareTellRawCommands(Message message){
-        ArrayList<String> commands = new ArrayList<>();
+    private static @NotNull List<Component> prepareMessages(Message message){
+        ArrayList<Component> components = new ArrayList<>();
 
         Member member = Objects.requireNonNull(message.getMember());
         String userName = member.getEffectiveName();
-        String roleColor = getHexColor(member.getColor());
+        Color roleColor = member.getColor() == null ? Color.WHITE : member.getColor();
 
-        ArrayList<TellRawComponent> basePart = new ArrayList<>() {{
-            add(new TellRawComponent("[discord] ").setBold().setColor(getHexColor(DISCORD_COLOR)));
-            add(new TellRawComponent("<"));
-            add(new TellRawComponent(userName)
-                    .setColor(roleColor)
-                    .setInsertion("@" + userName)
-                    .addClickEvent(new ComponentEvent("suggest_command", "/mention " + userName))
-                    .addHoverEvent(new ComponentEvent("show_text", member.getUser().getEffectiveName())));
-            add(new TellRawComponent("> "));
-        }};
+        Component basePart = Component.empty()
+                .append(Component.literal("[discord] ")
+                        .withColor(DISCORD_COLOR)
+                        .withStyle(style -> style.withBold(true))
+                )
+                .append(Component.literal("<"))
+                .append(Component.literal(userName)
+                        .withColor(roleColor.getRGB())
+                        .withStyle(style ->
+                                style.withInsertion("@" + userName)
+                                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/mention " + userName))
+                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.getUser().getEffectiveName())))
+                        )
+                )
+                .append(Component.literal("> "));
 
         if (!message.getContentRaw().isEmpty()){
             Map<String, DiscordMentionData> mentions = new HashMap<>();
@@ -68,47 +75,51 @@ public class DiscordEvents extends ListenerAdapter {
             for (GuildChannel channel : message.getMentions().getChannels())
                 mentions.put(channel.getAsMention(), new DiscordMentionData(channel));
 
-            List<TellRawComponent> textPart;
+            Component textPart;
             try {
-                textPart = new MarkdownTellRawConverter(
-                        MarkdownParser.parseMarkdown(message.getContentDisplay()), mentions
-                ).convertMarkdownTokensToTellRaw();
+                textPart = new MarkdownToComponentConverter(
+                        MarkdownParser.parseMarkdown(replaceDiscordEmojiMentionsToEmojiNames(message.getContentRaw())), mentions
+                ).convertMarkdownTokensToComponent();
             } catch (Exception ignored) {
                 String content = message.getContentRaw();
                 for (var entry : mentions.entrySet())
                     content = content.replace(entry.getKey(), entry.getValue().prettyMention);
-                textPart = List.of(new TellRawComponent(content));
+                textPart = Component.literal(content);
             }
 
-            commands.add(prepareTellRawCommand(basePart, textPart));
+            components.add(basePart.copy().append(textPart));
         }
 
         if (!message.getAttachments().isEmpty()){
-            List<TellRawComponent> attachmentPart = new ArrayList<>() {{
-                int index = 0;
-                List<Message.Attachment> attachments = message.getAttachments();
-                for (var file : attachments){
-                    add(new TellRawComponent(file.getFileName() + (++index < attachments.size() ? "\n" : ""))
-                            .setItalic()
-                            .setColor(getHexColor(CHAT_LINK_COLOR))
-                            .addClickEvent(new ComponentEvent("open_url", file.getUrl()))
-                            .addHoverEvent(new ComponentEvent("show_text", file.getUrl())));
-                }
-            }};
-            commands.add(prepareTellRawCommand(basePart, attachmentPart));
+            MutableComponent attachmentPart = Component.empty();
+            int index = 0;
+            List<Message.Attachment> attachments = message.getAttachments();
+            for (var file : attachments){
+                attachmentPart.append(Component.literal(file.getFileName() + (++index < attachments.size() ? "\n" : ""))
+                        .withColor(CHAT_LINK_COLOR).withStyle(style -> style.withItalic(true)
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl()))
+                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(file.getUrl())))
+                        )
+                );
+            }
+
+            components.add(basePart.copy().append(attachmentPart));
         }
 
         if (!message.getStickers().isEmpty()){
-            List<TellRawComponent> stickerPart = new ArrayList<>() {{
-                StickerItem sticker = message.getStickers().getFirst();
-                add(new TellRawComponent(String.format(getTranslate(STICKER, "*sticker* (%s)"), sticker.getName()))
-                        .setItalic()
-                        .addClickEvent(new ComponentEvent("open_url", sticker.getIconUrl()))
-                );
-            }};
-            commands.add(prepareTellRawCommand(basePart, stickerPart));
+            MutableComponent stickerPart = Component.empty();
+            StickerItem sticker = message.getStickers().getFirst();
+            stickerPart.append(Component.literal(String.format(getTranslate(STICKER, "*sticker* (%s)"), sticker.getName()))
+                    .withStyle(style -> style
+                            .withItalic(true)
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, sticker.getIconUrl()))
+                    )
+            );
+
+
+            components.add(basePart.copy().append(stickerPart));
         }
 
-        return commands;
+        return components;
     }
 }

@@ -1,9 +1,8 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
-import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.Component;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -14,13 +13,9 @@ import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHAT_LINK_COLOR;
 public class MarkdownToComponentConverter{
     private final MutableComponent result = Component.empty();
     private final List<MarkdownToken> tokens;
-    private final Map<String, DiscordMemberData> mentions;
+    private final Map<String, DiscordMentionData> mentions;
 
-    public MarkdownToComponentConverter(List<MarkdownToken> tokens){
-        this(tokens, new HashMap<>());
-    }
-
-    public MarkdownToComponentConverter(List<MarkdownToken> tokens, Map<String, DiscordMemberData> mentions){
+    public MarkdownToComponentConverter(List<MarkdownToken> tokens, Map<String, DiscordMentionData> mentions){
         this.tokens = tokens;
         this.mentions = mentions;
     }
@@ -37,13 +32,17 @@ public class MarkdownToComponentConverter{
 
         if (mentions.containsKey(textPart)){
             String mentionString = textPart;
-            DiscordMemberData member = mentions.get(mentionString);
-            textPart = member.prettyMention;
+            DiscordMentionData mentionData = mentions.get(mentionString);
+            textPart = mentionData.prettyMention;
             component = Component.literal(textPart).withStyle(style ->
-                    style.withColor(TextColor.parseColor(member.color).getOrThrow())
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.discordNickName)))
-                            .withInsertion("@" + member.guildNickname)
+                    style.withColor(TextColor.parseColor(mentionData.color).getOrThrow())
             );
+
+            if (mentionData.memberData != null){
+                component = component.withStyle(style -> style
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(mentionData.memberData.discordNickName)))
+                        .withInsertion("@" + mentionData.memberData.guildNickname));
+            }
         }
 
         if (!textPart.isBlank()){
