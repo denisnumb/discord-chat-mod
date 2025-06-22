@@ -2,9 +2,7 @@ package com.denisnumb.discord_chat_mod.commands;
 
 import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
 import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.markdown.tellraw.ComponentEvent;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -12,16 +10,17 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayers;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.SERVER_IS_NOT_CONNECTED_TO_DISCORD;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.UNKNOWN_MENTION;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.prepareDiscordTextMessage;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.prepareTellRawCommand;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
 
 public class MentionCommand {
@@ -54,18 +53,15 @@ public class MentionCommand {
                                                 .findFirst()
                                                 .get();
 
-                                        server.getCommands().performPrefixedCommand(
-                                                server.createCommandSourceStack(),
-                                                prepareTellRawCommand(new ArrayList<>() {{
-                                                    add(new TellRawComponent(String.format("<%s> ", player.getName().getString())));
-                                                    add(new TellRawComponent(String.format("@%s", name))
-                                                            .setColor(member.color)
-                                                            .setInsertion("@" + name)
-                                                            .addClickEvent(new ComponentEvent("suggest_command", "/mention " + name))
-                                                            .addHoverEvent(new ComponentEvent("show_text", member.discordNickName))
-                                                    );
-                                                }})
+                                        sendMessageToAllPlayers(
+                                                Component.literal(String.format("<%s> ", player.getName().getString()))
+                                                        .append(Component.literal(String.format("@%s", name)).withStyle(style ->
+                                                                style.withColor(TextColor.parseColor(member.color))
+                                                                        .withInsertion("@" + name)
+                                                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.discordNickName)))
+                                                        ))
                                         );
+
                                         prepareDiscordTextMessage(String.format("`<%s>` %s", player.getName().getString(), member.mentionString))
                                                 .ifPresent(DiscordUtils::sendMessage);
                                     }

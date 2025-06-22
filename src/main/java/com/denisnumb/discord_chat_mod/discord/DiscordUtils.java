@@ -1,7 +1,5 @@
 package com.denisnumb.discord_chat_mod.discord;
 
-import com.denisnumb.discord_chat_mod.markdown.tellraw.TellRawComponent;
-import com.google.gson.Gson;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -14,7 +12,6 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -26,7 +23,6 @@ import static com.denisnumb.discord_chat_mod.MinecraftUtils.logErrorToServer;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 
 public class DiscordUtils {
-    private static final Gson gson = new Gson();
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public static final List<Permission> requiredPermissions = List.of(
@@ -145,21 +141,6 @@ public class DiscordUtils {
         return Either.right(Optional.empty());
     }
 
-    @SafeVarargs
-    public static String prepareTellRawCommand(List<TellRawComponent>... parts){
-        return prepareTellRawCommand("@a", parts);
-    }
-
-    @SafeVarargs
-    public static String prepareTellRawCommand(String selector, List<TellRawComponent>... parts){
-        List<Object> commandJson = new ArrayList<>();
-        commandJson.add("");
-        for (var part : parts)
-            commandJson.addAll(part);
-
-        return "/tellraw " + selector + " " + gson.toJson(commandJson);
-    }
-
     public static String replaceEmojiCodesToDiscordMentions(String text){
         Pattern emojiPattern = Pattern.compile(":[a-zA-Z0-9_]{2,}:");
         Matcher matcher = emojiPattern.matcher(text);
@@ -171,6 +152,15 @@ public class DiscordUtils {
             if (!foundEmojis.isEmpty())
                 text = text.replace(emojiString, foundEmojis.get(0).getAsMention());
         }
+
+        return text;
+    }
+
+    public static String replaceDiscordEmojiMentionsToEmojiNames(String text){
+        Pattern emojiMentionPattern = Pattern.compile("<:([a-zA-Z0-9_]+):\\d+>");
+        Matcher matcher = emojiMentionPattern.matcher(text);
+        while (matcher.find())
+            text = text.replace(matcher.group(0), ":" + matcher.group(1) + ":");
 
         return text;
     }
