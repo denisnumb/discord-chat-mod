@@ -79,6 +79,16 @@ Type `@` in game chat to get a list of Discord users to mention
 
 ---
 
+### Discord Unicode & Custom emojis
+
+Type `:` in game chat to get a list of discord guild Custom and Unicode emojis
+
+![emojis](https://github.com/user-attachments/assets/eedc957e-f505-48e2-ab99-548d53f4ded4)
+
+<img width="355" height="292" alt="emojis" src="https://github.com/user-attachments/assets/98c9c127-fc98-4b42-85a1-7508a9a2e164" />
+
+---
+
 ### Local server
 
 Automatically closes when host exits
