@@ -1,6 +1,5 @@
 package com.denisnumb.discord_chat_mod.network.mentions;
 
-import com.google.gson.Gson;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -11,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import static net.neoforged.neoforge.internal.versions.neoforge.NeoForgeVersion.MOD_ID;
 
 public class RequestDiscordMentionsPacket implements CustomPacketPayload {
-    private static final Gson gson = new Gson();
     public static final CustomPacketPayload.Type<RequestDiscordMentionsPacket> TYPE
             = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "/network/request_discord_mentions_packet"));
 

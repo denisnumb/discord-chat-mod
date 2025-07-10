@@ -12,7 +12,9 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import org.slf4j.Logger;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,27 +143,65 @@ public class DiscordUtils {
         return Either.right(Optional.empty());
     }
 
-    public static String replaceEmojiCodesToDiscordMentions(String text){
-        Pattern emojiPattern = Pattern.compile(":[a-zA-Z0-9_]{2,}:");
+    public static String replaceEmojiCodesToDiscordMentions(String text) {
+        Pattern emojiPattern = Pattern.compile("(?<!\\\\):([a-zA-Z0-9_]{2,})(~([1-9][0-9]*))?:");
         Matcher matcher = emojiPattern.matcher(text);
+        Map<String, List<RichCustomEmoji>> emojiMap = CustomEmojiProvider.getGuildEmojis(discordChannel);
 
+        StringBuilder result = new StringBuilder();
         while (matcher.find()) {
-            String emojiString = matcher.group();
-            List<RichCustomEmoji> foundEmojis = discordChannel.getGuild()
-                    .getEmojisByName(emojiString.replace(":", ""), true);
-            if (!foundEmojis.isEmpty())
-                text = text.replace(emojiString, foundEmojis.getFirst().getAsMention());
+            String baseName = matcher.group(1);
+            String numberGroup = matcher.group(3);
+
+            int index = 0;
+            if (numberGroup != null) {
+                try {
+                    index = Integer.parseInt(numberGroup);
+                } catch (NumberFormatException ignored) {
+                    index = -1;
+                }
+            }
+
+            List<RichCustomEmoji> emojis = emojiMap.getOrDefault(baseName, Collections.emptyList());
+            if (index >= 0 && index < emojis.size()) {
+                matcher.appendReplacement(result, Matcher.quoteReplacement(emojis.get(index).getAsMention()));
+            } else {
+                matcher.appendReplacement(result, Matcher.quoteReplacement(matcher.group()));
+            }
         }
 
-        return text;
+        matcher.appendTail(result);
+        return result.toString();
     }
 
-    public static String replaceDiscordEmojiMentionsToEmojiNames(String text){
-        Pattern emojiMentionPattern = Pattern.compile("<:([a-zA-Z0-9_]+):\\d+>");
+    public static String replaceDiscordEmojiMentionsToEmojiNames(String text) {
+        Pattern emojiMentionPattern = Pattern.compile("(?<!\\\\)<a?:([a-zA-Z0-9_]+):(\\d+)>");
         Matcher matcher = emojiMentionPattern.matcher(text);
-        while (matcher.find())
-            text = text.replace(matcher.group(0), ":" + matcher.group(1) + ":");
+        Map<String, List<RichCustomEmoji>> emojiMap = CustomEmojiProvider.getGuildEmojis(discordChannel);
 
-        return text;
+        StringBuilder result = new StringBuilder();
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            String id = matcher.group(2);
+
+            List<RichCustomEmoji> emojis = emojiMap.getOrDefault(name, Collections.emptyList());
+
+            int index = -1;
+            for (int i = 0; i < emojis.size(); i++) {
+                if (emojis.get(i).getId().equals(id)) {
+                    index = i;
+                    break;
+                }
+            }
+
+            String replacement = (index > 0)
+                    ? ":" + name + "~" + index + ":"
+                    : ":" + name + ":";
+
+            matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+        }
+
+        matcher.appendTail(result);
+        return result.toString();
     }
 }

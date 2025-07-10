@@ -15,7 +15,7 @@ public class MarkdownPattern{
     public static final Pattern OBFUSCATED = Pattern.compile("(?<!\\\\)\\|(?<!\\\\)\\|(.+?)(?<!\\\\)\\|(?<!\\\\)\\|");
     public static final Pattern URL = Pattern.compile("(https?://\\S+)");
     public static final Pattern DISCORD_MENTION = Pattern.compile("(?<!\\\\)<((?<!\\\\)([@#][!&]?\\d+)|(:.+?:\\d+))(?<!\\\\)>");
-    public static final Pattern EMOJI = Pattern.compile(":[a-zA-Z0-9_]+:");
+    public static final Pattern EMOJI = Pattern.compile(":[a-zA-Z0-9_]{2,}(~([1-9][0-9]*))?:");
 
     public static final HashMap<Pattern, MarkdownStyle> withStyle = new HashMap<>() {{
         put(LINK, MarkdownStyle.LINK);

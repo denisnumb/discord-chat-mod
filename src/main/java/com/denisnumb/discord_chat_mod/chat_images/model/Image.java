@@ -9,8 +9,11 @@ public class Image extends AbstractImage {
             String url,
             ImageSize imageSize,
             ImageSize originalSize,
-            ResourceLocation resourceLocation) {
-        super(url, imageSize, originalSize);
+            ResourceLocation resourceLocation,
+            boolean isSpoiler,
+            ResourceLocation spoilerResourceLocation
+    ){
+        super(url, imageSize, originalSize, isSpoiler, spoilerResourceLocation);
         this.resourceLocation = resourceLocation;
     }
 }

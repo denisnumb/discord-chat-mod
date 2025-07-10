@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
@@ -49,6 +51,10 @@ public class MinecraftUtils {
 
     public static void sendMessageToAllPlayers(Component message){
         sendMessageToPlayersBySelector(message, "@a");
+    }
+
+    public static void showTitleBarMessage(Component message){
+        Minecraft.getInstance().gui.setOverlayMessage(message, false);
     }
 
     public static void logErrorToServer(String message) {
@@ -95,7 +101,7 @@ public class MinecraftUtils {
                     continue;
                 languageData.putAll(new Gson().fromJson(Files.readString(path), new TypeToken<Map<String, String>>(){}.getType()));
             } catch (Exception e) {
-                LOGGER.error("Failed to load localization {}", localePath);
+                LOGGER.warn("Failed to load localization {}", localePath);
             }
         }
     }
@@ -113,7 +119,7 @@ public class MinecraftUtils {
                     : String.format(getTranslate(attackBase), diedEntityName);
         } else {
             String killerEntity = source.getEntity() == null
-                    ? getTranslate(source.getDirectEntity().getType().getDescriptionId())
+                    ? getTranslate(Objects.requireNonNull(source.getDirectEntity()).getType().getDescriptionId())
                     : getTranslate(source.getEntity().getType().getDescriptionId());
 
             Entity entity = source.getEntity();

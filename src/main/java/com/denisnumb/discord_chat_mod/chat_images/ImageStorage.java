@@ -18,7 +18,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -35,8 +36,6 @@ public class ImageStorage {
     public static final float MAX_HEIGHT = 72.0f;
 
     public static final Map<String, AbstractImage> IMAGE_CACHE = new HashMap<>();
-//    public static final ResourceLocation SPOILER_PLACEHOLDER
-//            = ResourceLocation.fromNamespaceAndPath(DiscordChatMod.MODID, "textures/gui/spoiler_placeholder.png");
     public static final Set<String> HANDLED_URLS = new HashSet<>();
     private static CompletableFuture<LoadResult> lastTask = CompletableFuture.completedFuture(null);
 
@@ -69,7 +68,7 @@ public class ImageStorage {
     }
 
     @Nullable
-    private static AbstractImage parseImage(String url) {
+    public static AbstractImage parseImage(String url) {
         if (IMAGE_CACHE.containsKey(url))
             return IMAGE_CACHE.get(url);
         if (HANDLED_URLS.contains(url))
@@ -93,12 +92,17 @@ public class ImageStorage {
         return null;
     }
 
-    private static void loadImage(String imageUrl) throws IOException, InterruptedException {
-        try (InputStream inputStream = new URL(imageUrl).openStream()) {
+    private static void loadImage(String imageUrl) throws IOException, InterruptedException, URISyntaxException {
+        try (InputStream inputStream = new URI(imageUrl).toURL().openStream()) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ImageIO.write(ImageIO.read(inputStream), "png", outputStream);
 
             NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(outputStream.toByteArray()));
+
+            boolean isSpoiler = ImageUtils.isSpoilerImageUrl(imageUrl);
+            ResourceLocation spoilerTextureLocation = isSpoiler
+                    ? registerSpoilerImage(imageUrl, NativeImage.read(new ByteArrayInputStream(outputStream.toByteArray())))
+                    : null;
             ResourceLocation textureLocation = ResourceLocation.parse(
                     DiscordChatMod.MODID + "/chat_image/" + imageUrl.hashCode()
             );
@@ -117,18 +121,19 @@ public class ImageStorage {
                     imageUrl,
                     getImageScaledSize(nativeImage.getWidth(), nativeImage.getHeight()),
                     new ImageSize(nativeImage.getWidth(), nativeImage.getHeight()),
-                    textureLocation
+                    textureLocation,
+                    isSpoiler,
+                    spoilerTextureLocation
             ));
         }
     }
 
-
-    private static void loadGif(String gifUrl) throws IOException, InterruptedException {
+    private static void loadGif(String gifUrl) throws IOException, InterruptedException, URISyntaxException {
         List<ResourceLocation> frames = new ArrayList<>();
         ImageSize frameSize = null;
         int frameDuration = -1;
 
-        ImageInputStream input = ImageIO.createImageInputStream(new URL(gifUrl).openStream());
+        ImageInputStream input = ImageIO.createImageInputStream(new URI(gifUrl).toURL().openStream());
         Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("gif");
         if (!readers.hasNext())
             throw new IOException("No GIF reader found");
@@ -137,6 +142,9 @@ public class ImageStorage {
         reader.setInput(input, false);
         int numFrames = reader.getNumImages(true);
         CountDownLatch latch = new CountDownLatch(numFrames);
+
+        boolean isSpoiler = ImageUtils.isSpoilerImageUrl(gifUrl);
+        ResourceLocation spoilerTextureLocation = null;
 
         for (int i = 0; i < numFrames; i++) {
             BufferedImage frame = reader.read(i);
@@ -147,6 +155,8 @@ public class ImageStorage {
                 frameSize = new ImageSize(frame.getWidth(), frame.getHeight());
             if (frameDuration == -1)
                 frameDuration = getFrameDuration(reader.getImageMetadata(i));
+            if (i == 0 && isSpoiler)
+                spoilerTextureLocation = registerSpoilerImage(gifUrl, NativeImage.read(new ByteArrayInputStream(outputStream.toByteArray())));
 
             ResourceLocation frameLocation = ResourceLocation.parse(
                     DiscordChatMod.MODID + "/chat_gif/" + gifUrl.hashCode() + "_" + i
@@ -168,12 +178,35 @@ public class ImageStorage {
 
         if (!frames.isEmpty()){
             IMAGE_CACHE.put(gifUrl, new AnimatedImage(
-                    gifUrl,
-                    frames,
-                    getImageScaledSize(frameSize.width(), frameSize.height()),
-                    frameSize,
-                    frameDuration <= 0 ? 100 : frameDuration)
+                            gifUrl,
+                            frames,
+                            getImageScaledSize(frameSize.width(), frameSize.height()),
+                            frameSize,
+                            frameDuration <= 0 ? 100 : frameDuration,
+                            isSpoiler,
+                            spoilerTextureLocation
+                    )
             );
         }
+    }
+
+    private static ResourceLocation registerSpoilerImage(String imageUrl, NativeImage image) throws InterruptedException {
+        ImageUtils.applyPixelation(image, image.getHeight() / 6);
+        ImageUtils.applySpoilerOverlay(image);
+        ResourceLocation spoilerTextureLocation = ResourceLocation.parse(
+                DiscordChatMod.MODID + "/chat_image_spoiler/" + imageUrl.hashCode()
+        );
+
+        CountDownLatch latch = new CountDownLatch(1);
+        RenderSystem.recordRenderCall(() -> {
+            try {
+                Minecraft.getInstance().getTextureManager().register(spoilerTextureLocation, new DynamicTexture(image));
+            } finally {
+                latch.countDown();
+            }
+        });
+        latch.await();
+
+        return spoilerTextureLocation;
     }
 }

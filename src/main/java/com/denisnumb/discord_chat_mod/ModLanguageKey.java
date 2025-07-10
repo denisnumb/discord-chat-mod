@@ -14,6 +14,8 @@ public class ModLanguageKey {
     public static final String SCREENSHOT_SENDING_ERROR_WITH_REASON = "discord_chat_mod.command.send_screenshot.error.with_reason";
     public static final String SERVER_IS_NOT_CONNECTED_TO_DISCORD = "discord_chat_mod.command.send_screenshot.error.discord_not_connected";
     public static final String SCREENSHOT = "discord_chat_mod.command.send_screenshot.screenshot";
+    public static final String SENDING_SCREENSHOT = "discord_chat_mod.command.send_screenshot.sending_screenshot";
+    public static final String SCREENSHOT_COOLDOWN = "discord_chat_mod.command.send_screenshot.cooldown";
     public static final String CLICK_TO_OPEN_IMAGE = "discord_chat_mod.command.click_to_open_image";
     public static final String STICKER = "discord_chat_mod.sticker";
     public static final String PREPARE_MESSAGE_ERROR = "discord_chat_mod.error.prepare_message_error";
@@ -21,5 +23,5 @@ public class ModLanguageKey {
     public static final String SEND_MESSAGE_ERROR = "discord_chat_mod.error.send_message_error";
     public static final String INVALID_CHANNEL_ERROR = "discord_chat_mod.error.invalid_channel_error";
     public static final String MISSING_PERMISSIONS_ERROR = "discord_chat_mod.error.missing_permissions_error";
-
+    public static final String SPOILER = "discord_chat_mod.spoiler";
 }

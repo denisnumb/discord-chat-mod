@@ -12,16 +12,27 @@ public class Config
     private static final ModConfigSpec.Builder CLIENT_BUILDER = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.ConfigValue<String> DISCORD_BOT_TOKEN = COMMON_BUILDER
-            .comment(" Bot access token" +
-                    "\n [!] Make sure all Privileged Gateway Intents are enabled on https://discord.com/developers/applications/<your_app_id>/bot" +
-                    "\n [!] Make sure the bot has the following permissions on the server:" +
-                    "\n [!] - VIEW_CHANNEL" +
-                    "\n [!] - MESSAGE_SEND" +
-                    "\n [!] - MESSAGE_SEND_IN_THREADS" +
-                    "\n [!] - MESSAGE_EMBED_LINKS" +
-                    "\n [!] - MESSAGE_ATTACH_FILES" +
-                    "\n [!] - MESSAGE_MANAGE" +
-                    "\n [!] - MESSAGE_HISTORY")
+            .comment("""
+                     Bot access token\
+                    
+                     [!] Make sure all Privileged Gateway Intents are enabled on https://discord.com/developers/applications/<your_app_id>/bot\
+                    
+                     [!] Make sure the bot has the following permissions on the server:\
+                    
+                     [!] - VIEW_CHANNEL\
+                    
+                     [!] - MESSAGE_SEND\
+                    
+                     [!] - MESSAGE_SEND_IN_THREADS\
+                    
+                     [!] - MESSAGE_EMBED_LINKS\
+                    
+                     [!] - MESSAGE_ATTACH_FILES\
+                    
+                     [!] - MESSAGE_MANAGE\
+                    
+                     [!] - MESSAGE_HISTORY\
+                    """)
             .define("discordBotToken", "");
 
     public static final ModConfigSpec.ConfigValue<String> DISCORD_CHANNEL_ID = COMMON_BUILDER
@@ -49,15 +60,26 @@ public class Config
             .comment(" Mod locale")
             .define("modLocale", "en_us");
 
-    public static final ModConfigSpec.BooleanValue TRANSLATE_UNICODE_EMOJIS_TO_ALIASES = CLIENT_BUILDER
-            .comment(" Convert emoji sent from Discord to their names. For example, \"\uD83D\uDE03\" will be converted to \":smiley:\"" +
-                    "\n Can be used for correct compatibility with the Emojiful mod")
-            .define("translateUnicodeEmojisToTextAliases", false);
+    public static final ModConfigSpec.BooleanValue EMOJIFUL_COMPATIBILITY = CLIENT_BUILDER
+            .comment("""
+                     Can be set to "true" for correct compatibility with the Emojiful mod. Enabling this option:\
+                    
+                     1) Disables Discord Chat Mod's emoji suggestions to avoid conflicts with Emojiful\
+                    
+                     2) Disables Discord Chat Mod's rendering of custom Discord Emoji\
+                    
+                     3) Convert emoji sent from Discord to their names. For example, "\uD83D\uDE03" will be converted to ":smiley:"\
+                    """)
+            .define("emojifulCompatibility", false);
 
     public static final ModConfigSpec.IntValue MAX_CHAT_HISTORY = CLIENT_BUILDER
-            .comment(" Maximum number of messages in the chat." +
-                    "\n When the number of messages exceeds this value, old messages are automatically deleted." +
-                    "\n By default, this value is 100 in the vanilla game.")
+            .comment("""
+                     Maximum number of messages in the chat.\
+                    
+                     When the number of messages exceeds this value, old messages are automatically deleted.\
+                    
+                     By default, this value is 100 in the vanilla game.\
+                    """)
             .defineInRange("maxChatHistory", 500, 20, Integer.MAX_VALUE);
 
     static final ModConfigSpec COMMON_SPEC = COMMON_BUILDER.build();

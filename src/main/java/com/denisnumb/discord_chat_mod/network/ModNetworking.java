@@ -1,6 +1,8 @@
 package com.denisnumb.discord_chat_mod.network;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisPartPacket;
+import com.denisnumb.discord_chat_mod.network.emoji.RequestDiscordEmojisPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
@@ -38,6 +40,22 @@ public class ModNetworking {
                 ScreenshotPartPacket.STREAM_CODEC,
                 new MainThreadPayloadHandler<>(
                         PacketHandler::handleScreenshotPartPacket
+                )
+        );
+
+        registrar.playToClient(
+                DiscordEmojisPartPacket.TYPE,
+                DiscordEmojisPartPacket.STREAM_CODEC,
+                new MainThreadPayloadHandler<>(
+                        PacketHandler::handleDiscordEmojisPacket
+                )
+        );
+
+        registrar.playToServer(
+                RequestDiscordEmojisPacket.TYPE,
+                RequestDiscordEmojisPacket.STREAM_CODEC,
+                new MainThreadPayloadHandler<>(
+                        PacketHandler::handleRequestDiscordEmojisPacket
                 )
         );
     }

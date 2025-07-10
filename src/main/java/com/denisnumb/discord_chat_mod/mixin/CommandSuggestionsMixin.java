@@ -1,12 +1,18 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.Config;
 import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
+import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiManager;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -15,7 +21,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 @Mixin(CommandSuggestions.class)
 public abstract class CommandSuggestionsMixin {
@@ -44,7 +52,31 @@ public abstract class CommandSuggestionsMixin {
             if (!pendingSuggestions.join().isEmpty())
                 ci.cancel();
         }
+
+        if (!Config.EMOJIFUL_COMPATIBILITY.get() && currentInput.substring(lastWordIndex).startsWith(":")){
+            this.pendingSuggestions = EMOJIS_PROVIDER.getSuggestions(null, new SuggestionsBuilder(currentInput, lastWordIndex));
+            showSuggestions(true);
+            if (!pendingSuggestions.join().isEmpty())
+                ci.cancel();
+        }
     }
+
+    @Unique
+    private static final SuggestionProvider<String> EMOJIS_PROVIDER = (context, builder) -> {
+        String partial = builder.getRemaining().toLowerCase().substring(1);
+
+        Stream<String> customEmojis = CustomEmojiProvider.CLIENT_EMOJI_CACHE.keySet().stream()
+                .map(emojiName -> ":" + emojiName + ":")
+                .filter(emojiName -> emojiName.toLowerCase().contains(partial));
+
+        Stream<String> unicodeEmojis = EmojiManager.getAll().stream()
+                .filter(emoji -> emoji.getAliases().stream().anyMatch(alias -> alias.contains(partial)))
+                .map(Emoji::getUnicode);
+
+        Stream.concat(customEmojis, unicodeEmojis).forEach(builder::suggest);
+
+        return builder.buildFuture();
+    };
 
     @Unique
     private static boolean discord_minecraft_chat$matchesPartial(DiscordMemberData member, String partial) {
@@ -54,15 +86,17 @@ public abstract class CommandSuggestionsMixin {
     }
 
     @Unique
-    private static final SuggestionProvider MENTIONS_PROVIDER = (context, builder) -> {
+    private static final SuggestionProvider<String> MENTIONS_PROVIDER = (context, builder) -> {
         PacketDistributor.sendToServer(new RequestDiscordMentionsPacket());
+
         String partial = builder.getRemaining().toLowerCase().substring(1);
+        StringRange range = StringRange.between(builder.getStart(), builder.getInput().length());
 
-        ChannelMembersProvider.clientMemberData.stream()
+        List<Suggestion> suggestions = ChannelMembersProvider.clientMemberData.stream()
                 .filter(data -> discord_minecraft_chat$matchesPartial(data, partial))
-                .map(DiscordMemberData::getPrettyMention)
-                .forEach(builder::suggest);
+                .map(data -> new Suggestion(range, data.getPrettyMention()))
+                .toList();
 
-        return builder.buildFuture();
+        return CompletableFuture.completedFuture(new Suggestions(range, suggestions));
     };
 }

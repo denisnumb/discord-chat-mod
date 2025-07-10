@@ -11,9 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.IMAGE_CACHE;
-import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.getCurrentFrameIndex;
-
 public class ImageScreen extends Screen {
     private final AbstractImage image;
     private final int imageWidth;
@@ -23,9 +20,9 @@ public class ImageScreen extends Screen {
     private int renderWidth = 0;
     private int renderHeight = 0;
 
-    public ImageScreen(String imageUrl) {
+    public ImageScreen(AbstractImage image) {
         super(Component.literal("Image Viewer"));
-        this.image = IMAGE_CACHE.getOrDefault(imageUrl, null);
+        this.image = image;
         imageWidth = image.originalSize.width();
         imageHeight = image.originalSize.height();
     }
@@ -49,7 +46,7 @@ public class ImageScreen extends Screen {
         centerY = (this.height - renderHeight) / 2;
 
         ResourceLocation resourceLocation = image instanceof AnimatedImage gif
-                ? gif.frames.get(getCurrentFrameIndex(gif))
+                ? gif.getCurrentFrame()
                 : ((Image) image).resourceLocation;
 
         graphics.blit(resourceLocation,
