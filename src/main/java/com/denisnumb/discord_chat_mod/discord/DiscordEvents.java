@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord;
 
+import com.denisnumb.discord_chat_mod.ColorUtils;
 import com.denisnumb.discord_chat_mod.Config;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
@@ -9,10 +10,8 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -58,7 +57,7 @@ public class DiscordEvents extends ListenerAdapter {
                 .append(Component.literal(userName)
                         .withStyle(style ->
                                 style.withInsertion("@" + userName)
-                                        .withColor(roleColor.getRGB())
+                                        .withColor(TextColor.parseColor(ColorUtils.getHexColor(roleColor)))
                                         .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/mention " + userName))
                                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.getUser().getEffectiveName())))
                         )

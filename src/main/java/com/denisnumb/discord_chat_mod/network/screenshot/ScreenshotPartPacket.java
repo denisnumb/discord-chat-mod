@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.network.screenshot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -48,10 +49,12 @@ public class ScreenshotPartPacket {
             if (isDiscordConnected())
                 ScreenshotTransceiver.receivePart(packet, player);
             else if (packet.partIndex == 0){
-                context.enqueueWork(() -> player.sendSystemMessage(
-                        Component.literal(getTranslate(SERVER_IS_NOT_CONNECTED_TO_DISCORD, "Server is not connected to Discord"))
-                                .withStyle(ChatFormatting.RED)
-                ));
+                context.enqueueWork(() -> player.connection.send(new ClientboundSetActionBarTextPacket(
+                        Component.literal(getTranslate(
+                                SERVER_IS_NOT_CONNECTED_TO_DISCORD,
+                                "Server is not connected to Discord")
+                        ).withStyle(ChatFormatting.RED)
+                )));
             }
         }
 

@@ -23,8 +23,8 @@ import java.util.*;
 
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslateClient;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.CLICK_TO_OPEN_IMAGE;
+import static com.denisnumb.discord_chat_mod.ModLanguageKey.SPOILER;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.*;
-import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.getCurrentFrameIndex;
 
 
 @Mixin(ChatComponent.class)
@@ -206,8 +206,11 @@ public abstract class ChatComponentMixin {
 
                 AbstractImage abstractImage = IMAGE_CACHE.get(imageUrl);
                 ImageSize imageSize = abstractImage.imageSize;
-                ResourceLocation resourceLocation = abstractImage instanceof AnimatedImage gif
-                        ? gif.frames.get(getCurrentFrameIndex(gif))
+
+                ResourceLocation resourceLocation = abstractImage.isSpoilerAndNotOpened()
+                        ? abstractImage.spoilerResourceLocation
+                        : abstractImage instanceof AnimatedImage gif
+                        ? gif.getCurrentFrame()
                         : ((Image) abstractImage).resourceLocation;
 
                 int imageWidth = imageSize.width();
@@ -232,6 +235,40 @@ public abstract class ChatComponentMixin {
                         imageWidth, visibleHeight,
                         imageWidth, imageHeight
                 );
+
+                if (abstractImage.isSpoilerAndNotOpened()) {
+                    Component spoilerText = Component.literal(getTranslateClient(SPOILER, "SPOILER"))
+                            .setStyle(Style.EMPTY.withBold(true));
+                    float maxScale = 1.5f;
+                    float scaleX = (imageWidth / MAX_WIDTH) * maxScale;
+                    float scaleY = (imageHeight / MAX_HEIGHT) * maxScale;
+                    float scale = Mth.clamp(Math.min(scaleX, scaleY), 0.5f, maxScale);
+
+                    int originalTextWidth = minecraft.font.width(spoilerText);
+                    int originalTextHeight = minecraft.font.lineHeight;
+
+                    int centerX = imageWidth / 2;
+                    int fullCenterY = messageY + offset + (lineHeight / 2) + imageHeight / 2;
+
+                    if (fullCenterY >= chatTopY && fullCenterY <= chatBottomY) {
+                        int textX = centerX - (int)(originalTextWidth * scale / 2);
+                        int textY = fullCenterY - (int)(originalTextHeight * scale / 2);
+
+                        graphics.pose().pushPose();
+                        graphics.pose().translate(textX, textY, 0);
+                        graphics.pose().scale(scale, scale, 1.0f);
+
+                        graphics.drawString(minecraft.font,
+                                spoilerText,
+                                0, 0,
+                                0xFFFFFF,
+                                true
+                        );
+
+                        graphics.pose().popPose();
+                    }
+                }
+
 
                 offset += imageHeight + lineHeight;
             }

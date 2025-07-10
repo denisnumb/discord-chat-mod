@@ -1,6 +1,8 @@
 package com.denisnumb.discord_chat_mod;
 
 
+import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.DiscordEvents;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.JDA;
@@ -88,6 +90,9 @@ public class DiscordChatMod
                     LOCAL_SERVER_STARTED,
                     "Local server started [`%d`]"
                     ), server.getPort()), GREEN);
+
+            CustomEmojiProvider.loadClient(CustomEmojiProvider.getNameToUrlMap(discordChannel));
+            ChannelMembersProvider.clientMemberData = ChannelMembersProvider.getMemberData(discordChannel);
         }).start();
     }
 

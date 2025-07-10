@@ -13,10 +13,26 @@ public class AnimatedImage extends AbstractImage {
             List<ResourceLocation> frames,
             ImageSize imageSize,
             ImageSize originalSize,
-            int frameDuration
+            int frameDuration,
+            boolean isSpoiler,
+            ResourceLocation spoilerResourceLocation
     ) {
-        super(url, imageSize, originalSize);
+        super(url, imageSize, originalSize, isSpoiler, spoilerResourceLocation);
         this.frames = frames;
         this.frameDuration = frameDuration;
+    }
+
+    public ResourceLocation getCurrentFrame() {
+        long time = System.currentTimeMillis();
+        int totalDuration = frames.size() * frameDuration;
+        long timeInLoop = time % totalDuration;
+
+        int elapsedTime = 0;
+        for (ResourceLocation frame : frames) {
+            elapsedTime += frameDuration;
+            if (elapsedTime > timeInLoop)
+                return frame;
+        }
+        return frames.get(0);
     }
 }

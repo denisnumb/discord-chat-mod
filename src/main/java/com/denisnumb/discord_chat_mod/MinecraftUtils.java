@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
@@ -48,6 +49,10 @@ public class MinecraftUtils {
 
     public static void sendMessageToAllPlayers(Component message){
         sendMessageToPlayersBySelector(message, "@a");
+    }
+
+    public static void showTitleBarMessage(Component message){
+        Minecraft.getInstance().gui.setOverlayMessage(message, false);
     }
 
     public static void logErrorToServer(String message) {
@@ -94,7 +99,7 @@ public class MinecraftUtils {
                     continue;
                 languageData.putAll(new Gson().fromJson(Files.readString(path), new TypeToken<Map<String, String>>(){}.getType()));
             } catch (Exception e) {
-                LOGGER.error("Failed to load localization {}", localePath);
+                LOGGER.warn("Failed to load localization {}", localePath);
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.network.ModNetworking;
+import com.denisnumb.discord_chat_mod.network.emoji.RequestDiscordEmojisPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
 import com.vdurmont.emoji.EmojiParser;
 import net.minecraft.ChatFormatting;
@@ -40,7 +41,12 @@ public class MinecraftClientEvents {
                                 "send_screenshot " + screenshotFile.getAbsolutePath()
                         )).withHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
-                                Component.literal(getTranslateClient(CLICK_TO_SEND_SCREENSHOT_HINT, "Click to send screenshot to Discord (Sending may take a few seconds)"))
+                                Component.literal(
+                                        getTranslateClient(
+                                                CLICK_TO_SEND_SCREENSHOT_HINT,
+                                                "Click to send screenshot to Discord (Sending may take a few seconds)\n\n*Hold Shift to send screenshot as spoiler"
+                                        )
+                                )
                         ))
         );
 
@@ -53,7 +59,7 @@ public class MinecraftClientEvents {
 
     @SubscribeEvent
     public static void onChatMessage(ClientChatReceivedEvent event){
-        if (Config.TRANSLATE_UNICODE_EMOJIS_TO_ALIASES.get()){
+        if (Config.EMOJIFUL_COMPATIBILITY.get()){
             if (!EmojiParser.extractEmojis(event.getMessage().getString()).isEmpty()){
                 MutableComponent withReplacedEmojis = Component.empty();
                 for (Component comp : event.getMessage().toFlatList())
@@ -67,5 +73,6 @@ public class MinecraftClientEvents {
     @SubscribeEvent
     public static void onJoinServer(ClientPlayerNetworkEvent.LoggingIn event){
         ModNetworking.sendToServer(new RequestDiscordMentionsPacket());
+        ModNetworking.sendToServer(new RequestDiscordEmojisPacket());
     }
 }
