@@ -1,0 +1,11 @@
+name: Feature Request
+description: Here you can request changes to the current functionality or the implementation of any function that is currently missing from the mod
+labels: enhancement
+body:
+  - type: textarea
+    attributes:
+      label: Description of functionality
+      description: >
+        Describe what you would like to add/change in the mod
+    validations:
+      required: true
