@@ -5,6 +5,8 @@ import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.DiscordEvents;
 import com.mojang.logging.LogUtils;
+import com.neovisionaries.ws.client.ProxySettings;
+import com.neovisionaries.ws.client.WebSocketFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
@@ -24,8 +26,11 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import okhttp3.*;
 import org.slf4j.Logger;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,6 +104,30 @@ public class DiscordChatMod
 
     private static void initJDA(){
         try {
+            // Configuring websocket proxy.
+            WebSocketFactory factory = new WebSocketFactory();
+            if (!Config.PROXY_HOSTNAME.get().isEmpty()) {
+                ProxySettings settings = factory.getProxySettings();
+                settings.setHost(Config.PROXY_HOSTNAME.get()).setPort(Config.PROXY_PORT.get());
+                if (!Config.PROXY_USER.get().isEmpty()) {
+                    settings.setCredentials(Config.PROXY_USER.get(), Config.PROXY_PASSWORD.get());
+                }
+            }
+            // Configuring HTTP client proxy.
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            if (!Config.PROXY_HOSTNAME.get().isEmpty()) {
+                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(Config.PROXY_HOSTNAME.get(), Config.PROXY_PORT.get()));
+                builder.proxy(proxy);
+                if (!Config.PROXY_USER.get().isEmpty()) {
+                    builder.proxyAuthenticator((proxy1, url) -> {
+                        String credential = Credentials.basic(Config.PROXY_USER.get(), Config.PROXY_PASSWORD.get());
+                        return url.request().newBuilder()
+                                .header("Proxy-Authorization", credential)
+                                .build();
+                    });
+                }
+            }
+
             jda = JDABuilder.create(Config.DISCORD_BOT_TOKEN.get(),
                             GatewayIntent.MESSAGE_CONTENT,
                             GatewayIntent.GUILD_MEMBERS,
@@ -108,6 +137,8 @@ public class DiscordChatMod
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .addEventListeners(new DiscordEvents())
+                    .setHttpClientBuilder(builder)
+                    .setWebsocketFactory(factory)
                     .build();
 
             jda.awaitReady();

@@ -82,6 +82,17 @@ public class Config
                     """)
             .defineInRange("maxChatHistory", 500, 20, Integer.MAX_VALUE);
 
+    public static final ModConfigSpec.ConfigValue<String> PROXY_HOSTNAME = COMMON_BUILDER
+            .comment("Configuring the HTTP proxy when connecting with Discord. Do not modify if you don't understand what this is.")
+            .define("proxy_hostname", "");
+    public static final ModConfigSpec.IntValue PROXY_PORT = COMMON_BUILDER
+            .defineInRange("proxy_port", 1234, 0, 65535);
+    public static final ModConfigSpec.ConfigValue<String> PROXY_USER = COMMON_BUILDER
+            .comment("Leave blank if no certificate required.")
+            .define("proxy_user", "");
+    public static final ModConfigSpec.ConfigValue<String> PROXY_PASSWORD = COMMON_BUILDER
+            .define("proxy_password", "");
+
     static final ModConfigSpec COMMON_SPEC = COMMON_BUILDER.build();
     static final ModConfigSpec CLIENT_SPEC = CLIENT_BUILDER.build();
 
