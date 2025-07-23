@@ -1,0 +1,29 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+/common/src/main/resources/assets/minecraft
+*.png
+.architectury-transformer
+eclipse
+run
+runs
+run-data
+
+repo

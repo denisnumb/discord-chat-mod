@@ -1,0 +1,32 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+issueTrackerURL = "https://github.com/denisnumb/discord-minecraft-chat/issues"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "discord_chat_mod"
+version = "${version}"
+displayName = "Discord & Chat Images"
+authors = "denisnumb"
+description = '''
+Mod for combining minecraft chat with discord chat and chat image displaying
+'''
+logoFile= "logo.png"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/discord-chat-connect"
+
+[[dependencies.discord_chat_mod]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.discord_chat_mod]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "discord_chat_mod.mixins.json"

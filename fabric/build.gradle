@@ -1,0 +1,85 @@
+plugins {
+    id 'com.gradleup.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+
+    // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    // Don't use the `shadow` configuration from the plugin itself as it's meant for excluding files.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+
+    // Fabric API. This is technically optional, but you probably want it anyway.
+    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
+
+    shadowBundle(implementation("net.dv8tion:JDA:5.2.2")) {transitive = false }
+    shadowBundle(implementation("com.squareup.okhttp3:okhttp:4.12.0")) {transitive = false }
+    shadowBundle(implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")) {transitive = false }
+    shadowBundle(implementation("com.squareup.okio:okio:3.9.1")) {transitive = false }
+    shadowBundle(implementation("com.neovisionaries:nv-websocket-client:2.14")) {transitive = false }
+    shadowBundle(implementation("net.sf.trove4j:trove4j:3.0.3")) {transitive = false }
+    shadowBundle(implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")) {transitive = false }
+    shadowBundle(implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")) {transitive = false }
+    shadowBundle(implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.2")) {transitive = false }
+    shadowBundle(implementation("org.apache.commons:commons-collections4:4.4")) {transitive = false }
+    shadowBundle(implementation("org.json:json:20231013")) { transitive = false }
+    shadowBundle(implementation(files("../libs/emoji-java-5.1.1.jar")))
+    shadowBundle(implementation("com.electronwill.night-config:core:3.6.6")) { transitive = false }
+    shadowBundle(implementation("com.electronwill.night-config:toml:3.6.6")) { transitive = false }
+
+    minecraftRuntimeLibraries "net.dv8tion:JDA:5.2.2"
+    minecraftRuntimeLibraries "org.json:json:20231013"
+    minecraftRuntimeLibraries(files("../libs/emoji-java-5.1.1.jar"))
+}
+
+processResources {
+    inputs.property 'version', project.version
+
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+    mergeServiceFiles()
+
+    relocate("com.squareup", "com.shadow.com.squareup")
+    relocate("com.neovisionaries", "com.shadow.com.neovisionaries")
+    relocate("com.fasterxml", "com.shadow.com.fasterxml")
+    relocate("net.dv8tion", "com.shadow.net.dv8tion")
+    relocate("org.apache", "com.shadow.org.apache")
+    relocate("gnu.trove", "com.shadow.gnu.trove")
+    relocate("kotlin", "com.shadow.kotlin")
+    relocate("okhttp3", "com.shadow.okhttp3")
+    relocate("okio", "com.shadow.okio")
+    relocate("com.vdurmont", "com.shadow.com.vdurmont")
+    relocate("org.json", "com.shadow.org.json")
+    relocate("com.electronwill", "com.shadow.com.electronwill")
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+}

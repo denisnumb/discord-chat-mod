@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "discord_chat_mod",
+  "version": "${version}",
+  "name": "Discord & Chat Images",
+  "description": "Mod for combining minecraft chat with discord chat and chat image displaying",
+  "authors": [
+    "denisnumb"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/discord-chat-connect",
+    "sources": "https://github.com/denisnumb/discord-minecraft-chat"
+  },
+  "license": "All Rights Reserved",
+  "icon": "logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.denisnumb.discord_chat_mod.fabric.DiscordChatModFabric"
+    ],
+    "client": [
+      "com.denisnumb.discord_chat_mod.fabric.client.DiscordChatModFabricClient"
+    ]
+  },
+  "mixins": [
+    "discord_chat_mod.mixins.json",
+    "discord_chat_mod.fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

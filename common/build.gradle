@@ -1,0 +1,20 @@
+architectury {
+    common rootProject.enabled_platforms.split(',')
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+
+    implementation("net.dv8tion:JDA:5.2.2")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
+    implementation("com.squareup.okio:okio:3.9.1")
+    implementation("com.neovisionaries:nv-websocket-client:2.14")
+    implementation("net.sf.trove4j:trove4j:3.0.3")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.2")
+    implementation("org.apache.commons:commons-collections4:4.4")
+    implementation("org.json:json:20231013")
+    implementation(files("../libs/emoji-java-5.1.1.jar"))
+}
