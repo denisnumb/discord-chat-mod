@@ -14,9 +14,8 @@ import net.minecraft.network.chat.MutableComponent;
 import java.io.File;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.LIME;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslateClient;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.CLICK_TO_SEND_SCREENSHOT;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.CLICK_TO_SEND_SCREENSHOT_HINT;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
+import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 
 public class MinecraftClientEvents {
     public static Component handleScreenshot(File screenshotFile){

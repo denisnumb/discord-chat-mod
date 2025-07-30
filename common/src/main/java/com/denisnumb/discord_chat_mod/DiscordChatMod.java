@@ -22,11 +22,10 @@ import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.GREEN;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.RED;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.clearChannelsCache;
@@ -42,7 +41,6 @@ public final class DiscordChatMod {
     public static final Logger LOGGER = LogUtils.getLogger();
     public static JDA jda;
     public static MinecraftServer server;
-    public static final Map<String, String> languageData = new HashMap<>();
 
     public static void onServerStarting(MinecraftServer minecraftServer) {
         server = minecraftServer;
@@ -131,6 +129,7 @@ public final class DiscordChatMod {
             LOGGER.info("Discord connected");
         } catch (Exception e) {
             logErrorToServer(String.format("DiscordConnectError: %s", e.getMessage()));
+            e.printStackTrace();
             stopJDA();
         }
     }

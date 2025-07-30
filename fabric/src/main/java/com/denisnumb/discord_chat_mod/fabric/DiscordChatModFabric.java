@@ -7,20 +7,12 @@ import com.denisnumb.discord_chat_mod.fabric.config.FabricConfig;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricNetworking;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricPacketDistributor;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-
-import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.*;
 
 public final class DiscordChatModFabric implements ModInitializer{
     @Override
@@ -37,30 +29,17 @@ public final class DiscordChatModFabric implements ModInitializer{
     }
 
     private void loadLocalization() {
-        BiConsumer<ModContainer, String> loadFromNamespace = (mod, namespace) -> {
-            String localePath = String.format("assets/%s/lang/%s.json", namespace, Config.modLocale);
-            Optional<Path> optionalPath = mod.findPath(localePath);
-            if (optionalPath.isEmpty())
-                return;
-
-            Path modPath = optionalPath.get();
-            try {
-                if (!Files.exists(modPath))
-                    return;
-                languageData.putAll(new Gson().fromJson(Files.readString(modPath), new TypeToken<Map<String, String>>() {}.getType()));
-            } catch (Exception e) {
-                LOGGER.warn("Failed to load localization {}", localePath);
-            }
-        };
+        String configLocale = Config.modLocale;
 
         for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            String modId = mod.getMetadata().getId();
-            if (modId.equals("minecraft"))
-                continue;
-            if (modId.equals(MOD_ID))
-                loadFromNamespace.accept(mod, "minecraft");
+            String namespace = mod.getMetadata().getId();
 
-            loadFromNamespace.accept(mod, modId);
+            if (namespace.equals("minecraft") && !configLocale.equals("en_us")){
+                loadMinecraftLocale(configLocale);
+                continue;
+            }
+
+            loadLocaleFromPath(mod.findPath(String.format("assets/%s/lang/%s.json", namespace, configLocale)).orElse(null));
         }
     }
 }

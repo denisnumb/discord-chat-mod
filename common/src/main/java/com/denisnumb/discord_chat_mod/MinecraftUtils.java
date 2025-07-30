@@ -8,20 +8,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
-import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.RED;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.YELLOW;
-import static com.denisnumb.discord_chat_mod.DiscordChatMod.languageData;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 
 public class MinecraftUtils {
@@ -63,48 +59,29 @@ public class MinecraftUtils {
             sendMessageToPlayersBySelector(buildLogMessageComponent(message, YELLOW), PlatformConfig.getConfig().discordErrorsChatPlayerSelector());
     }
 
+    public static int getServerPlayerCount(@Nullable MinecraftServer server){
+        if (server != null && server.getPlayerList() != null)
+            return server.getPlayerCount();
+        return 0;
+    }
+
+    public static int getServerMaxPlayers(@Nullable MinecraftServer server){
+        if (server != null && server.getPlayerList() != null)
+            return server.getMaxPlayers();
+        return 20;
+    }
+
+    public static String[] getServerPlayerNames(@Nullable MinecraftServer server){
+        if (server != null && server.getPlayerList() != null)
+            return server.getPlayerNames();
+        return new String[0];
+    }
+
     private static Component buildLogMessageComponent(String message, int color) {
         return Component.empty()
                 .append(Component.literal("[discord_chat_mod] ")
                         .withStyle(style -> style.withBold(true))
                 )
                 .append(Component.literal(message)).setStyle(Style.EMPTY.withColor(color));
-    }
-
-    public static String getTranslateClient(String key){
-        return Language.getInstance().getOrDefault(key);
-    }
-
-    public static String getTranslate(String key) {
-        return languageData.containsKey(key)
-                ? languageData.get(key)
-                : Language.getInstance().getOrDefault(key);
-    }
-
-    public static String getLocalizedDeathMessage(DamageSource source, LivingEntity diedEntity) {
-        String diedEntityName = diedEntity.getDisplayName().getString();
-        String attackBase = "death.attack." + source.type().msgId();
-
-        if (source.getEntity() == null && source.getDirectEntity() == null) {
-            LivingEntity playerKiller = diedEntity.getKillCredit();
-            String byPlayer = attackBase + ".player";
-
-            return playerKiller != null
-                    ? String.format(getTranslate(byPlayer), diedEntityName, playerKiller.getDisplayName().getString())
-                    : String.format(getTranslate(attackBase), diedEntityName);
-        } else {
-            String killerEntity = source.getEntity() == null
-                    ? getTranslate(source.getDirectEntity().getType().getDescriptionId())
-                    : getTranslate(source.getEntity().getType().getDescriptionId());
-
-            Entity entity = source.getEntity();
-            ItemStack item = (entity instanceof LivingEntity)
-                    ? ((LivingEntity)entity).getMainHandItem()
-                    : ItemStack.EMPTY;
-
-            return !item.isEmpty() && item.hasCustomHoverName()
-                    ? String.format(getTranslate(attackBase + ".item"), diedEntityName, killerEntity, item.getDisplayName().getString())
-                    : String.format(getTranslate(attackBase), diedEntityName, killerEntity);
-        }
     }
 }

@@ -23,6 +23,7 @@ import java.util.*;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.STICKER;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.replaceDiscordEmojiMentionsToEmojiNames;
@@ -38,7 +39,7 @@ public class DiscordEvents extends ListenerAdapter {
 
         if (PlatformConfig.getConfig().isDiscordMessagesLoggingEnabled())
             System.out.printf("[Discord] <%s> %s%n", event.getAuthor().getEffectiveName(), event.getMessage().getContentDisplay());
-        if (server.getPlayerCount() == 0)
+        if (getServerPlayerCount(server) == 0)
             return;
 
         for (Component component : prepareMessages(event.getMessage()))

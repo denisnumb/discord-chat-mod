@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 

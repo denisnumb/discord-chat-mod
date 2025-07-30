@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
 
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslateClient;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.CLICK_TO_OPEN_IMAGE;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.SPOILER;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.*;
@@ -32,7 +32,6 @@ public abstract class ChatComponentMixin {
     @Shadow @Final private Minecraft minecraft;
     @Shadow @Final private List<GuiMessage.Line> trimmedMessages;
     @Shadow private int chatScrollbarPos;
-    @Shadow public abstract int getWidth();
     @Shadow protected abstract int getLineHeight();
     @Shadow protected abstract boolean isChatFocused();
     @Shadow public abstract double getScale();

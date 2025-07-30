@@ -25,6 +25,8 @@ import java.util.function.Consumer;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.YELLOW;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.LOCAL_RESOURCE_PREFIX;

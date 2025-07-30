@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.isImageUrl;
@@ -63,7 +64,7 @@ public class WebhookUtils {
     }
 
     public static void initWebhookSendExecutor(){
-        EXECUTOR = Executors.newFixedThreadPool(5);
+        EXECUTOR = Executors.newSingleThreadExecutor();
     }
 
     public static void stopWebhookSendExecutor(){
@@ -75,41 +76,43 @@ public class WebhookUtils {
         EXECUTOR.submit(() -> sendDiscordWebhook(webhookUrl, GSON.toJson(payloadSupplier.get())));
     }
 
-    public static Optional<String> sendWebhookWithImage(String webhookUrl, WebhookPayload payload, byte[] imageBytes, String fileName) {
-        try {
-            String boundary = UUID.randomUUID().toString();
-            HttpURLConnection connection = getHttpURLConnection(webhookUrl, "multipart/form-data; boundary=" + boundary);
+    public static Future<Optional<String>> sendWebhookWithImage(String webhookUrl, WebhookPayload payload, byte[] imageBytes, String fileName) {
+        return EXECUTOR.submit(() -> {
+            try {
+                String boundary = UUID.randomUUID().toString();
+                HttpURLConnection connection = getHttpURLConnection(webhookUrl, "multipart/form-data; boundary=" + boundary);
 
-            try (DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
-                String payloadJson = GSON.toJson(payload);
+                try (DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
+                    String payloadJson = GSON.toJson(payload);
 
-                out.writeBytes("--" + boundary + "\r\n");
-                out.writeBytes("Content-Disposition: form-data; name=\"payload_json\"\r\n");
-                out.writeBytes("Content-Type: application/json\r\n\r\n");
-                out.write(payloadJson.getBytes(StandardCharsets.UTF_8));
-                out.writeBytes("\r\n");
+                    out.writeBytes("--" + boundary + "\r\n");
+                    out.writeBytes("Content-Disposition: form-data; name=\"payload_json\"\r\n");
+                    out.writeBytes("Content-Type: application/json\r\n\r\n");
+                    out.write(payloadJson.getBytes(StandardCharsets.UTF_8));
+                    out.writeBytes("\r\n");
 
-                out.writeBytes("--" + boundary + "\r\n");
-                out.writeBytes("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n");
-                out.writeBytes("Content-Type: application/octet-stream\r\n\r\n");
-                out.write(imageBytes);
-                out.writeBytes("\r\n");
+                    out.writeBytes("--" + boundary + "\r\n");
+                    out.writeBytes("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n");
+                    out.writeBytes("Content-Type: application/octet-stream\r\n\r\n");
+                    out.write(imageBytes);
+                    out.writeBytes("\r\n");
 
-                out.writeBytes("--" + boundary + "--\r\n");
-                out.flush();
+                    out.writeBytes("--" + boundary + "--\r\n");
+                    out.flush();
+                }
+
+                handleResponseCode(connection);
+                Optional<String> imageUrl = getSentImageUrl(connection);
+                connection.disconnect();
+
+                return imageUrl;
+            } catch (Exception e) {
+                LOGGER.error("SendWebhookError: " + e.getMessage());
+                e.printStackTrace();
             }
 
-            handleResponseCode(connection);
-            Optional<String> imageUrl = getSentImageUrl(connection);
-            connection.disconnect();
-
-            return imageUrl;
-        } catch (Exception e) {
-            LOGGER.error("SendWebhookError: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return Optional.empty();
+            return Optional.empty();
+        });
     }
 
     public static String getWebhookServerName(){

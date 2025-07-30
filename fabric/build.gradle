@@ -44,6 +44,7 @@ dependencies {
     shadowBundle(implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.2")) {transitive = false }
     shadowBundle(implementation("org.apache.commons:commons-collections4:4.4")) {transitive = false }
     shadowBundle(implementation("org.json:json:20231013")) { transitive = false }
+    shadowBundle(implementation("org.jsoup:jsoup:1.17.2")) { transitive = false }
     shadowBundle(implementation(files("../libs/emoji-java-5.1.1.jar")))
     shadowBundle(implementation("com.electronwill.night-config:core:3.6.6")) { transitive = false }
     shadowBundle(implementation("com.electronwill.night-config:toml:3.6.6")) { transitive = false }
@@ -77,6 +78,7 @@ shadowJar {
     relocate("okio", "com.shadow.okio")
     relocate("com.vdurmont", "com.shadow.com.vdurmont")
     relocate("org.json", "com.shadow.org.json")
+    relocate("org.jsoup", "com.shadow.org.jsoup")
     relocate("com.electronwill", "com.shadow.com.electronwill")
 }
 

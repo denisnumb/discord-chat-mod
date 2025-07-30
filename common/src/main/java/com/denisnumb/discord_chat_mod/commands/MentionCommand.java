@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.playerChatMessagesChannel;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayers;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.SERVER_IS_NOT_CONNECTED_TO_DISCORD;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.UNKNOWN_MENTION;
