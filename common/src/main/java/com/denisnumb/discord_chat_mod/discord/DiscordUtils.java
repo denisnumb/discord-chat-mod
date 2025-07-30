@@ -2,7 +2,6 @@ package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.config.PlatformConfig;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
-import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -18,11 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +29,6 @@ import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.*;
 
 public class DiscordUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Gson GSON = new Gson();
 
     public static MessageEmbed buildEmbed(String title, String description, int color){
         return new EmbedBuilder()
@@ -196,32 +189,6 @@ public class DiscordUtils {
         }
 
         return Optional.empty();
-    }
-
-    public static void sendWebhookMessage(String webhookUrl, String content) {
-        try {
-            URL url = new URI(webhookUrl).toURL();
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-
-            String jsonPayload = GSON.toJson(Map.of("content", content));
-
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode != 204)
-                LOGGER.warn("Webhook response code: " + responseCode);
-
-            connection.disconnect();
-        } catch (Exception e) {
-            LOGGER.error("SendWebhookMessageError: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     public static String replaceEmojiCodesToDiscordMentions(String text) {
