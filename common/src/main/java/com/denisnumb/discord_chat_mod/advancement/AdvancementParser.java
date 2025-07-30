@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 
 public class AdvancementParser {
     private static final Logger LOGGER = LogUtils.getLogger();

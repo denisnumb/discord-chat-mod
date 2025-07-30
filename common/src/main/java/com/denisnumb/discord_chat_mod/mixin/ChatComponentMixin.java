@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslateClient;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.CLICK_TO_OPEN_IMAGE;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.SPOILER;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.*;

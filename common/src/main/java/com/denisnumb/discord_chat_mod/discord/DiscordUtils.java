@@ -28,7 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.logErrorToServer;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.*;
@@ -121,14 +121,18 @@ public class DiscordUtils {
                     .map(message -> message.getAttachments().getFirst().getUrl()));
 
         } else {
-            optionalScreenshotUrl = sendWebhookWithImage(
-                    optionalWebhook.get().getUrl(),
-                    new WebhookPayload("")
-                            .setUsername(fromPlayer.getName().getString())
-                            .setAvatarUrl(getPlayerAvatarUrl(fromPlayer)),
-                    screenshotData.data(),
-                    screenshotData.fileName()
-            );
+            try {
+                optionalScreenshotUrl = sendWebhookWithImage(
+                        optionalWebhook.get().getUrl(),
+                        new WebhookPayload("")
+                                .setUsername(fromPlayer.getName().getString())
+                                .setAvatarUrl(getPlayerAvatarUrl(fromPlayer)),
+                        screenshotData.data(),
+                        screenshotData.fileName()
+                ).get();
+            } catch (Exception ignored) {
+                optionalScreenshotUrl = Optional.empty();
+            }
         }
 
         optionalScreenshotUrl.ifPresent(s -> duplicateMessageToDefaultChannel(channel,

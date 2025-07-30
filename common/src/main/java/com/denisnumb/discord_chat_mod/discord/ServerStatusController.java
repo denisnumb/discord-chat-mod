@@ -15,8 +15,9 @@ import java.util.concurrent.TimeUnit;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.pinnedStatusMessageChannel;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
 
@@ -29,7 +30,7 @@ public class ServerStatusController {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public static void updateServerStatusWithDelay() {
-        if (!isDiscordConnected() || scheduler == null)
+        if (!isPossibleUpdateStatusMessage() || scheduler == null)
             return;
         lastInvocationTime = System.currentTimeMillis();
         scheduler.schedule(() -> {
@@ -39,7 +40,10 @@ public class ServerStatusController {
         }, 10, TimeUnit.SECONDS);
     }
 
-    public static void initServerStatusController(){
+    public static void initServerStatusController() {
+        if (!PlatformConfig.getConfig().isPinnedStatusMessageEnabled())
+            return;
+
         scheduler = Executors.newSingleThreadScheduledExecutor();
         Optional<Message> existingStatusMessage = findPinnedStatusMessage();
         serverStatusMessage = existingStatusMessage.orElseGet(()
@@ -59,19 +63,18 @@ public class ServerStatusController {
     public static void updateServerStatusMessageToUnavailable(){
         if (scheduler != null)
             scheduler.close();
-        if (!isDiscordConnected() || !PlatformConfig.getConfig().isPinnedStatusMessageEnabled() || serverStatusMessage == null)
-            return;
-        editMessageEmbeds(serverStatusMessage, buildEmbed(getTranslate(SERVER_UNAVAILABLE), RED));
+        if (isPossibleUpdateStatusMessage())
+            editMessageEmbeds(serverStatusMessage, buildEmbed(getTranslate(SERVER_UNAVAILABLE), RED));
     }
 
     private static MessageEmbed createServerStatusMessageEmbed(){
-        return server.getPlayerCount() == 0
+        return getServerPlayerCount(server) == 0
                 ? buildEmbed(getTranslate(SERVER_AVAILABLE), DARK_GREEN)
-                : buildEmbed(getOnlineCountString(), String.join("\n", server.getPlayerNames()), GREEN);
+                : buildEmbed(getOnlineCountString(), String.join("\n", getServerPlayerNames(server)), GREEN);
     }
 
     private static void updateServerStatus(){
-        if (PlatformConfig.getConfig().isPinnedStatusMessageEnabled() && serverStatusMessage != null)
+        if (isPossibleUpdateStatusMessage())
             editMessageEmbeds(serverStatusMessage, createServerStatusMessageEmbed());
         jda.getPresence().setActivity(Activity.customStatus(getOnlineCountString()));
     }
@@ -79,8 +82,8 @@ public class ServerStatusController {
     private static String getOnlineCountString(){
         return String.format(
                 getTranslate(ONLINE_PLAYERS),
-                server.getPlayerCount(),
-                server.getMaxPlayers()
+                getServerPlayerCount(server),
+                getServerMaxPlayers(server)
         );
     }
 
@@ -95,5 +98,11 @@ public class ServerStatusController {
             LOGGER.error(e.getMessage());
             return Optional.empty();
         }
+    }
+
+    private static boolean isPossibleUpdateStatusMessage(){
+        return isDiscordConnected()
+                && PlatformConfig.getConfig().isPinnedStatusMessageEnabled()
+                && serverStatusMessage != null;
     }
 }

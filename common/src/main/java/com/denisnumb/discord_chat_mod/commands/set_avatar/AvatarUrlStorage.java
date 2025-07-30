@@ -27,7 +27,7 @@ public class AvatarUrlStorage {
 
     public static void load(MinecraftServer server) {
         File file = getFile(server);
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             try (FileReader reader = new FileReader(file)) {
                 Type type = new TypeToken<Map<UUID, String>>() {}.getType();
                 urlMap = GSON.fromJson(reader, type);
@@ -42,6 +42,9 @@ public class AvatarUrlStorage {
 
     public static void save(MinecraftServer server) {
         File file = getFile(server);
+        if (file == null)
+            return;
+
         try (FileWriter writer = new FileWriter(file)) {
             GSON.toJson(urlMap, writer);
         } catch (Exception e) {
@@ -69,7 +72,12 @@ public class AvatarUrlStorage {
         return urlMap.getOrDefault(player.getUUID(), null);
     }
 
+    @Nullable
     private static File getFile(MinecraftServer server) {
-        return server.getWorldPath(LevelResource.ROOT).resolve(FILE_NAME).toFile();
+        try {
+            return server.getWorldPath(LevelResource.ROOT).resolve(FILE_NAME).toFile();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

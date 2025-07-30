@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 
 public class SetAvatarCommand {

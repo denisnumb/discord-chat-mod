@@ -29,8 +29,8 @@ import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getLocalizedDeathMessage;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.getTranslate;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getLocalizedDeathMessage;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.advancement.AdvancementParser.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
