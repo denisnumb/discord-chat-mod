@@ -32,8 +32,8 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: "Mod List"
-      description: "If you have other mods installed, please attach the list here"
+      label: "Other installed mods"
+      description: "If you have other mods installed, please attach links or .zip archive for downloading"
     validations:
       required: false
   - type: textarea
