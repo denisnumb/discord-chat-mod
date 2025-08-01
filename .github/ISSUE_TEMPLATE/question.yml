@@ -1,10 +1,11 @@
-name: Just Question
+name: Question
 description: Ask a question related to the project, its usage or architecture
 labels: question
 body:
  - type: textarea
     attributes:
+      label: Question text
       description: >
-        Text of your question
+        Describe what you would like to add/change in the mod
     validations:
       required: true
