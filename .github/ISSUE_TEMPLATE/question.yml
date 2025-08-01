@@ -4,7 +4,6 @@ labels: question
 body:
  - type: textarea
     attributes:
-      label: Question
       description: >
         Text of your question
     validations:
