@@ -1,5 +1,5 @@
 name: Feature Request
-description: Here you can request changes to the current functionality or the implementation of any function that is currently missing from the mod
+description: Suggest a new feature or improvement to an existing one
 labels: enhancement
 body:
   - type: input
