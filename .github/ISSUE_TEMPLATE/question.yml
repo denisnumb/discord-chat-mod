@@ -4,7 +4,8 @@ labels: question
 body:
   - type: textarea
     attributes:
+      label: Question text
       description: >
-        Describe what you would like to add/change in the mod
+        Text of your question
       validations:
         required: true
