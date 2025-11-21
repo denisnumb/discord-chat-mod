@@ -1,0 +1,16 @@
+name: New Locale
+description: Add a new localization to the mod
+labels: new locale
+body:
+  - type: checkboxes
+    attributes:
+      label: Checking for existing localization
+      options:
+        - label: I made sure that the localization I was proposing had not been added to the mod before.
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Localization
+      description: >
+        Attach the localization file you created
