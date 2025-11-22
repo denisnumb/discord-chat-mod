@@ -4,10 +4,12 @@ MineCraft mod for combining the game chat with a channel in discord.
 
 ### **Quick start:** 
 
-If you don't have a Discord bot, use the [**SETUP GUIDE**](https://github.com/denisnumb/discord-minecraft-chat/blob/1.21.1/SETUP_GUIDE.md)
+If you don't have a Discord bot, read the [**Quick start guilde**](https://github.com/denisnumb/discord-chat-mod/wiki/Quick-Start)
 
 Install the mod on the server and run it to generate the `discord_chat_mod-common.toml`-config file. 
 Configure the necessary parameters and run server. For additional features, install the mod on the client side.
+
+ℹ️ **Read more about configuration and see examples on the [Wiki](https://github.com/denisnumb/discord-chat-mod/wiki)**
 
 **Important:**
 - Make sure all **Privileged Gateway Intents** are enabled in the Bot tab of your app
@@ -15,19 +17,14 @@ Configure the necessary parameters and run server. For additional features, inst
 
   <details><summary>Required Permissions</summary>
   
-  - View Channels
-  
-  - Send Messages
-
-  - Send Messages in Threads
-  
-  - Embed Link
-  
-  - Attach Files
-
-  - Manage Messages
-  
-  - Read Message History
+    - View Channels
+    - Send Messages
+    - Send Messages in Threads
+    - Embed Links
+    - Attach Files
+    - Pin Messages
+    - Read Message History
+    - Manage Webhooks
   </details>
 
 ---
