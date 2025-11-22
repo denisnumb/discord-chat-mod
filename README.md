@@ -4,10 +4,12 @@ MineCraft mod for combining the game chat with a channel in discord.
 
 ### **Quick start:** 
 
-If you don't have a Discord bot, use the [**SETUP GUIDE**](https://github.com/denisnumb/discord-minecraft-chat/blob/1.21.1/SETUP_GUIDE.md)
+If you don't have a Discord bot, read the [**Quick start guilde**](https://github.com/denisnumb/discord-chat-mod/wiki/Quick-Start)
 
 Install the mod on the server and run it to generate the `discord_chat_mod-common.toml`-config file. 
 Configure the necessary parameters and run server. For additional features, install the mod on the client side.
+
+ℹ️ **Read more about configuration and see examples on the [Wiki](https://github.com/denisnumb/discord-chat-mod/wiki)**
 
 **Important:**
 - Make sure all **Privileged Gateway Intents** are enabled in the Bot tab of your app
@@ -15,19 +17,14 @@ Configure the necessary parameters and run server. For additional features, inst
 
   <details><summary>Required Permissions</summary>
   
-  - View Channels
-  
-  - Send Messages
-
-  - Send Messages in Threads
-  
-  - Embed Link
-  
-  - Attach Files
-
-  - Manage Messages
-  
-  - Read Message History
+    - View Channels
+    - Send Messages
+    - Send Messages in Threads
+    - Embed Links
+    - Attach Files
+    - Pin Messages
+    - Read Message History
+    - Manage Webhooks
   </details>
 
 ---
@@ -107,31 +104,83 @@ For the following functions to work, it is enough to install the mod only on the
 
 ---
 
+### Webhook mode
+
+- Default mode
+
+<img width="291" height="70" alt="515840977-78468d4e-5809-4866-8cc8-b016a060fcbf" src="https://github.com/user-attachments/assets/c9e589b4-12a2-4388-a01b-64ff001ed035" />
+
+- Webhook mode is enabled
+
+<img width="247" height="68" alt="515843070-2b4c93e9-3242-4eed-86cc-acf609d665d2" src="https://github.com/user-attachments/assets/61a01cd9-b40d-407d-88e3-f94023b819be" />
+
+ℹ️ [Read more about webhook mode](https://github.com/denisnumb/discord-chat-mod/wiki/Webhook-mode)
+
+---
+
 ### Markdown support
 
-![markdown](https://github.com/user-attachments/assets/b6e998e6-90b7-45f6-ae5f-23a4118b8b6e)
+- Message style preview is only available when the mod is installed on the client.
 
-![Screenshot 2025-02-11 010419](https://github.com/user-attachments/assets/2738597c-b020-45ab-9cc8-dc0b562b96a5)
+![image](https://github.com/user-attachments/assets/04505f09-6cce-4f44-aa47-c5a775a586fb)
 
-![Screenshot 2025-02-11 010454](https://github.com/user-attachments/assets/70f6ed86-8aab-4bff-825a-1340b77a15f4)
+ℹ️ [Read more about markdown and colored text](https://github.com/denisnumb/discord-chat-mod/wiki/Markdown-and-colored-text)
+
+---
+
+### Multiple discord server support
+
+Minecraft chat:
+
+![image](https://github.com/user-attachments/assets/c10aaee2-7117-4d1f-8904-bbd1961b1ade)
+
+First server chat:
+
+![image](https://github.com/user-attachments/assets/cadba07b-9b9e-4487-82bb-1cce8a01ccb3)
+
+Second server chat:
+
+![image](https://github.com/user-attachments/assets/48cc41b2-a1bf-4d53-8566-dd08cacec2b7)
+
+ℹ️ [Read more discord servers configuration](https://github.com/denisnumb/discord-chat-mod/wiki/Discord-server-configuration)
+
+---
+
+### Minecraft chat customization
+
+![image](https://github.com/user-attachments/assets/6789a9c2-c817-45dd-b635-4c8e0eddae7f)
+
+![image](https://github.com/user-attachments/assets/ffc80931-64a8-40b0-8030-73cbbb87bbd6)
+
+ℹ️ [Read more about chat customization](https://github.com/denisnumb/discord-chat-mod/wiki/Minecraft-Chat-Customization)
 
 ---
 
 ### Pinned status message and server online in bot status
 
-![Screenshot 2025-02-11 010608](https://github.com/user-attachments/assets/c21362b5-fa33-40dc-86ef-32b274698e0a)
-
 ![Screenshot 2025-02-11 010642](https://github.com/user-attachments/assets/0a799918-0522-4031-841c-865b48a6a161)
+
+![image](https://github.com/user-attachments/assets/c8d36abf-3e77-450d-b82b-1ea296227d84)
 
 ---
 
-### Advancements with description and death messages (localized)
+### Advancements with icon and description and death messages (localized)
 
-Localization also works for other mods (last advancement from Farmer's Delight for example)
+![image](https://github.com/user-attachments/assets/f4523142-f88e-44ea-8544-05b75cc554a0)
 
-![Screenshot 2025-02-11 010859](https://github.com/user-attachments/assets/0a7e0754-3d54-4c0d-b566-dba65a5d3588)
+![image](https://github.com/user-attachments/assets/cc4e6dd1-52bf-4d27-8e17-ac38786c494f)
 
-![Screenshot 2025-02-11 011057](https://github.com/user-attachments/assets/6b60dcab-9d40-4ff9-b5b4-593569e0a834)
+![image](https://github.com/user-attachments/assets/5a5dd58a-014d-429a-a9c6-132cc70d008b)
+
+ℹ️ [Read more about discord messages configuration](https://github.com/denisnumb/discord-chat-mod/wiki/Discord-Chat-Customization)
+
+---
+
+### `/send_sticker` command
+
+- Sticker preview is only available when the mod is installed on the client.
+
+![image](https://github.com/user-attachments/assets/32f5849c-659d-486e-bd7b-ae57bf9488ea)
 
 ---
 
