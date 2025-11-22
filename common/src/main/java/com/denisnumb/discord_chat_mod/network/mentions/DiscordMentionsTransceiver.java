@@ -1,8 +1,8 @@
 package com.denisnumb.discord_chat_mod.network.mentions;
 
 import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
-import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
 import com.google.gson.Gson;
@@ -24,7 +24,7 @@ public class DiscordMentionsTransceiver {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<Long, ArrayList<byte[]>> receivedParts = new HashMap<>();
     private static final Gson gson = new Gson();
-    private static final Type gsonType = new TypeToken<List<DiscordMemberData>>(){}.getType();
+    private static final Type gsonType = new TypeToken<List<DiscordUserData>>(){}.getType();
     private static long lastRequestTime = 0;
 
     public static void requestDiscordMemberData(){
@@ -44,7 +44,7 @@ public class DiscordMentionsTransceiver {
     public static void sendDiscordMemberDataToPlayer(ServerPlayer player) {
         long sendTime = System.currentTimeMillis();
 
-        byte[] data = gson.toJson(ChannelMembersProvider.getMemberData(DiscordChannelRegistry.playerChatMessagesChannel), gsonType).getBytes();
+        byte[] data = gson.toJson(ChannelMembersProvider.getMemberData(ChannelCategory.PLAYER_CHAT), gsonType).getBytes();
         BigPacketsTransceiver.send(data, (partIndex, totalParts, part) ->
                 PlatformPacketDistributor.sendToPlayer(player, new DiscordMentionsPartPacket(sendTime, partIndex, totalParts, part))
         );
@@ -57,6 +57,6 @@ public class DiscordMentionsTransceiver {
                 packet.partIndex,
                 packet.totalParts,
                 packet.data
-        ).ifPresent(bytes -> ChannelMembersProvider.clientMemberData = gson.fromJson(new String(bytes), gsonType));
+        ).ifPresent(bytes -> ChannelMembersProvider.CLIENT_MEMBER_CACHE = gson.fromJson(new String(bytes), gsonType));
     }
 }

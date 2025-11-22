@@ -1,8 +1,8 @@
 package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.commands.set_avatar.AvatarUrlStorage;
-import com.denisnumb.discord_chat_mod.config.IPlatformConfig;
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
+import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,13 +28,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.isImageUrl;
-import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.getMimeType;
+import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.isImageUrl;
+import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getMimeType;
 
 public class WebhookUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new Gson();
     private static ExecutorService EXECUTOR;
+
+    public record WebhookAttachment(byte[] data, String fileName) { }
 
     public static class WebhookPayload {
         String username;
@@ -42,14 +45,59 @@ public class WebhookUtils {
         List<WebhookEmbed> embeds;
         String content;
 
-        private record WebhookEmbed(String title, String description, int color) {}
+        private record EmbedImage(String url) {}
+        private record EmbedAuthor(String name, String url, String icon_url) {}
+        private record EmbedThumbnail(String url) {}
+        private record EmbedFooter(String text, String icon_url) {}
+        private record EmbedField(String name, String value, Boolean inline) {}
+
+        private record WebhookEmbed(
+                String title,
+                String description,
+                String url,
+                int color,
+                EmbedAuthor author,
+                EmbedThumbnail thumbnail,
+                EmbedImage image,
+                List<EmbedField> fields,
+                EmbedFooter footer,
+                String timestamp
+        ) {}
 
         public WebhookPayload(String content){
-            this.content = content;
+            this(content, null);
         }
 
         public WebhookPayload(MessageEmbed embed){
-            this.embeds = List.of(new WebhookEmbed(embed.getTitle(), embed.getDescription(), embed.getColorRaw()));
+            this(null, embed);
+        }
+
+        public WebhookPayload(String content, MessageEmbed embed){
+            if (content != null)
+                content = content.isEmpty() ? null : content;
+            this.content = content;
+            if (embed != null){
+                int color = embed.getColorRaw() == 536870911 ? 3881793 : embed.getColorRaw();
+                EmbedImage image = embed.getImage() == null ? null : new EmbedImage(embed.getImage().getUrl());
+                MessageEmbed.AuthorInfo authorInfo = embed.getAuthor();
+                EmbedAuthor author = authorInfo == null ? null : new EmbedAuthor(authorInfo.getName(), authorInfo.getUrl(), authorInfo.getIconUrl());
+                EmbedThumbnail thumbnail = embed.getThumbnail() == null ? null : new EmbedThumbnail(embed.getThumbnail().getUrl());
+                List<EmbedField> embedFields = embed.getFields().stream().map(f -> new EmbedField(f.getName(), f.getValue(), f.isInline())).toList();
+                EmbedFooter footer = embed.getFooter() == null ? null : new EmbedFooter(embed.getFooter().getText(), embed.getFooter().getIconUrl());
+
+                this.embeds = List.of(new WebhookEmbed(
+                        embed.getTitle(),
+                        embed.getDescription(),
+                        embed.getUrl(),
+                        color,
+                        author,
+                        thumbnail,
+                        image,
+                        embedFields,
+                        footer,
+                        embed.getTimestamp() == null ? null : embed.getTimestamp().format(DateTimeFormatter.ISO_INSTANT)
+                ));
+            }
         }
 
         public WebhookPayload setUsername(String username){
@@ -68,60 +116,99 @@ public class WebhookUtils {
     }
 
     public static void stopWebhookSendExecutor(){
-        EXECUTOR.shutdown();
-        EXECUTOR = null;
+        if (EXECUTOR != null){
+            EXECUTOR.shutdownNow();
+            EXECUTOR = null;
+        }
     }
 
     public static void sendWebhook(String webhookUrl, Supplier<WebhookPayload> payloadSupplier) {
-        EXECUTOR.submit(() -> sendDiscordWebhook(webhookUrl, GSON.toJson(payloadSupplier.get())));
+        if (EXECUTOR != null)
+            EXECUTOR.submit(() -> sendDiscordWebhook(webhookUrl, GSON.toJson(payloadSupplier.get())));
     }
 
-    public static Future<Optional<String>> sendWebhookWithImage(String webhookUrl, WebhookPayload payload, byte[] imageBytes, String fileName) {
+    public static Future<Optional<String>> sendWebhookWithImage(
+            String webhookUrl,
+            WebhookPayload payload,
+            WebhookAttachment attachment
+    ) {
+        return sendWebhookWithFiles(webhookUrl, payload, List.of(attachment), true);
+    }
+
+    public static void sendWebhookWithFiles(
+            String webhookUrl,
+            WebhookPayload payload,
+            List<WebhookAttachment> images
+    ) {
+        if ((payload.content == null && payload.embeds == null) && (images == null || images.isEmpty()))
+            return;
+
+        sendWebhookWithFiles(webhookUrl, payload, images, false);
+    }
+
+    private static Future<Optional<String>> sendWebhookWithFiles(
+            String webhookUrl,
+            WebhookPayload payload,
+            List<WebhookAttachment> images,
+            boolean returnImageUrl
+    ) {
         return EXECUTOR.submit(() -> {
             try {
                 String boundary = UUID.randomUUID().toString();
                 HttpURLConnection connection = getHttpURLConnection(webhookUrl, "multipart/form-data; boundary=" + boundary);
 
                 try (DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
-                    String payloadJson = GSON.toJson(payload);
-
-                    out.writeBytes("--" + boundary + "\r\n");
-                    out.writeBytes("Content-Disposition: form-data; name=\"payload_json\"\r\n");
-                    out.writeBytes("Content-Type: application/json\r\n\r\n");
-                    out.write(payloadJson.getBytes(StandardCharsets.UTF_8));
-                    out.writeBytes("\r\n");
-
-                    out.writeBytes("--" + boundary + "\r\n");
-                    out.writeBytes("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n");
-                    out.writeBytes("Content-Type: application/octet-stream\r\n\r\n");
-                    out.write(imageBytes);
-                    out.writeBytes("\r\n");
-
-                    out.writeBytes("--" + boundary + "--\r\n");
-                    out.flush();
+                    writePayloadJson(out, boundary, payload);
+                    writeImageParts(out, boundary, images);
+                    finishMultipart(out, boundary);
                 }
 
                 handleResponseCode(connection);
-                Optional<String> imageUrl = getSentImageUrl(connection);
+                Optional<String> imageUrl = returnImageUrl ? getSentImageUrl(connection) : Optional.empty();
                 connection.disconnect();
 
                 return imageUrl;
             } catch (Exception e) {
-                LOGGER.error("SendWebhookError: " + e.getMessage());
-                e.printStackTrace();
+                LOGGER.error("SendWebhookError: " + e.getMessage(), e);
+                return Optional.empty();
             }
-
-            return Optional.empty();
         });
     }
 
+    private static void writePayloadJson(DataOutputStream out, String boundary, WebhookPayload payload) throws IOException {
+        String payloadJson = GSON.toJson(payload);
+
+        out.writeBytes("--" + boundary + "\r\n");
+        out.writeBytes("Content-Disposition: form-data; name=\"payload_json\"\r\n");
+        out.writeBytes("Content-Type: application/json\r\n\r\n");
+        out.write(payloadJson.getBytes(StandardCharsets.UTF_8));
+        out.writeBytes("\r\n");
+    }
+
+    private static void writeImageParts(DataOutputStream out, String boundary, List<WebhookAttachment> images) throws IOException {
+        int index = 0;
+        for (WebhookAttachment image : images) {
+            out.writeBytes("--" + boundary + "\r\n");
+            out.writeBytes("Content-Disposition: form-data; name=\"file" + index + "\"; filename=\"" + image.fileName + "\"\r\n");
+            out.writeBytes("Content-Type: application/octet-stream\r\n\r\n");
+            out.write(image.data);
+            out.writeBytes("\r\n");
+            index++;
+        }
+    }
+
+    private static void finishMultipart(DataOutputStream out, String boundary) throws IOException {
+        out.writeBytes("--" + boundary + "--\r\n");
+        out.flush();
+    }
+
     public static String getWebhookServerName(){
-        String configValue = PlatformConfig.getConfig().webhookServerName();
+        String configValue = ConfigProvider.getConfig().webhookServerName();
         return configValue.isBlank() ? null : configValue.replaceAll("(?i)discord", "DC");
     }
 
     public static String getPlayerAvatarUrl(Player player){
-        IPlatformConfig config = PlatformConfig.getConfig();
+        IConfigProvider config = ConfigProvider.getConfig();
 
         if (config.isSetAvatarUrlCommandEnabled()){
             String customAvatarUrl = AvatarUrlStorage.getUrl(player);
@@ -146,13 +233,14 @@ public class WebhookUtils {
 
         return isImageUrl(getMimeType(defaultAvatarUrl))
                 ? defaultAvatarUrl
-                : "https://mc-heads.net/avatar.png";
+                : "https://mc-heads.net/avatar/steve_head_png";
     }
 
     public static Optional<String> getUUIDFromMojangAPI(String username) {
         try {
             URL url = new URI("https://api.mojang.com/users/profiles/minecraft/" + username).toURL();
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
             connection.setRequestMethod("GET");
 
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -197,10 +285,15 @@ public class WebhookUtils {
 
             JsonObject responseJson = JsonParser.parseString(response.toString()).getAsJsonObject();
             JsonArray attachments = responseJson.getAsJsonArray("attachments");
+            JsonArray embeds = responseJson.getAsJsonArray("embeds");
 
-            if (attachments != null && attachments.size() > 0) {
+            if (attachments != null && !attachments.isEmpty()) {
                 JsonObject attachment = attachments.get(0).getAsJsonObject();
                 return Optional.of(attachment.get("url").getAsString());
+            } else if (embeds != null && !embeds.isEmpty()) {
+                JsonObject embed = embeds.get(0).getAsJsonObject();
+                if (embed.has("image"))
+                    return Optional.of(embed.getAsJsonObject("image").get("url").getAsString());
             }
         } catch (Exception ignored){}
 

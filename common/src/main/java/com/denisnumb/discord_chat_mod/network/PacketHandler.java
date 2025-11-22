@@ -3,11 +3,20 @@ package com.denisnumb.discord_chat_mod.network;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
+import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersTransceiver;
 import net.minecraft.server.level.ServerPlayer;
 
 import static com.denisnumb.discord_chat_mod.network.CustomPayloadPackets.*;
 
 public class PacketHandler {
+    public static void handleDiscordStickersPacket(final DiscordStickersPartPacket data) {
+        DiscordStickersTransceiver.receiveDiscordStickersPart(data);
+    }
+
+    public static void handleRequestDiscordStickersPacket(ServerPlayer player){
+        DiscordStickersTransceiver.sendDiscordStickersDataToPlayer(player);
+    }
+
     public static void handleDiscordEmojisPacket(final DiscordEmojisPartPacket data) {
         DiscordEmojisTransceiver.receiveDiscordEmojisPart(data);
     }

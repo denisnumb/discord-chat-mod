@@ -4,13 +4,22 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "discord_chat_mod-common-common-refmap.json",
   "mixins": [
+    "chat_style.ServerGamePacketListenerImplMixin",
+    "chat_style.CombatTrackerAccessorMixin",
+    "chat_style.TamableAnimalMixin",
+    "chat_style.ServerPlayerMixin",
+    "chat_style.PlayerListMixin",
+    "chat_style.MappedRegistryMixin",
+    "chat_style.PlayerAdvancementsMixin"
   ],
   "client": [
     "ChatComponentMixin",
     "CommandSuggestionsMixin",
     "GuiGraphicsMixin",
     "IntegratedServerMixin",
-    "ScreenMixin"
+    "ScreenMixin",
+    "SuggestionsListAccessorMixin",
+    "ClientPacketListenerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

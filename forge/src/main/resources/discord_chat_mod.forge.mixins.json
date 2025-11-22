@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "com.denisnumb.discord_chat_mod.forge.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "discord_chat_mod-forge-forge-refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "EditBoxMixin",
+    "ScreenshotMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

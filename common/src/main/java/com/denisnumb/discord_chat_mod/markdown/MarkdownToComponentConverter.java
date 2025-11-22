@@ -27,7 +27,14 @@ public class MarkdownToComponentConverter{
 
     public MutableComponent convertMarkdownTokensToComponent() {
         for (MarkdownToken token : tokens)
-            convertToken(token);
+            convertToken(token, false);
+
+        return result;
+    }
+
+    public MutableComponent convertMarkdownTokensWithSpecialCharsToComponent() {
+        for (MarkdownToken token : tokens)
+            convertToken(token, true);
 
         return result;
     }
@@ -45,8 +52,8 @@ public class MarkdownToComponentConverter{
 
             if (mentionData.memberData != null){
                 component = component.withStyle(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(mentionData.memberData.discordNickName)))
-                        .withInsertion("@" + mentionData.memberData.guildNickname));
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(mentionData.memberData.discordName)))
+                        .withInsertion(mentionData.prettyMention));
             }
         }
 
@@ -62,6 +69,9 @@ public class MarkdownToComponentConverter{
                 if (token.obfuscated)
                     style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(finalTextPart)));
 
+                if (token.isColored())
+                    style = style.withColor(token.color);
+
                 if (token.isUrl()){
                     String hoverValue = token.obfuscated ? String.format("%s (%s)", finalTextPart, token.url) : token.url;
                     style = style.withColor(CHAT_LINK_COLOR)
@@ -76,8 +86,8 @@ public class MarkdownToComponentConverter{
         result.append(component);
     }
 
-    private void convertToken(MarkdownToken token){
-        if (token.getInnerTokens().isEmpty())
+    private void convertToken(MarkdownToken token, boolean handleSpecialChars){
+        if (token.getInnerTokens().isEmpty() || (handleSpecialChars && token.isSpecialCharacters))
             addPart(token, token.text);
         else {
             int currentPos = 0;
@@ -87,16 +97,21 @@ public class MarkdownToComponentConverter{
                 int startIndex = (match.find() ? match.start() : 0) + currentPos;
 
                 if (startIndex > currentPos){
-                    String textPart = token.text.substring(currentPos, startIndex).replaceAll("^[_*~|]+|[_*~|]+$", "");
+                    String textPart = token.text.substring(currentPos, startIndex);
                     addPart(token, textPart);
                 }
 
-                convertToken(innerToken);
-                currentPos = startIndex + innerToken.rawText.length();
+                if (handleSpecialChars && innerToken.isSpecialCharacters){
+                    addPart(innerToken, innerToken.rawText);
+                    currentPos = startIndex;
+                } else {
+                    convertToken(innerToken, handleSpecialChars);
+                    currentPos = startIndex + innerToken.rawText.length();
+                }
             }
 
             if (currentPos < token.text.length()){
-                String textPart = token.text.substring(currentPos).replaceAll("^[_*~|]+|[_*~|]+$", "");
+                String textPart = token.text.substring(currentPos);
                 if (!textPart.isBlank())
                     addPart(token, textPart);
             }

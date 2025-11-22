@@ -1,12 +1,14 @@
 package com.denisnumb.discord_chat_mod.fabric;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
-import com.denisnumb.discord_chat_mod.fabric.config.Config;
-import com.denisnumb.discord_chat_mod.fabric.config.FabricConfig;
+import com.denisnumb.discord_chat_mod.LocaleProvider;
+import com.denisnumb.discord_chat_mod.config.ConfigManager;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.ConfigProviderImpl;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricNetworking;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricPacketDistributor;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -17,29 +19,31 @@ import static com.denisnumb.discord_chat_mod.LocaleProvider.*;
 public final class DiscordChatModFabric implements ModInitializer{
     @Override
     public void onInitialize() {
-        Config.load();
+        ConfigManager.load(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
         FabricNetworking.init();
-        FabricEvents.register();
+        ConfigProvider.setConfigProvider(new ConfigProviderImpl());
+        LocaleProvider.setLocaleLoader(new FabricLocaleLoader());
         loadLocalization();
-        PlatformConfig.setConfigProvider(new FabricConfig());
         PlatformPacketDistributor.setHandler(new FabricPacketDistributor());
         ServerLifecycleEvents.SERVER_STARTING.register(DiscordChatMod::onServerStarting);
         ServerLifecycleEvents.SERVER_STARTED.register(server -> DiscordChatMod.onServerStarted());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> DiscordChatMod.onServerStopped());
     }
 
-    private void loadLocalization() {
-        String configLocale = Config.modLocale;
+    public static class FabricLocaleLoader implements LocaleLoader{
+        public void loadLocalization() {
+            String configLocale = ConfigProvider.getConfig().modLocale();
 
-        for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            String namespace = mod.getMetadata().getId();
+            for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
+                String namespace = mod.getMetadata().getId();
 
-            if (namespace.equals("minecraft") && !configLocale.equals("en_us")){
-                loadMinecraftLocale(configLocale);
-                continue;
+                if (namespace.equals("minecraft") && !configLocale.equals("en_us")){
+                    loadMinecraftLocale(configLocale);
+                    continue;
+                }
+
+                loadLocaleFromPath(mod.findPath(String.format("assets/%s/lang/%s.json", namespace, configLocale)).orElse(null));
             }
-
-            loadLocaleFromPath(mod.findPath(String.format("assets/%s/lang/%s.json", namespace, configLocale)).orElse(null));
         }
     }
 }

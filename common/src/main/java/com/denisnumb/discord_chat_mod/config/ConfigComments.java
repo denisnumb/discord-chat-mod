@@ -1,7 +1,13 @@
 package com.denisnumb.discord_chat_mod.config;
 
+import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
+
 public class ConfigComments {
     public static final String DISCORD_BOT_TOKEN_COMMENT = """
+                     Read more about configuration here: https://github.com/denisnumb/discord-chat-mod/wiki\
+
+                     \
+
                      Bot access token\
                     
                      [!] Make sure all Privileged Gateway Intents are enabled on https://discord.com/developers/applications/<your_app_id>/bot\
@@ -18,16 +24,18 @@ public class ConfigComments {
                     
                      [!] - MESSAGE_ATTACH_FILES\
                     
-                     [!] - MESSAGE_MANAGE\
+                     [!] - PIN_MESSAGES\
                     
                      [!] - MESSAGE_HISTORY\
                     """;
-    public static final String DISCORD_CHANNEL_ID_COMMENT
-            = " Discord channel ID for messaging with MineCraft\n [!] Make sure the bot has access to the channel and all the permissions listed above.";
+
+    public static final String SERVER_LOGS_CHANNEL_ID_COMMENT
+            = " Discord channel ID for logs from Minecraft Server console\n Leave blank if you don't want to send server logs to Discord.";
+
+    public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT
+            = " The minimum level of logs that will be sent to Discord.\n Possible values: ERROR, WARN, INFO";
 
     public static final String LOG_DISCORD_MESSAGES_COMMENT = " Do logging to the server console messages from discord";
-
-    public static final String ENABLE_PINNED_STATUS_MESSAGE_COMMENT = " Create a pinned message with the current server status and player list";
 
     public static final String LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT = " Notify about internal Discord interaction errors in the server's in-game chat";
 
@@ -36,6 +44,35 @@ public class ConfigComments {
             "\n By default, \"@a\" — all players. You can specify a specific nickname or attribute, for example, \"@a[tag=admin]\"";
 
     public static final String MOD_LOCALE_COMMENT = " Mod locale";
+
+    public static final String UTC_OFFSET_HOURS_COMMENT
+            = """
+             The offset of the current time from UTC in hours.\
+
+             Used to generate timestamps for message style configurations.\
+            """;
+
+    // =================================================================================================================
+    //                                          DISCORD GUILD CONFIG COMMENTS
+    // =================================================================================================================
+
+    public static final String GUILD_ID_COMMENT =
+            """
+             The [[guilds]] section is used to define the main and additional channels within a specific discord guild.\
+
+             You can copy this section entirely and define another discord guild in the configuration.\
+
+             In the guildId field you must specify the identifier of the discord guild to which all the channels listed below belong.\
+            """;
+
+    public static final String DEFAULT_CHANNEL_ID_COMMENT
+            = " Discord channel ID for messaging with MineCraft\n [!] Make sure the bot has access to the channel and all the permissions listed above.";
+
+    public static final String ENABLE_PINNED_STATUS_MESSAGE_COMMENT = " Create a pinned message with the current server status and player list";
+
+    // =================================================================================================================
+    //                                              WEBHOOK MODE COMMENTS
+    // =================================================================================================================
 
     public static final String ENABLE_WEBHOOK_MODE_COMMENT
             = """
@@ -57,21 +94,25 @@ public class ConfigComments {
             "\n The /remove_avatar_url command will also be available to remove an avatar.";
 
     public static final String WEBHOOK_PLAYER_AVATAR_URL_COMMENT
-            = """
+            = String.format("""
              Url to get the player's display avatar\
             
-             You specify a link with dynamic parameters <uuid> and <name>, which will be automatically substituted when requesting an image\
+             You can specify a link with dynamic parameters <uuid> and <name>, which will be automatically substituted when requesting an image\
             
              <uuid> — player's UUID\
             
              <name> — player's nickname\
             
-             Default: https://mc-heads.net/avatar/<name>.png\
-            """;
+             Default: %s\
+            """, WEBHOOK_PLAYER_AVATAR_URL_DEFAULT);
 
     public static final String WEBHOOK_PLAYER_DEFAULT_AVATAR_URL_COMMENT
-            = " Url to get the player's display avatar if dynamic link is invalid" +
-            "\n Default: https://mc-heads.net/avatar.png";
+            = String.format(" Url to get the player's display avatar if dynamic link is invalid" +
+            "\n Default: %s", WEBHOOK_PLAYER_DEFAULT_AVATAR_URL_DEFAULT);
+
+    // =================================================================================================================
+    //                                              DISCORD PROXY COMMENTS
+    // =================================================================================================================
 
     public static final String PROXY_HOSTNAME_COMMENT
             = " Configuring the HTTP proxy when connecting with Discord. Do not modify if you don't understand what this is.";
@@ -79,35 +120,391 @@ public class ConfigComments {
     public static final String PROXY_USER_COMMENT
             = " Leave blank if no certificate required.";
 
+    // =================================================================================================================
+    //                                             CHANNEL OVERRIDES COMMENTS
+    // =================================================================================================================
+
     public static final String DUPLICATE_MESSAGES_COMMENT
             = " If true, messages will still be sent to the main channel, but will also be duplicated to the specified channels.";
 
     public static final String PINNED_STATUS_MESSAGE_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for pinned server status message. If empty, uses discordChannelId.";
+            = " Overrides the default channel for pinned server status message. If empty, uses defaultChannelId.";
 
     public static final String DEATHS_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for player death messages. If empty, uses discordChannelId.";
+            = " Overrides the default channel for player death messages. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending death messages to Discord";
 
     public static final String ADVANCEMENTS_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for player advancement messages. If empty, uses discordChannelId.";
+            = " Overrides the default channel for player advancement messages. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending player advancement messages to Discord";
 
     public static final String SERVER_START_STOP_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for server started/closed messages. If empty, uses discordChannelId.";
+            = " Overrides the default channel for server started/closed messages. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending server started/closed messages to Discord";
 
     public static final String PLAYER_JOIN_LEAVE_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for player join/leave messages. If empty, uses discordChannelId.";
+            = " Overrides the default channel for player join/leave messages. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending player join/leave messages to Discord";
 
     public static final String PLAYER_CHAT_MESSAGES_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for messages from players in Minecraft chat. If empty, uses discordChannelId.";
+            = " Overrides the default channel for messages from players in Minecraft chat. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending messages from Minecraft players chat to Discord";
 
     public static final String SCREENSHOTS_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for screenshots sent from Minecraft. If empty, uses discordChannelId.";
+            = " Overrides the default channel for screenshots sent from Minecraft. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending screenshots from Minecraft to Discord";
 
     public static final String TELLRAW_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for messages sent using /tellraw @a command. If empty, uses discordChannelId.";
+            = " Overrides the default channel for messages sent using /tellraw @a command. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending messages sent using /tellraw @a command to Discord";
 
     public static final String SAY_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for messages sent using /say command. If empty, uses discordChannelId.";
+            = " Overrides the default channel for messages sent using /say command. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending messages send using /say command to Discord";
+
+    public static final String ME_CHANNEL_ID_COMMENT
+            = " Overrides the default channel for messages sent using /me command. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending messages send using /me command to Discord";
+
+    // =================================================================================================================
+    //                                      MINECRAFT CHAT CUSTOMIZATION COMMENTS
+    // =================================================================================================================
+
+    public static final String ENABLE_MINECRAFT_CHAT_CUSTOMIZATION_COMMENT
+            = """
+             If true, messages in the game chat will be formatted in the formats specified below.\
+            
+             For each format, you can use dynamic parameters specified in the comment above the parameter.\
+
+             Global parameters available for all styles listed below:\
+
+             {HH}, {MM}, {SS} — Hours, minutes, and seconds at the time the message was sent. Example usage: "[{HH}:{MM}] <{player}> {message}"\
+
+             You can read more about this configuration section and see examples here: https://github.com/denisnumb/discord-chat-mod/wiki/Minecraft-Chat-Customization\
+
+             [!] If enabled, make sure you don't have any other chat styling mods installed.\
+            """;
+
+    public static final String MINECRAFT_CHAT_LINK_COLOR_COMMENT
+            = " Color of links in game chat";
+
+    public static final String MINECRAFT_DISCORD_MESSAGES_STYLE_COMMENT
+            = String.format("""
+             Style for displaying Discord messages in game chat\
+            
+             Parameters: {guild}, {member}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_PLAYER_MESSAGE_STYLE_COMMENT
+            = String.format("""
+             Chat message from player\
+            
+             Parameters: {player}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_PLAYER_JOINED_STYLE_COMMENT
+            = String.format("""
+             Player joined the game\
+            
+             Parameters: {player}, {multiplayer.player.joined}\
+            
+             Default: "%s"\
+            """, MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_PLAYER_LEFT_STYLE_COMMENT
+            = String.format("""
+             Player left the game\
+            
+             Parameters: {player}, {multiplayer.player.left}\
+            
+             Default: "%s"\
+            """, MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_PLAYER_DEATH_STYLE_COMMENT
+            = """
+             Player death message\
+
+             Death messages are composite and contain: Player Name, Cause of Death, Second Entity (optional), Murder Weapon (optional).\
+
+             You can customize them separately using the configuration fields below.\
+
+             Parameters: {death_cause}, {player}, {second_entity}, {item}\
+            """;
+
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT
+            = String.format("""
+             Player has made the advancement\
+            
+             Parameters: {player}, {chat.type.advancement.task}, {advancement}\
+            
+             Default: "%s"\
+            """, MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT
+            = String.format("""
+             Player has reached the goal\
+            
+             Parameters: {player}, {chat.type.advancement.goal}, {advancement}\
+            
+             Default: "%s"\
+            """, MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT
+            = String.format("""
+             Player has completed the challenge\
+            
+             Parameters: {player}, {chat.type.advancement.challenge}, {advancement}\
+            
+             Default: "%s"\
+            """, MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_TEAM_MESSAGE_SENT_STYLE_COMMENT
+            = String.format("""
+             Team message sent by the player\
+            
+             Parameters: {team}, {player}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_COMMENT
+            = String.format("""
+             Team message received from any player\
+            
+             Parameters: {team}, {player}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_TELL_MESSAGE_SENT_STYLE_COMMENT
+            = String.format("""
+             Private message sent by the player using /tell or /msg command\
+            
+             Parameters: {commands.message.display.outgoing}, {receiver}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_COMMENT
+            = String.format("""
+             Private message received from any player who used the /tell or /msg command\
+            
+             Parameters: {sender}, {commands.message.display.incoming}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_SAY_COMMAND_STYLE_COMMENT
+            = String.format("""
+             Chat message from player sent using /say command\
+            
+             Parameters: {player}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_SAY_COMMAND_STYLE_DEFAULT);
+
+    public static final String MINECRAFT_ME_COMMAND_STYLE_COMMENT
+            = String.format("""
+             Chat message from player sent using /me command\
+            
+             Parameters: {player}, {message}\
+            
+             Default: "%s"\
+            """, MINECRAFT_ME_COMMAND_STYLE_DEFAULT);
+
+    // =================================================================================================================
+    //                                      DISCORD CHAT CUSTOMIZATION COMMENTS
+    // =================================================================================================================
+
+    public static final String DISCORD_PLAYER_MESSAGE_STYLE_COMMENT
+            = """
+             The configuration settings below determine how messages sent from Minecraft to Discord will be formatted.\
+
+             The message format is specified in JSON format. You can remove the parameter from the configuration to get the default value\
+
+             For each format, you can use dynamic parameters specified in the comment above the parameter.\
+
+             Global parameters available for all styles listed below:\
+
+             {player_avatar_url} — link to the player's avatar (available wherever the {player} parameter is present)\
+
+             {timestamp} — current number of seconds in the system. It's convenient to substitute when using Discord timestamps, for example: <t:{timestamp}:R>\
+
+             {datetime} — A string with the current date and time in the format "2025-11-02T10:00:00.000Z". May be useful for embed timestamps.\
+
+             You can read more about this configuration section and see examples here: https://github.com/denisnumb/discord-chat-mod/wiki/Discord-Chat-Customization\
+
+             \
+
+             Chat message from player\
+            
+             Parameters: {player}, {message}\
+            """;
+
+    public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_COMMENT
+            = """
+             Chat message from player (if webhook mode is enabled) \
+            
+             Parameters: {player}, {message}\
+            """;
+
+    public static final String DISCORD_PLAYER_JOINED_STYLE_COMMENT
+            = """
+             Player joined the game\
+            
+             Parameters: {player}, {multiplayer.player.joined}\
+            """;
+
+    public static final String DISCORD_PLAYER_LEFT_STYLE_COMMENT
+            = """
+             Player left the game\
+            
+             Parameters: {player}, {multiplayer.player.left}\
+            """;
+
+    public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_COMMENT
+            = """
+             You can apply Markdown to individual components of the death message using the parameters below.\
+
+             They will ultimately be compiled into the {death_message} substitution parameter, which you can use to form the final message in Discord.\
+            """;
+
+    public static final String DISCORD_PLAYER_DEATH_MESSAGE_STYLE_COMMENT
+            = """
+             Player death message (configure parameters above)\
+
+             Parameters: {player}, {death_message}\
+            """;
+
+    public static final String DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT
+            = """
+             Player has made the advancement\
+            
+             Parameters: {player}, {chat.type.advancement.task}, {advancement}, {description}, {icon_url}\
+            """;
+
+    public static final String DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT
+            = """
+             Player has reached the goal\
+            
+             Parameters: {player}, {chat.type.advancement.goal}, {advancement}, {description}, {icon_url}\
+            """;
+
+    public static final String DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT
+            = """
+             Player has completed the challenge\
+            
+             Parameters: {player}, {chat.type.advancement.challenge}, {advancement}, {description}, {icon_url}\
+            """;
+
+    public static final String DISCORD_SAY_COMMAND_STYLE_COMMENT
+            = """
+             Chat message from player sent using /say command\
+            
+             Parameters: {player}, {message}\
+            """;
+
+    public static final String DISCORD_ME_COMMAND_STYLE_COMMENT
+            = """
+             Chat message from player sent using /me command\
+            
+             Parameters: {player}, {message}\
+            """;
+
+    public static final String DISCORD_ME_COMMAND_WEBHOOK_STYLE_COMMENT
+            = """
+             Chat message from player sent using /me command (if webhook mode is enabled)\
+            
+             Parameters: {player}, {message}\
+            """;
+
+    public static final String DISCORD_TELLRAW_COMMAND_STYLE_COMMENT
+            = """
+             Chat message from send using /tellraw @a command\
+            
+             Parameters: {message}\
+            """;
+
+    public static final String DISCORD_SCREENSHOT_MESSAGE_STYLE_COMMENT
+            = """
+             Screenshot from player\
+            
+             Parameters: {player}, {screenshot_url}\
+            """;
+
+    public static final String DISCORD_SCREENSHOT_MESSAGE_WEBHOOK_STYLE_COMMENT
+            = """
+             Screenshot from player (if webhook mode is enabled)\
+            
+             Parameters: {player}, {screenshot_url}\
+            """;
+
+    public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT
+            = """
+             Server started message\
+            
+             Parameters: {discord_chat_mod.server.started}\
+            """;
+
+    public static final String DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_COMMENT
+            = """
+             Local server started message\
+            
+             Parameters: {discord_chat_mod.server.local_started}, {server_port}\
+            """;
+
+    public static final String DISCORD_SERVER_CLOSED_MESSAGE_STYLE_COMMENT
+            = """
+             Server closed message\
+            
+             Parameters: {discord_chat_mod.server.closed}\
+            """;
+
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_COMMENT
+            = """
+             Pinned server status message when server is unavailable\
+            
+             Parameters: {discord_chat_mod.server.status.unavailable}\
+            """;
+
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_COMMENT
+            = """
+             Pinned server status message when server is available but there are no players\
+            
+             Parameters: {discord_chat_mod.server.status.available}\
+            """;
+
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_COMMENT
+            = " The characters separating player nicknames in the {player_list} parameter for the pinned status message style";
+
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_COMMENT
+            = """
+             Style of a single nickname in the {player_list} parameter of a pinned status message\
+            
+             Parameters: {player}, {counter} — can be used to number players in order\
+            """;
+
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_STYLE_COMMENT
+            = """
+             Pinned server status message when there are players on the server\
+            
+             Parameters: {discord_chat_mod.server.status.online_players}, {player_list}, {player_count}, {max_players}\
+            """;
+
+    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_COMMENT
+            = """
+             The username displayed in Discord when forwarding a message from another guild\
+            
+             Parameters: {member}, {user}, {guild}\
+            """;
+
+    // =================================================================================================================
+    //                                             CLIENT CONFIG COMMENTS
+    // =================================================================================================================
 
     public static final String EMOJIFUL_COMPATIBILITY_COMMENT = """
                      Can be set to "true" for correct compatibility with the Emojiful mod. Enabling this option:\

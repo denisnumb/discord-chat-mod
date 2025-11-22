@@ -1,12 +1,14 @@
 package com.denisnumb.discord_chat_mod;
 
+import com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry;
+import com.denisnumb.discord_chat_mod.chat_style.Parameters;
+import com.denisnumb.discord_chat_mod.commands.ReloadConfigCommand;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.AvatarUrlStorage;
-import com.denisnumb.discord_chat_mod.config.IPlatformConfig;
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
-import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
-import com.denisnumb.discord_chat_mod.discord.DiscordEvents;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.discord.*;
+import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.logging.LogUtils;
 import com.neovisionaries.ws.client.ProxySettings;
 import com.neovisionaries.ws.client.WebSocketFactory;
@@ -15,6 +17,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
@@ -22,67 +25,74 @@ import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.time.Duration;
+import java.util.Map;
 
-import static com.denisnumb.discord_chat_mod.ColorUtils.Color.GREEN;
-import static com.denisnumb.discord_chat_mod.ColorUtils.Color.RED;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.clearChannelsCache;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.initDiscordChannels;
+import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
+import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.serverLogsChannel;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.initServerStatusController;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusMessageToUnavailable;
 import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.initWebhookSendExecutor;
 import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.stopWebhookSendExecutor;
+import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 
 public final class DiscordChatMod {
     public static final String MOD_ID = "discord_chat_mod";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static JDA jda;
     public static MinecraftServer server;
+    private static final DiscordEvents discordEvents = new DiscordEvents();
 
     public static void onServerStarting(MinecraftServer minecraftServer) {
         server = minecraftServer;
         if (server.isPublished())
             initJDA();
+
+        CustomChatTypeRegistry.registerChatTypes(server.registryAccess().registryOrThrow(Registries.CHAT_TYPE));
     }
 
     public static void onServerStarted() {
-        sendEmbedMessage(
-                DiscordChannelRegistry.serverStartStopChannel,
-                buildEmbed(getTranslate(SERVER_STARTED), GREEN)
-        );
+        ServerLogsRetranslator.start();
+        getDiscordMessageComponents(MessageType.SERVER_START, Map.of())
+                .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
     }
 
     public static void onServerStopped() {
-        sendEmbedMessage(
-                DiscordChannelRegistry.serverStartStopChannel,
-                buildEmbed(getTranslate(SERVER_CLOSED), RED)
-        );
+        getDiscordMessageComponents(MessageType.SERVER_STOP, Map.of())
+                .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
         stopJDA();
     }
 
     public static void onIntegratedServerStarted(){
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             initJDA();
-            sendEmbedMessage(
-                    DiscordChannelRegistry.serverStartStopChannel,
-                    buildEmbed(String.format(getTranslate(LOCAL_SERVER_STARTED), server.getPort()), GREEN)
-            );
+            getDiscordMessageComponents(MessageType.LOCAL_SERVER_START,
+                    Map.of(
+                            Parameters.LOCAL_SERVER_STARTED, String.format(getTranslate(ModLanguageKey.LOCAL_SERVER_STARTED), server.getPort()),
+                            Parameters.SERVER_PORT, String.valueOf(server.getPort())
+                    )
+            ).ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
 
-            CustomEmojiProvider.loadClient(CustomEmojiProvider.getNameToUrlMap(DiscordChannelRegistry.defaultChannel));
-            ChannelMembersProvider.clientMemberData = ChannelMembersProvider.getMemberData(DiscordChannelRegistry.playerChatMessagesChannel);
-        }).start();
+            StickersProvider.loadClient(StickersProvider.getNameToUrlMap());
+            CustomEmojiProvider.loadClient(CustomEmojiProvider.getNameToUrlMap());
+            ChannelMembersProvider.CLIENT_MEMBER_CACHE = ChannelMembersProvider.getMemberData(ChannelCategory.PLAYER_CHAT);
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     public static boolean isDiscordConnected() {
-        return jda != null && jda.getStatus() == JDA.Status.CONNECTED;
+        return jda != null
+                && jda.getStatus() == JDA.Status.CONNECTED
+                && !ReloadConfigCommand.isReloadingNow;
     }
 
-    private static void initJDA(){
+    public static void initJDA(){
         try {
-            IPlatformConfig config = PlatformConfig.getConfig();
+            IConfigProvider config = ConfigProvider.getConfig();
 
             WebSocketFactory webSocketFactory = new WebSocketFactory();
             if (!config.proxyHostname().isEmpty()) {
@@ -115,16 +125,20 @@ public final class DiscordChatMod {
                             GatewayIntent.GUILD_EXPRESSIONS)
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
-                    .addEventListeners(new DiscordEvents())
+                    .addEventListeners(discordEvents)
                     .setHttpClientBuilder(httpClientBuilder)
                     .setWebsocketFactory(webSocketFactory)
                     .build();
 
             jda.awaitReady();
             initWebhookSendExecutor();
-            initDiscordChannels();
+            initDiscordSendExecutor();
+            DiscordChannelRegistry.initDiscordChannels(config.discordGuildConfigs());
             initServerStatusController();
             AvatarUrlStorage.load(server);
+
+            if (!isChannelCategoryDisabled(serverLogsChannel))
+                ServerLogsRetranslator.init(config.serverLogsToDiscordLoggingLevel());
 
             LOGGER.info("Discord connected");
         } catch (Exception e) {
@@ -134,14 +148,31 @@ public final class DiscordChatMod {
         }
     }
 
-    private static void stopJDA() {
+    public static void stopJDA() {
         if (jda != null) {
             updateServerStatusMessageToUnavailable();
-            clearChannelsCache();
+            ServerLogsRetranslator.stop();
             stopWebhookSendExecutor();
+            stopDiscordSendExecutor();
             AvatarUrlStorage.unload();
-            jda.shutdown();
+            LOGGER.info("Disconnecting from discord...");
+
+            try {
+                jda.removeEventListener(discordEvents);
+                jda.awaitShutdown(Duration.ofMillis(5000));
+                jda.cancelRequests();
+                jda.shutdownNow();
+                if (jda.getHttpClient() != null) {
+                    jda.getHttpClient().dispatcher().executorService().shutdownNow();
+                    jda.getHttpClient().connectionPool().evictAll();
+                }
+                jda.getGatewayPool().shutdownNow();
+                jda.getCallbackPool().shutdownNow();
+                jda.getRateLimitPool().shutdownNow();
+            } catch (Exception ignored) {
+            }
             jda = null;
+
             LOGGER.info("Discord disconnected");
         }
     }

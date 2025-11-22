@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.chat_images;
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
 import com.denisnumb.discord_chat_mod.chat_images.model.*;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
+import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -17,8 +18,6 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -27,9 +26,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
+import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.*;
+import static com.denisnumb.discord_chat_mod.chat_images.utils.WebpUtils.*;
+import static com.denisnumb.discord_chat_mod.chat_images.utils.GifUtils.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.LOGGER;
-import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.*;
-import static com.denisnumb.discord_chat_mod.chat_images.ImageUtils.getGifFrameDuration;
 
 public class ImageStorage {
     public static final float MAX_WIDTH = 128.0f;
@@ -68,7 +68,7 @@ public class ImageStorage {
     }
 
     @Nullable
-    public static AbstractImage parseEmoji(String url) {
+    public static AbstractImage parseEmojiOrSticker(String url) {
         return parseImageInternal(url, false);
     }
 
@@ -90,10 +90,7 @@ public class ImageStorage {
 
         if (isImageUrl(mimeType) || isTenorGifUrl(url)) {
             try {
-                if (isTenorGifUrl(url) || isGifUrl(mimeType))
-                    loadGifFromUrl(url);
-                else
-                    loadImageFromUrl(url);
+                loadImageFromUrl(url, mimeType);
                 return parseImageInternal(url, skipHandledUrls);
             } catch (Exception e) {
                 LOGGER.error("ImageLoadError: {}", e.getMessage());
@@ -136,15 +133,110 @@ public class ImageStorage {
         ));
     }
 
-    private static void loadImageFromUrl(String imageUrl) throws IOException, InterruptedException, URISyntaxException {
-        try (InputStream inputStream = new URI(imageUrl).toURL().openStream()) {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            ImageIO.write(ImageIO.read(inputStream), "png", outputStream);
-            registerImage(imageUrl, outputStream.toByteArray());
+    private static void loadImageFromUrl(String imageUrl, String mimeType) throws Exception {
+        if (isTenorGifUrl(imageUrl) || isGifUrl(mimeType)){
+            loadGifFromUrl(imageUrl);
+        } else if (isAnimatedWebpUrl(imageUrl, mimeType)){
+            loadWebpAnimatedWebpFromUrl(imageUrl);
+        } else {
+            try (InputStream inputStream = getInputStreamFromUrl(imageUrl)) {
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ImageIO.write(ImageIO.read(inputStream), "png", outputStream);
+                registerImage(imageUrl, outputStream.toByteArray());
+            }
         }
     }
 
-    public static void loadGifFromUrl(String gifUrl) throws Exception {
+    private static void loadWebpAnimatedWebpFromUrl(String webpUrl) throws Exception {
+        List<ResourceLocation> frames = new ArrayList<>();
+        ImageSize frameSize = null;
+        int frameDuration = -1;
+        boolean isSpoiler = ImageUtils.isSpoilerImageUrl(webpUrl);
+        ResourceLocation spoilerTextureLocation = null;
+
+        byte[] webpData;
+        try (InputStream input = getInputStreamFromUrl(webpUrl)) {
+            webpData = input.readAllBytes();
+        }
+
+        List<FrameMetadata> frameMetadata;
+        try (ByteArrayInputStream metaStream = new ByteArrayInputStream(webpData)) {
+            frameMetadata = parseAnimatedWebP(metaStream);
+        }
+
+        try (ImageInputStream input = ImageIO.createImageInputStream(new ByteArrayInputStream(webpData))) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+            if (!readers.hasNext())
+                throw new IllegalStateException("No ImageReader for WebP");
+
+            ImageReader reader = readers.next();
+            reader.setInput(input);
+
+            int frameCount = reader.getNumImages(true);
+            BufferedImage canvas = new BufferedImage(
+                    reader.getWidth(0),
+                    reader.getHeight(0),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+            Graphics2D g = canvas.createGraphics();
+            CountDownLatch latch = new CountDownLatch(frameCount);
+
+            for (int i = 0; i < frameCount; i++) {
+                BufferedImage frame = reader.read(i);
+
+                FrameMetadata meta = (i < frameMetadata.size())
+                        ? frameMetadata.get(i)
+                        : new FrameMetadata(0, 0, frame.getWidth(), frame.getHeight());
+
+                g.drawImage(frame, meta.xOffset(), meta.yOffset(), null);
+
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ImageIO.write(canvas, "png", outputStream);
+                byte[] imageBytes = outputStream.toByteArray();
+
+                if (i == 0) {
+                    frameSize = new ImageSize(frame.getWidth(), frame.getHeight());
+                    frameDuration = 100;
+
+                    if (isSpoiler)
+                        spoilerTextureLocation = registerSpoilerImage(webpUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
+                }
+
+                ResourceLocation frameLocation = new ResourceLocation(
+                        DiscordChatMod.MOD_ID + "/chat_webp/" + webpUrl.hashCode() + "_" + i
+                );
+
+                NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
+                RenderSystem.recordRenderCall(() -> {
+                    try {
+                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(nativeImage));
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+
+                frames.add(frameLocation);
+            }
+
+            g.dispose();
+            reader.dispose();
+            latch.await();
+
+            if (!frames.isEmpty()) {
+                IMAGE_CACHE.put(webpUrl, new AnimatedImage(
+                        webpUrl,
+                        frames,
+                        getImageScaledSize(frameSize.width(), frameSize.height()),
+                        frameSize,
+                        frameDuration,
+                        isSpoiler,
+                        spoilerTextureLocation
+                ));
+            }
+        }
+    }
+
+    private static void loadGifFromUrl(String gifUrl) throws Exception {
         String cacheKey = gifUrl;
         if (isTenorGifUrl(gifUrl))
             gifUrl = getTenorGifSourceUrl(gifUrl);
@@ -156,7 +248,7 @@ public class ImageStorage {
         boolean isSpoiler = ImageUtils.isSpoilerImageUrl(gifUrl);
         ResourceLocation spoilerTextureLocation = null;
 
-        try (ImageInputStream input = ImageIO.createImageInputStream(new URI(gifUrl).toURL().openStream())) {
+        try (ImageInputStream input = ImageIO.createImageInputStream(getInputStreamFromUrl(gifUrl))) {
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("gif");
             if (!readers.hasNext()) throw new IOException("No GIF reader found");
 

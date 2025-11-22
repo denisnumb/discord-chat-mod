@@ -1,110 +1,111 @@
 package com.denisnumb.discord_chat_mod;
+import com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider;
 import com.denisnumb.discord_chat_mod.commands.MentionCommand;
-import com.denisnumb.discord_chat_mod.commands.SayCommand;
-import com.denisnumb.discord_chat_mod.commands.TellrawCommand;
+import com.denisnumb.discord_chat_mod.commands.ReloadConfigCommand;
+import com.denisnumb.discord_chat_mod.commands.SendStickerCommand;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.SetAvatarCommand;
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
-import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
-import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
-import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
-import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
-import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
+import com.denisnumb.discord_chat_mod.commands.vanilla.*;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.advancements.FrameType;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.ColorUtils.Color.*;
-import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getLocalizedDeathMessage;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.processChatMessage;
+import static com.denisnumb.discord_chat_mod.advancement.AdvancementIconParser.parseAdvancementIcon;
 import static com.denisnumb.discord_chat_mod.advancement.AdvancementParser.*;
+import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
+import static com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
+import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 
 public class MinecraftEvents {
     public static void handleRegisterCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
         MentionCommand.register(dispatcher);
+        SendStickerCommand.register(dispatcher);
+        ReloadConfigCommand.register(dispatcher);
         SayCommand.register(dispatcher);
         TellrawCommand.register(dispatcher, context);
+        MsgCommand.register(dispatcher);
+        EmoteCommand.register(dispatcher);
+        TeamMsgCommand.register(dispatcher);
 
-        if (PlatformConfig.getConfig().isWebhookModeEnabled() && PlatformConfig.getConfig().isSetAvatarUrlCommandEnabled())
+        IConfigProvider config = ConfigProvider.getConfig();
+        if (config.isWebhookModeEnabled() && config.isSetAvatarUrlCommandEnabled())
             SetAvatarCommand.register(dispatcher);
     }
 
-    public static Component handleChatMessage(ServerPlayer player, Component component) {
-        String message = component.getString();
-        Map<String, DiscordMentionData> mentions = Map.of();
+    public static Component handleChatMessageText(ServerPlayer player, Component component) {
+        MinecraftUtils.ProcessChatMessageResult chatMessage = processChatMessage(component.getString(), ChannelCategory.PLAYER_CHAT);
 
-        if (isDiscordConnected()) {
-            List<DiscordMemberData> memberData = ChannelMembersProvider.getMemberData(playerChatMessagesChannel);
+        handleDiscord(() -> {
+            Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(player));
+            Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
+            Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
 
-            for (DiscordMemberData member : memberData)
-                if (message.contains(member.prettyMention))
-                    message = message.replace(member.prettyMention, member.mentionString);
+            if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
+                sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
+        });
 
-            mentions = new HashMap<>(){{
-                for (DiscordMemberData member : memberData)
-                    put(member.mentionString, new DiscordMentionData(member));
-            }};
-
-            String textForDiscord = replaceEmojiCodesToDiscordMentions(message);
-            sendTextMessage(
-                    playerChatMessagesChannel,
-                    player,
-                    textForDiscord,
-                    String.format("`<%s>` %s", player.getName().getString(), textForDiscord)
-            );
-        }
-
-        return new MarkdownToComponentConverter(MarkdownParser.parseMarkdown(message), mentions)
-                .convertMarkdownTokensToComponent();
+        return chatMessage.forMinecraft();
     }
 
-    public static void handlePlayerDie(LivingEntity entity, DamageSource damageSource) {
-        if (!isDiscordConnected())
-            return;
-        if (!(entity instanceof Player))
-            return;
-
-        String message;
-        try{
-            message = getLocalizedDeathMessage(damageSource, entity);
-        } catch (Exception ignored) {
-            message = damageSource.getLocalizedDeathMessage(entity).getString();
-        }
-        sendEmbedMessage(deathsChannel, buildEmbed(message, DEFAULT));
+    public static Optional<Component> handleChatMessage(ResourceKey<ChatType> chatType, MinecraftChatStyleProvider.ChatMessageComponents components) {
+        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+            return getStyledChatMessage(chatType, components);
+        return Optional.empty();
     }
 
-    public static void handleAdvancementMade(Player player, Advancement advancement){
-        if (!isDiscordConnected())
-            return;
+    public static Optional<Component> handlePlayerOrPetDie(List<CombatEntry> combatEntries, LivingEntity entity) {
+        if (!(entity instanceof Player) && !(entity instanceof TamableAnimal a && a.isTame()))
+            return Optional.empty();
+
+        DeathMessageUtils.DeathMessageComponents components = DeathMessageUtils.getDeathMessageComponents(combatEntries, entity);
+
+        if (entity instanceof Player){
+            handleDiscord(() -> {
+                Map<String, String> parameters = mergeMaps(
+                        Map.of(DEATH_MESSAGE, formatDeathMessageComponents(components)),
+                        buildPlayerParameters(components.diedEntityName().getString(), entity)
+                );
+                getDiscordMessageComponents(MessageType.DEATH, parameters)
+                        .ifPresent(discordMessageComponents -> sendMessageFromServer(ChannelCategory.DEATHS, getAllContexts(), discordMessageComponents));
+            });
+        }
+
+        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+            return getStyledDeathMessage(components);
+        return Optional.empty();
+    }
+
+    public static Optional<Component> handleAdvancementMade(Player player, Advancement advancement) {
         if (advancement.getDisplay() == null)
-            return;
+            return Optional.empty();
 
         DisplayInfo displayInfo = advancement.getDisplay();
         if (!displayInfo.shouldAnnounceChat())
-            return;
-
-        String message = displayInfo.getFrame() == FrameType.TASK
-                ? getTranslate("chat.type.advancement.task")
-                : displayInfo.getFrame() == FrameType.GOAL
-                ? getTranslate("chat.type.advancement.goal")
-                : getTranslate("chat.type.advancement.challenge");
+            return Optional.empty();
 
         ResourceLocation advancementId = advancement.getId();
         ResourceLocation advancementResourceLocation = new ResourceLocation(
@@ -115,40 +116,50 @@ public class MinecraftEvents {
         String title = displayInfo.getTitle().getString();
         String description = displayInfo.getDescription().getString();
 
-        var advancementJson = getAdvancementFileAsJsonObject(advancementResourceLocation);
-        if (advancementJson != null){
+        JsonObject advancementJson = getAdvancementFileAsJsonObject(advancementResourceLocation);
+        if (advancementJson != null) {
             title = getTranslatedAdvancementTitle(advancementJson, title);
             description = getTranslatedAdvancementDescription(advancementJson, description);
         }
 
-        int color = displayInfo.getFrame() == FrameType.CHALLENGE ? PURPLE : GOLD;
-        String formattedTitle = MarkdownParser.parseMarkdown(title).stream().allMatch(MarkdownToken::hasNoMarkdown)
-                ? "**`" + title + "`**"
-                : title;
+        String finalTitle = title;
+        String finalDescription = description;
+        handleDiscord(() -> {
+            MessageType messageType = switch (displayInfo.getFrame()) {
+                case TASK -> MessageType.ADVANCEMENT_TASK;
+                case CHALLENGE -> MessageType.ADVANCEMENT_CHALLENGE;
+                case GOAL -> MessageType.ADVANCEMENT_GOAL;
+            };
 
-        sendEmbedMessage(
-                advancementsChannel,
-                buildEmbed(
-                        String.format(
-                                message,
-                                "**" + player.getName().getString() + "**",
-                                formattedTitle
-                        ),
-                        description,
-                        color
-                )
-        );
+            Map<String, String> parameters = mergeMaps(
+                    Map.of(ADVANCEMENT, finalTitle, DESCRIPTION, finalDescription, ICON_URL, "attachment://icon.png"),
+                    buildPlayerParameters(player)
+            );
+
+            getDiscordMessageComponents(messageType, parameters).ifPresent(components ->
+                    parseAdvancementIcon(displayInfo).ifPresentOrElse(
+                            iconData -> sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components, iconData),
+                            () -> sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components)
+                    )
+            );
+        });
+
+        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+            return getStyledAdvancementMessage(player, advancement, title, description);
+        return Optional.empty();
     }
 
-    public static void handleJoinLeave(Player player, boolean isJoin) {
-        if (!isDiscordConnected())
-            return;
+    public static Optional<Component> handleJoinLeave(Player player, boolean isJoin) {
+        handleDiscord(() -> {
+            MessageType messageType = isJoin ? MessageType.JOIN : MessageType.LEFT;
+            getDiscordMessageComponents(messageType, buildPlayerParameters(player))
+                    .ifPresent(components -> sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), components));
+            updateServerStatusWithDelay();
+        });
 
-        String message = getTranslate(isJoin ? "multiplayer.player.joined" : "multiplayer.player.left");
-        int color = isJoin ? GREEN : RED;
-
-        sendEmbedMessage(playerJoinLeaveChannel, buildEmbed(String.format(message, "**" + player.getName().getString() + "**"), color));
-        updateServerStatusWithDelay();
+        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+            return getStyledJoinedLeftMessage(player, isJoin);
+        return Optional.empty();
     }
 }
 

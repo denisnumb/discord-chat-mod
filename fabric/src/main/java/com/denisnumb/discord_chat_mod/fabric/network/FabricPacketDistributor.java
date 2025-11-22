@@ -23,6 +23,10 @@ public class FabricPacketDistributor implements IPlatformPacketDistributor {
             return new DiscordEmojisPartPacketFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
         if (packet instanceof RequestDiscordEmojisPacket)
             return new RequestDiscordEmojisPacketFabric();
+        if (packet instanceof DiscordStickersPartPacket p)
+            return new DiscordStickersPartPacketFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
+        if (packet instanceof RequestDiscordStickersPacket)
+            return new RequestDiscordStickersPacketFabric();
         return null;
     }
 

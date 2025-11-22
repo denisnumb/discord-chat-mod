@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AnimatedImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
@@ -77,7 +77,7 @@ public abstract class GuiGraphicsMixin {
     public void drawString(Font font, String text, int x, int y, int color, boolean dropShadow, CallbackInfoReturnable<Integer> cir){
         Matcher matcher = EMOJI_PATTERN.matcher(text);
 
-        if (PlatformConfig.getConfig().isEmojifulCompatibilityEnabled()
+        if (ConfigProvider.getConfig().isEmojifulCompatibilityEnabled()
                 || !matcher.find()
                 || CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty()) {
             cir.setReturnValue(discord_chat_mod$drawInBatch(font, text, x, y, color, dropShadow));
@@ -131,7 +131,7 @@ public abstract class GuiGraphicsMixin {
         String rawText = rawTextBuilder.toString();
         Matcher matcher = EMOJI_PATTERN.matcher(rawText);
 
-        if (PlatformConfig.getConfig().isEmojifulCompatibilityEnabled()
+        if (ConfigProvider.getConfig().isEmojifulCompatibilityEnabled()
                 || !matcher.find()
                 || CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty()) {
             cir.setReturnValue(discord_chat_mod$drawInBatch(font, text, x, y, color, dropShadow));

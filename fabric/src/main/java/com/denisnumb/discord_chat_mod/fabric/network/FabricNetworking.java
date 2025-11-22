@@ -30,6 +30,15 @@ public class FabricNetworking {
         );
 
         ServerPlayNetworking.registerGlobalReceiver(
+                RequestDiscordStickersPacketFabric.TYPE,
+                (packet, player, sender) -> {
+                    MinecraftServer server = player.getServer();
+                    if (server != null)
+                        server.execute(() -> PacketHandler.handleRequestDiscordStickersPacket(player));
+                }
+        );
+
+        ServerPlayNetworking.registerGlobalReceiver(
                 ScreenshotPartPacketServerFabric.TYPE,
                 (p, player, sender) -> {
                     MinecraftServer server = player.getServer();
@@ -57,6 +66,15 @@ public class FabricNetworking {
                 (p, player, sender) -> {
                     Minecraft.getInstance().execute(() -> PacketHandler.handleDiscordEmojisPacket(
                             new DiscordEmojisPartPacket(p.sendTime, p.partIndex, p.totalParts, p.data))
+                    );
+                }
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(
+                DiscordStickersPartPacketFabric.TYPE,
+                (p, player, sender) -> {
+                    Minecraft.getInstance().execute(() -> PacketHandler.handleDiscordStickersPacket(
+                            new DiscordStickersPartPacket(p.sendTime, p.partIndex, p.totalParts, p.data))
                     );
                 }
         );

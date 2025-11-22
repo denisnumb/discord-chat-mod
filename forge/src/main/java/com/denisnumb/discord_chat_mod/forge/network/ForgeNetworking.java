@@ -71,6 +71,20 @@ public class ForgeNetworking {
                     .consumerMainThread((data, context)
                             -> PacketHandler.handleRequestDiscordEmojisPacket(context.get().getSender()))
                     .add();
+
+            CHANNEL.messageBuilder(DiscordStickersPartPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                    .encoder(DiscordStickersPartPacket::encode)
+                    .decoder(DiscordStickersPartPacket::new)
+                    .consumerMainThread((data, context)
+                            -> PacketHandler.handleDiscordStickersPacket(data))
+                    .add();
+
+            CHANNEL.messageBuilder(RequestDiscordStickersPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                    .encoder(RequestDiscordStickersPacket::encode)
+                    .decoder(RequestDiscordStickersPacket::new)
+                    .consumerMainThread((data, context)
+                            -> PacketHandler.handleRequestDiscordStickersPacket(context.get().getSender()))
+                    .add();
         });
     }
 

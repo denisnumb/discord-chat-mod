@@ -2,8 +2,8 @@ package com.denisnumb.discord_chat_mod.mixin;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageScreen;
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
-import com.denisnumb.discord_chat_mod.chat_images.ImageUtils;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
+import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;

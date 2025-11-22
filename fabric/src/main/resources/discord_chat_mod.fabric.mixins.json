@@ -3,14 +3,8 @@
   "package": "com.denisnumb.discord_chat_mod.fabric.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "discord_chat_mod-fabric-fabric-refmap.json",
-  "mixins": [
-    "PlayerAdvancementsMixin",
-    "ServerGamePacketListenerImplMixin"
-  ],
-  "client": [
-    "ChatComponentMixin",
-    "ScreenshotMixin"
-  ],
+  "mixins": [],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   },

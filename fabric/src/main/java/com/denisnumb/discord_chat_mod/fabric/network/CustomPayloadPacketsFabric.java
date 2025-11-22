@@ -55,6 +55,29 @@ public class CustomPayloadPacketsFabric {
         }
     }
 
+    public static class RequestDiscordStickersPacketFabric extends RequestDiscordStickersPacket implements FabricPacket {
+        public static final PacketType<RequestDiscordEmojisPacketFabric> TYPE =
+                PacketType.create(new ResourceLocation(DiscordChatMod.MOD_ID, "network/request_discord_stickers_packet"), RequestDiscordEmojisPacketFabric::new);
+
+        public RequestDiscordStickersPacketFabric(FriendlyByteBuf buf){
+            super(buf);
+        }
+
+        public RequestDiscordStickersPacketFabric(){
+            super();
+        }
+
+        @Override
+        public void write(FriendlyByteBuf buf) {
+            super.encode(buf);
+        }
+
+        @Override
+        public PacketType<?> getType() {
+            return TYPE;
+        }
+    }
+
     public static class ScreenshotPartPacketServerFabric extends ScreenshotPartPacketServer implements FabricPacket {
         public static final PacketType<ScreenshotPartPacketServerFabric> TYPE =
                 PacketType.create(new ResourceLocation(DiscordChatMod.MOD_ID, "network/screenshot_part_packet_server"), ScreenshotPartPacketServerFabric::new);
@@ -133,6 +156,29 @@ public class CustomPayloadPacketsFabric {
         }
 
         public DiscordEmojisPartPacketFabric(long sendTime, int partIndex, int totalParts, byte[] data){
+            super(sendTime, partIndex, totalParts, data);
+        }
+
+        @Override
+        public void write(FriendlyByteBuf buf) {
+            super.encode(buf);
+        }
+
+        @Override
+        public PacketType<?> getType() {
+            return TYPE;
+        }
+    }
+
+    public static class DiscordStickersPartPacketFabric extends DiscordStickersPartPacket implements FabricPacket {
+        public static final PacketType<DiscordEmojisPartPacketFabric> TYPE =
+                PacketType.create(new ResourceLocation(DiscordChatMod.MOD_ID, "network/discord_stickers_packet"), DiscordEmojisPartPacketFabric::new);
+
+        public DiscordStickersPartPacketFabric(FriendlyByteBuf buf){
+            super(buf);
+        }
+
+        public DiscordStickersPartPacketFabric(long sendTime, int partIndex, int totalParts, byte[] data){
             super(sendTime, partIndex, totalParts, data);
         }
 

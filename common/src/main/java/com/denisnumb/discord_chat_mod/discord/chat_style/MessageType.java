@@ -1,0 +1,25 @@
+package com.denisnumb.discord_chat_mod.discord.chat_style;
+
+public enum MessageType {
+    PINNED_STATUS_AVAILABLE,
+    PINNED_STATUS_UNAVAILABLE,
+    PINNED_STATUS_PLAYERS,
+    SERVER_START,
+    LOCAL_SERVER_START,
+    SERVER_STOP,
+    CHAT,
+    CHAT_WEBHOOK,
+    SCREENSHOT,
+    SCREENSHOT_WEBHOOK,
+    LEFT,
+    JOIN,
+    DEATH,
+    PET_DEATH,
+    ADVANCEMENT_GOAL,
+    ADVANCEMENT_TASK,
+    ADVANCEMENT_CHALLENGE,
+    SAY_COMMAND,
+    ME_COMMAND,
+    ME_COMMAND_WEBHOOK,
+    TELLRAW_COMMAND
+}

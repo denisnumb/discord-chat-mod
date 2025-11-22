@@ -17,10 +17,11 @@ public class ModLanguageKey {
     public static final String SCREENSHOT_COOLDOWN = "discord_chat_mod.command.send_screenshot.cooldown";
     public static final String CLICK_TO_OPEN_IMAGE = "discord_chat_mod.command.click_to_open_image";
     public static final String STICKER = "discord_chat_mod.sticker";
-    public static final String PREPARE_MESSAGE_ERROR = "discord_chat_mod.error.prepare_message_error";
-    public static final String SEND_EMBED_ERROR = "discord_chat_mod.error.send_embed_error";
     public static final String SEND_MESSAGE_ERROR = "discord_chat_mod.error.send_message_error";
+    public static final String SEND_MESSAGE_ERROR_WITH_CAUSE = "discord_chat_mod.error.send_message_error_with_cause";
     public static final String INVALID_CHANNEL_ERROR = "discord_chat_mod.error.invalid_channel_error";
+    public static final String INVALID_DEFAULT_CHANNEL_ERROR = "discord_chat_mod.error.invalid_default_channel_error";
+    public static final String INVALID_GUILD_ERROR = "discord_chat_mod.error.invalid_guild_error";
     public static final String MISSING_PERMISSIONS_ERROR = "discord_chat_mod.error.missing_permissions_error";
     public static final String SPOILER = "discord_chat_mod.spoiler";
     public static final String WEBHOOK_INITIALIZE_ERROR = "discord_chat_mod.webhook.error";
@@ -29,4 +30,9 @@ public class ModLanguageKey {
     public static final String PROVIDED_INVALID_AVATAR_URL = "discord_chat_mod.command.set_avatar_url.invalid_url";
     public static final String SET_AVATAR_URL_SUCCESS = "discord_chat_mod.command.set_avatar_url.success";
     public static final String REMOVE_AVATAR_URL_SUCCESS = "discord_chat_mod.command.remove_avatar_url.success";
+    public static final String UNKNOWN_STICKER = "discord_chat_mod.command.send_sticker.unknown";
+    public static final String COLORED_TEXT_EXAMPLE = "discord_chat_mod.colored_text_example";
+    public static final String CONFIG_RELOADED = "discord_chat_mod.command.reload_config.success";
+    public static final String FORWARDED_GUILD_MESSAGE = "discord_chat_mod.forwarded_guild_message";
+    public static final String NO_CONFIG_GUILDS_CONFIGURED = "discord_chat_mod.warn.no_guilds_configured";
 }

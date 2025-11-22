@@ -13,6 +13,16 @@ public class CustomPayloadPackets {
         }
     }
 
+    public static class DiscordStickersPartPacket extends BasePartPacket {
+        public DiscordStickersPartPacket(FriendlyByteBuf buffer) {
+            super(buffer);
+        }
+
+        public DiscordStickersPartPacket(long sendTime, int partIndex, int totalParts, byte[] data){
+            super(sendTime, partIndex, totalParts, data);
+        }
+    }
+
     public static class ScreenshotPartPacketServer extends BasePartPacket {
         public ScreenshotPartPacketServer(FriendlyByteBuf buffer) {
             super(buffer);
@@ -59,6 +69,16 @@ public class CustomPayloadPackets {
         }
 
         public RequestDiscordEmojisPacket() {
+            super();
+        }
+    }
+
+    public static class RequestDiscordStickersPacket extends BaseRequestPacket {
+        public RequestDiscordStickersPacket(FriendlyByteBuf buffer) {
+            super(buffer);
+        }
+
+        public RequestDiscordStickersPacket() {
             super();
         }
     }

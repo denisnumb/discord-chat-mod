@@ -29,4 +29,7 @@ ordering = "NONE"
 side = "BOTH"
 
 [[mixins]]
+config = "discord_chat_mod.forge.mixins.json"
+
+[[mixins]]
 config = "discord_chat_mod.mixins.json"

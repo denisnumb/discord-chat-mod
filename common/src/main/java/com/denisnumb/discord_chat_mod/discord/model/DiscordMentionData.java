@@ -6,38 +6,36 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHANNEL_MENTION_COLOR;
 import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
+import static com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider.getMemberDisplayName;
 
 public class DiscordMentionData {
-    public DiscordMemberData memberData;
-    public String name;
+    public DiscordUserData memberData;
     public String prettyMention;
     public String color;
 
     public DiscordMentionData(Member member){
-        this(member.getEffectiveName(), "@" + member.getEffectiveName(), getHexColor(member.getColor()));
-        this.memberData = new DiscordMemberData(member.getEffectiveName(),
-                member.getUser().getEffectiveName(),
+        this(new DiscordUserData(
+                getMemberDisplayName(member),
                 member.getUser().getName(),
                 member.getAsMention(),
                 member.getColor()
-        );
+        ));
     }
 
     public DiscordMentionData(Role role){
-        this(role.getName(), "@" + role.getName(), getHexColor(role.getColor()));
+        this("@" + role.getName(), getHexColor(role.getColor()));
     }
 
     public DiscordMentionData(GuildChannel channel){
-        this(channel.getName(), "#" + channel.getName(), getHexColor(CHANNEL_MENTION_COLOR));
+        this("#" + channel.getName(), getHexColor(CHANNEL_MENTION_COLOR));
     }
 
-    public DiscordMentionData(DiscordMemberData memberData){
-        this(memberData.guildNickname, memberData.prettyMention, memberData.color);
+    public DiscordMentionData(DiscordUserData memberData){
+        this(memberData.prettyMention, memberData.color);
         this.memberData = memberData;
     }
 
-    public DiscordMentionData(String name, String prettyMention, String color){
-        this.name = name;
+    public DiscordMentionData(String prettyMention, String color){
         this.prettyMention = prettyMention;
         this.color = color;
     }

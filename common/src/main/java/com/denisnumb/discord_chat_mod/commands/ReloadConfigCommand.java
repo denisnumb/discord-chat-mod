@@ -1,0 +1,58 @@
+package com.denisnumb.discord_chat_mod.commands;
+
+import com.denisnumb.discord_chat_mod.ServerLogsRetranslator;
+import com.denisnumb.discord_chat_mod.config.ConfigManager;
+import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
+import com.denisnumb.discord_chat_mod.discord.StickersProvider;
+import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+
+import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
+import static com.denisnumb.discord_chat_mod.LocaleProvider.loadLocalization;
+import static com.denisnumb.discord_chat_mod.ModLanguageKey.CONFIG_RELOADED;
+
+public class ReloadConfigCommand {
+    public static boolean isReloadingNow = false;
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
+        dispatcher.register(Commands.literal("reload_discord_chat_mod_config")
+                .requires(source -> source.hasPermission(2))
+                .executes(ctx -> {
+                    if (isReloadingNow)
+                        return 0;
+
+                    Thread t = new Thread(() -> {
+                        boolean discordConnected = isDiscordConnected();
+                        isReloadingNow = true;
+
+                        if (discordConnected)
+                            stopJDA();
+
+                        ConfigManager.load(false);
+                        ChannelMembersProvider.dropTimeouts();
+                        StickersProvider.dropTimeouts();
+                        CustomEmojiProvider.dropTimeouts();
+                        loadLocalization();
+
+                        if (ctx.getSource().getPlayer() != null)
+                            ctx.getSource().getPlayer().sendSystemMessage(Component.literal(getTranslate(CONFIG_RELOADED)));
+
+                        isReloadingNow = false;
+
+                        if (discordConnected){
+                            initJDA();
+                            ServerLogsRetranslator.start();
+                        }
+                    });
+                    t.setDaemon(true);
+                    t.start();
+
+                    return 1;
+        }));
+    }
+}
