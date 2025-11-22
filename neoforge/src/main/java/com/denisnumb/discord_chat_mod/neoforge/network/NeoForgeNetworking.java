@@ -7,6 +7,8 @@ import com.denisnumb.discord_chat_mod.network.emoji.RequestDiscordEmojisPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
+import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersPartPacket;
+import com.denisnumb.discord_chat_mod.network.sticker.RequestDiscordStickersPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -63,6 +65,23 @@ public class NeoForgeNetworking {
                 new MainThreadPayloadHandler<>((data, context) -> {
                     if (context.player() instanceof ServerPlayer player)
                         PacketHandler.handleRequestDiscordEmojisPacket(player);
+                })
+        );
+
+        registrar.playToClient(
+                DiscordStickersPartPacket.TYPE,
+                DiscordStickersPartPacket.STREAM_CODEC,
+                new MainThreadPayloadHandler<>((data, context) ->
+                        PacketHandler.handleDiscordStickersPacket(data)
+                )
+        );
+
+        registrar.playToServer(
+                RequestDiscordStickersPacket.TYPE,
+                RequestDiscordStickersPacket.STREAM_CODEC,
+                new MainThreadPayloadHandler<>((data, context) -> {
+                    if (context.player() instanceof ServerPlayer player)
+                        PacketHandler.handleRequestDiscordStickersPacket(player);
                 })
         );
     }

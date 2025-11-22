@@ -9,7 +9,9 @@ architectury {
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
-    implementation("net.dv8tion:JDA:5.2.2")
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+
+    implementation("net.dv8tion:JDA:6.1.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
     implementation("com.squareup.okio:okio:3.9.1")
@@ -21,5 +23,13 @@ dependencies {
     implementation("org.apache.commons:commons-collections4:4.4")
     implementation("org.json:json:20231013")
     implementation("org.jsoup:jsoup:1.17.2")
+    implementation("com.electronwill.night-config:core:3.8.3")
+    implementation("com.electronwill.night-config:toml:3.8.3")
+    implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
     implementation(files("../libs/emoji-java-5.1.1.jar"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

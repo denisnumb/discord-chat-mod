@@ -1,14 +1,12 @@
 package com.denisnumb.discord_chat_mod.discord;
 
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
-import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.mojang.logging.LogUtils;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
+import net.dv8tion.jda.api.entities.sticker.GuildSticker;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
@@ -18,6 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,228 +25,318 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.logErrorToServer;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
+import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
+import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
 import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
+
 
 public class DiscordUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
+    public record ImageData(String fileName, byte[] data){}
+    private static ExecutorService EXECUTOR;
 
-    public static MessageEmbed buildEmbed(String title, String description, int color){
-        return new EmbedBuilder()
-                .setTitle(title)
-                .setDescription(description)
-                .setColor(color)
-                .build();
+    public static void initDiscordSendExecutor() {
+        EXECUTOR = Executors.newFixedThreadPool(5);
     }
 
-    public static MessageEmbed buildEmbed(String description, int color){
-        return new EmbedBuilder()
-                .setDescription(description)
-                .setColor(color)
-                .build();
-    }
-
-    public static void editMessageEmbeds(Message message, MessageEmbed embed){
-        try {
-            message.editMessageEmbeds(embed).queue();
-        } catch (Exception e){
-            LOGGER.error(e.getMessage());
+    public static void stopDiscordSendExecutor() {
+        if (EXECUTOR != null){
+            EXECUTOR.shutdownNow();
+            EXECUTOR = null;
         }
     }
 
-    public static Optional<Message> sendServerStatusMessageComplete(GuildMessageChannel channel, MessageEmbed embed){
-        return sendEmbedMessage(channel, embed, true);
+    public static void handleDiscord(Runnable prepareMessageFunc) {
+        if (isDiscordConnected() && EXECUTOR != null)
+            EXECUTOR.submit(prepareMessageFunc);
     }
 
-    public static void sendEmbedMessage(GuildMessageChannel channel, MessageEmbed embed){
-        duplicateMessageToDefaultChannel(channel,
-                () -> sendEmbedMessage(DiscordChannelRegistry.defaultChannel, embed)
-        );
-
-        Optional<Webhook> optionalWebhook = DiscordChannelRegistry.getChannelWebhook(channel);
-
-        if (optionalWebhook.isEmpty()){
-            sendEmbedMessage(channel, embed, false);
-        } else {
-            sendWebhook(optionalWebhook.get().getUrl(),
-                    () -> new WebhookPayload(embed).setUsername(getWebhookServerName())
-            );
-        }
-    }
-
-    public static void sendTextMessage(GuildMessageChannel channel, @Nullable Player fromPlayer, String rawText, String formattedText) {
-        duplicateMessageToDefaultChannel(channel,
-                () -> sendTextMessage(DiscordChannelRegistry.defaultChannel, fromPlayer, rawText, formattedText)
-        );
-
-        Optional<Webhook> optionalWebhook = DiscordChannelRegistry.getChannelWebhook(channel);
-
-        if (optionalWebhook.isEmpty()){
-            prepareDiscordTextMessage(channel, formattedText).ifPresent(
-                    messageCreateAction -> sendMessage(messageCreateAction, false)
-            );
-        } else {
-            String webhookUrl = optionalWebhook.get().getUrl();
-            if (fromPlayer == null)
-                sendWebhook(webhookUrl, () -> new WebhookPayload(formattedText).setUsername(getWebhookServerName()));
-            else {
-                sendWebhook(webhookUrl, () -> new WebhookPayload(rawText)
-                        .setUsername(fromPlayer.getName().getString())
-                        .setAvatarUrl(getPlayerAvatarUrl(fromPlayer))
-                );
-            }
-        }
-
-
-    }
-
-    public static Optional<String> sendTextMessageWithFileComplete(
-            GuildMessageChannel channel,
-            Player fromPlayer,
-            String formattedText,
-            ScreenshotTransceiver.ScreenshotData screenshotData
+    public static Optional<String> sendMessageFromPlayer(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            ImageData imageData
     ) {
-        Optional<Webhook> optionalWebhook = DiscordChannelRegistry.getChannelWebhook(channel);
-        Optional<String> optionalScreenshotUrl;
+        Optional<String> optionalScreenshotUrl = Optional.empty();
 
-        if (optionalWebhook.isEmpty()){
-            Optional<MessageCreateAction> createAction = prepareDiscordTextMessage(channel, formattedText);
-            optionalScreenshotUrl = createAction.flatMap(mca -> sendMessage(mca.addFiles(FileUpload.fromData(screenshotData.data(), screenshotData.fileName())), true)
-                    .map(message -> message.getAttachments().getFirst().getUrl()));
+        for (DiscordGuildContext guildContext : guildContexts){
+            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
 
-        } else {
-            try {
-                optionalScreenshotUrl = sendWebhookWithImage(
-                        optionalWebhook.get().getUrl(),
-                        new WebhookPayload("")
-                                .setUsername(fromPlayer.getName().getString())
-                                .setAvatarUrl(getPlayerAvatarUrl(fromPlayer)),
-                        screenshotData.data(),
-                        screenshotData.fileName()
-                ).get();
-            } catch (Exception ignored) {
-                optionalScreenshotUrl = Optional.empty();
-            }
+            if (isChannelCategoryDisabled(channel))
+                continue;
+
+            if (optionalScreenshotUrl.isEmpty())
+                optionalScreenshotUrl = sendScreenshotFromPlayerToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData);
+
+            duplicateMessageToDefaultChannel(guildContext, channelCategory,
+                    () -> sendScreenshotFromPlayerToChannel(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData)
+            );
         }
-
-        optionalScreenshotUrl.ifPresent(s -> duplicateMessageToDefaultChannel(channel,
-                () -> sendTextMessage(DiscordChannelRegistry.defaultChannel, fromPlayer, s, "`<" + fromPlayer.getName().getString() + ">` " + s)
-        ));
 
         return optionalScreenshotUrl;
     }
 
-    private static void duplicateMessageToDefaultChannel(GuildMessageChannel duplicateChannel, Runnable sendMessageFunction){
+    private static Optional<String> sendScreenshotFromPlayerToChannel(
+            DiscordGuildContext guildContext,
+            GuildMessageChannel channel,
+            Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            ImageData imageData
+    ) {
+        Optional<Webhook> optionalWebhook = guildContext.getWebhook(channel);
+
+        if (optionalWebhook.isEmpty()) {
+            return prepareDiscordMessage(channel, messageComponents).flatMap(
+                    mca -> sendDiscordMessage(mca.addFiles(FileUpload.fromData(imageData.data, imageData.fileName)), channel, true).flatMap(
+                            message -> message.getAttachments().stream().findFirst().map(Message.Attachment::getUrl)
+                    )
+            );
+        } else {
+            try {
+                WebhookPayload payload = messageComponentsWebhook.hasContentAndEmbed()
+                        ? new WebhookPayload(messageComponentsWebhook.getContent(), messageComponentsWebhook.getEmbed())
+                        : messageComponentsWebhook.hasNoEmbed()
+                        ? new WebhookPayload(messageComponentsWebhook.getContent())
+                        : new WebhookPayload(messageComponentsWebhook.getEmbed());
+
+                return sendWebhookWithImage(
+                        optionalWebhook.get().getUrl(),
+                        payload.setUsername(player.getName().getString())
+                                .setAvatarUrl(getPlayerAvatarUrl(player)),
+                        new WebhookAttachment(imageData.data(), imageData.fileName())
+                ).get();
+            } catch (Exception ignored) {
+                return Optional.empty();
+            }
+        }
+    }
+
+    public static void sendMessageFromServer(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            DiscordMessageComponents messageComponents
+    ) {
+        sendMessage(channelCategory, guildContexts, null, messageComponents, messageComponents, null, null);
+    }
+    public static void sendMessageFromServer(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            DiscordMessageComponents messageComponents,
+            ImageData imageData
+    ) {
+        sendMessage(channelCategory, guildContexts, null, messageComponents, messageComponents, imageData, null);
+    }
+
+    public static void sendMessageFromPlayer(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents
+    ) {
+        sendMessage(channelCategory, guildContexts, player, messageComponentsWebhook, messageComponents, null, null);
+    }
+
+    public static void sendMessageFromPlayer(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            StickersProvider.StickerData stickerData
+    ) {
+        sendMessage(channelCategory, guildContexts, player, messageComponentsWebhook, messageComponents, null, stickerData);
+    }
+
+    private static void sendMessage(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            @Nullable Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            @Nullable ImageData imageData,
+            @Nullable StickersProvider.StickerData stickerData
+    ) {
+        for (DiscordGuildContext guildContext : guildContexts){
+            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
+
+            if (isChannelCategoryDisabled(channel))
+                continue;
+
+            duplicateMessageToDefaultChannel(guildContext, channelCategory,
+                    () -> sendMessageToChannel(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData, stickerData)
+            );
+
+            sendMessageToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData, stickerData);
+        }
+    }
+
+    private static void sendMessageToChannel(
+            DiscordGuildContext guildContext,
+            GuildMessageChannel channel,
+            @Nullable Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            @Nullable ImageData imageData,
+            @Nullable StickersProvider.StickerData stickerData
+    ) {
+        guildContext.getWebhook(channel).ifPresentOrElse(
+                webhook -> sendDiscordWebhookMessage(webhook.getUrl(), player, messageComponentsWebhook, imageData),
+                () -> prepareDiscordMessage(channel, messageComponents).ifPresent(mca -> {
+                    if (imageData != null)
+                        mca.addFiles(FileUpload.fromData(imageData.data, imageData.fileName));
+
+                    if (stickerData != null){
+                        GuildSticker sticker = guildContext.guild.getStickerById(stickerData.discordId());
+                        if (sticker != null)
+                            mca = mca.setStickers(sticker);
+                        else{
+                            try {
+                                mca.addFiles(FileUpload.fromData(
+                                        getInputStreamFromUrl(stickerData.imageUrl()).readAllBytes(),
+                                        getStickerFileName(stickerData.imageUrl())
+                                ));
+                            } catch (Exception ignored) {}
+                        }
+                    }
+
+                    sendDiscordMessage(mca, channel, false);
+                })
+        );
+    }
+
+    private static void sendDiscordWebhookMessage(
+            String webhookUrl,
+            @Nullable Player player,
+            DiscordMessageComponents components,
+            @Nullable ImageData imageData
+    ) {
+        WebhookPayload payload = components.hasContentAndEmbed()
+                ? new WebhookPayload(components.getContent(), components.getEmbed())
+                : components.hasNoEmbed()
+                ? new WebhookPayload(components.getContent())
+                : new WebhookPayload(components.getEmbed());
+
+        payload.setUsername(player != null
+                ? player.getName().getString()
+                : getWebhookServerName()
+        );
+
+        if (player != null)
+            payload.setAvatarUrl(getPlayerAvatarUrl(player));
+
+        if (imageData != null)
+            sendWebhookWithImage(webhookUrl, payload, new WebhookAttachment(imageData.data, imageData.fileName));
+        else
+            sendWebhook(webhookUrl, () -> payload);
+    }
+
+    public static Optional<MessageCreateAction> prepareDiscordMessage(GuildMessageChannel channel, DiscordMessageComponents messageComponents) {
+        if (!isDiscordConnected())
+            return Optional.empty();
+        try {
+            MessageCreateAction mca = messageComponents.hasContentAndEmbed()
+                    ? channel.sendMessage(messageComponents.getContent()).addEmbeds(messageComponents.getEmbed())
+                    : messageComponents.hasNoEmbed()
+                    ? channel.sendMessage(messageComponents.getContent())
+                    : channel.sendMessageEmbeds(messageComponents.getEmbed());
+
+            return Optional.of(mca);
+        } catch (InsufficientPermissionException e) {
+            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMessage()));
+            e.printStackTrace();
+        } catch (ErrorResponseException e) {
+            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMeaning()));
+            e.printStackTrace();
+        } catch (Exception e) {
+            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR), channel.getName()));
+            e.printStackTrace();
+        }
+
+        return Optional.empty();
+    }
+
+    public static Optional<Message> sendDiscordMessage(MessageCreateAction mca, GuildMessageChannel channel, boolean complete) {
+        try {
+            if (complete)
+                return Optional.of(mca.complete());
+            else
+                mca.queue();
+        } catch (InsufficientPermissionException e) {
+            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMessage()));
+            e.printStackTrace();
+        } catch (ErrorResponseException e) {
+            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMeaning()));
+            e.printStackTrace();
+        } catch (Exception e) {
+            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR), channel.getName()));
+            e.printStackTrace();
+        }
+
+        return Optional.empty();
+    }
+
+    public static void editMessage(Message message, DiscordMessageComponents components) {
+        try {
+            if (components.hasContentAndEmbed())
+                message.editMessage(components.getContent()).setEmbeds(components.getEmbed()).queue();
+            else if (components.hasNoEmbed())
+                message.editMessage(components.getContent()).queue();
+            else
+                message.editMessageEmbeds(components.getEmbed()).queue();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+        }
+    }
+
+    private static void duplicateMessageToDefaultChannel(DiscordGuildContext context, ChannelCategory category, Runnable sendMessageFunction) {
         if (isDiscordConnected()
-                && PlatformConfig.getConfig().isDuplicateMessagesEnabled()
-                && !DiscordChannelRegistry.defaultChannel.equals(duplicateChannel)){
+                && context.duplicateMessages
+                && !context.defaultChannel.equals(context.getChannel(category))) {
             sendMessageFunction.run();
         }
     }
 
-    private static Optional<MessageCreateAction> prepareDiscordTextMessage(GuildMessageChannel channel, String text){
-        if (!isDiscordConnected())
-            return Optional.empty();
-        try{
-            return Optional.of(channel.sendMessage(text));
-        } catch (Exception e){
-            logErrorToServer(getTranslate(PREPARE_MESSAGE_ERROR));
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-
-    private static Optional<Message> sendEmbedMessage(GuildMessageChannel channel, MessageEmbed embed, boolean complete){
-        if (!isDiscordConnected())
-            return Optional.empty();
-        try {
-            if (complete){
-                Optional<Message> message = sendMessage(channel.sendMessageEmbeds(embed), true);
-                if (message.isPresent())
-                    return message;
-            } else
-                sendMessage(channel.sendMessageEmbeds(embed), false);
-        } catch (InsufficientPermissionException e){
-            logErrorToServer(getTranslate(SEND_EMBED_ERROR));
-            e.printStackTrace();
-        } catch (Exception e){
-            LOGGER.error(e.getMessage());
-        }
-
-        return Optional.empty();
-    }
-
-    private static Optional<Message> sendMessage(MessageCreateAction messageCreateAction, boolean complete) {
-        try {
-            if (complete)
-                return Optional.of(messageCreateAction.complete());
-            else
-                messageCreateAction.queue();
-        } catch (ErrorResponseException e) {
-            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR), e.getMeaning()));
-            e.printStackTrace();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-        }
-
-        return Optional.empty();
+    public static String getStickerFileName(String stickerUrl){
+        String[] parts = stickerUrl.split("\\.");
+        return "sticker" + "." + parts[parts.length - 1];
     }
 
     public static String replaceEmojiCodesToDiscordMentions(String text) {
-        Pattern emojiPattern = Pattern.compile("(?<!\\\\):([a-zA-Z0-9_]{2,})(~([1-9][0-9]*))?:");
+        Pattern emojiPattern = Pattern.compile("(?<!\\\\):([a-zA-Z0-9_]{2,}(~[1-9][0-9]*)?):");
         Matcher matcher = emojiPattern.matcher(text);
-        Map<String, List<RichCustomEmoji>> emojiMap = CustomEmojiProvider.getGuildEmojis(DiscordChannelRegistry.defaultChannel);
+        Map<String, CustomEmojiProvider.EmojiData> emojiMap = CustomEmojiProvider.getNameToEmojiDataMap();
 
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
-            String baseName = matcher.group(1);
-            String numberGroup = matcher.group(3);
-
-            int index = 0;
-            if (numberGroup != null) {
-                try {
-                    index = Integer.parseInt(numberGroup);
-                } catch (NumberFormatException ignored) {
-                    index = -1;
-                }
-            }
-
-            List<RichCustomEmoji> emojis = emojiMap.getOrDefault(baseName, Collections.emptyList());
-            if (index >= 0 && index < emojis.size()) {
-                matcher.appendReplacement(result, Matcher.quoteReplacement(emojis.get(index).getAsMention()));
-            } else {
-                matcher.appendReplacement(result, Matcher.quoteReplacement(matcher.group()));
-            }
+            String indexedName = matcher.group(1);
+            if (emojiMap.containsKey(indexedName))
+                matcher.appendReplacement(result, Matcher.quoteReplacement(emojiMap.get(indexedName).mentionString()));
         }
+
 
         matcher.appendTail(result);
         return result.toString();
     }
 
     public static String replaceDiscordEmojiMentionsToEmojiNames(String text) {
-        Pattern emojiMentionPattern = Pattern.compile("(?<!\\\\)<a?:([a-zA-Z0-9_]+):(\\d+)>");
+        Pattern emojiMentionPattern = Pattern.compile("(?<!\\\\)<a?:[a-zA-Z0-9_]+:\\d+>");
         Matcher matcher = emojiMentionPattern.matcher(text);
-        Map<String, List<RichCustomEmoji>> emojiMap = CustomEmojiProvider.getGuildEmojis(DiscordChannelRegistry.defaultChannel);
+        Map<String, CustomEmojiProvider.EmojiData> emojiMap = CustomEmojiProvider.getNameToEmojiDataMap();
 
         StringBuilder result = new StringBuilder();
         while (matcher.find()) {
-            String name = matcher.group(1);
-            String id = matcher.group(2);
-
-            List<RichCustomEmoji> emojis = emojiMap.getOrDefault(name, Collections.emptyList());
-
-            int index = -1;
-            for (int i = 0; i < emojis.size(); i++) {
-                if (emojis.get(i).getId().equals(id)) {
-                    index = i;
-                    break;
-                }
-            }
-
-            String replacement = (index > 0)
-                    ? ":" + name + "~" + index + ":"
-                    : ":" + name + ":";
-
-            matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+            String mentionString = matcher.group();
+            emojiMap.entrySet().stream()
+                    .filter(entry -> entry.getValue().mentionString().equals(mentionString))
+                    .findFirst()
+                    .map(Map.Entry::getKey)
+                    .ifPresent(indexedName -> matcher.appendReplacement(result,
+                            Matcher.quoteReplacement(String.format(":%s:", indexedName))));
         }
 
         matcher.appendTail(result);

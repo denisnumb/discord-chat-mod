@@ -39,7 +39,7 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 
-    shadowBundle(implementation("net.dv8tion:JDA:5.2.2")) {transitive = false }
+    shadowBundle(implementation("net.dv8tion:JDA:6.1.1")) {transitive = false }
     shadowBundle(implementation("com.squareup.okhttp3:okhttp:4.12.0")) {transitive = false }
     shadowBundle(implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")) {transitive = false }
     shadowBundle(implementation("com.squareup.okio:okio:3.9.1")) {transitive = false }
@@ -52,9 +52,16 @@ dependencies {
     shadowBundle(implementation("org.json:json:20231013")) { transitive = false }
     shadowBundle(implementation("org.jsoup:jsoup:1.17.2")) { transitive = false }
     shadowBundle(implementation(files("../libs/emoji-java-5.1.1.jar")))
+    shadowBundle(implementation("com.electronwill.night-config:core:3.8.3")) { transitive = false }
+    shadowBundle(implementation("com.electronwill.night-config:toml:3.8.3")) { transitive = false }
+    shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")) { transitive = false }
+    shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0"))
+    compileOnly("org.apache.logging.log4j:log4j-core:2.20.0")
 
-    minecraftRuntimeLibraries "net.dv8tion:JDA:5.2.2"
+    minecraftRuntimeLibraries "net.dv8tion:JDA:6.1.1"
     minecraftRuntimeLibraries "org.json:json:20231013"
+    minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-webp:3.12.0"
+    minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-core:3.12.0"
     minecraftRuntimeLibraries(files("../libs/emoji-java-5.1.1.jar"))
 }
 
@@ -75,7 +82,7 @@ shadowJar {
     relocate("com.neovisionaries", "com.shadow.com.neovisionaries")
     relocate("com.fasterxml", "com.shadow.com.fasterxml")
     relocate("net.dv8tion", "com.shadow.net.dv8tion")
-    relocate("org.apache", "com.shadow.org.apache")
+    relocate("org.apache.commons", "com.shadow.org.apache.commons")
     relocate("gnu.trove", "com.shadow.gnu.trove")
     relocate("kotlin", "com.shadow.kotlin")
     relocate("okhttp3", "com.shadow.okhttp3")
@@ -83,6 +90,8 @@ shadowJar {
     relocate("com.vdurmont", "com.shadow.com.vdurmont")
     relocate("org.json", "com.shadow.org.json")
     relocate("org.jsoup", "com.shadow.org.jsoup")
+    relocate("com.electronwill", "com.shadow.com.electronwill")
+    relocate("com.twelvemonkeys", "com.shadow.com.twelvemonkeys")
 }
 
 remapJar {

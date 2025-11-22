@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 import java.util.Comparator;
@@ -19,45 +19,36 @@ import java.util.stream.IntStream;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 
 public class CustomEmojiProvider {
+    public record EmojiData(String url, String mentionString) { }
     public static Map<String, AbstractImage> CLIENT_EMOJI_CACHE = new HashMap<>();
-    private static long lastGetNameToUrlMap = 0;
-    private static long lastGetGuildEmojis = 0;
-    private static Map<String, String> cachedNameToUrlMap;
-    private static Map<String, List<RichCustomEmoji>> cachedGuildEmojis;
+    private static long lastGetEmojiData = 0;
+    private static Map<String, EmojiData> cachedEmojiData;
 
-    public static Map<String, List<RichCustomEmoji>> getGuildEmojis(GuildMessageChannel channel){
-        if (!isDiscordConnected())
-            return Map.of();
+    public static void dropTimeouts(){
+        lastGetEmojiData = 0;
+    }
 
-        if (System.currentTimeMillis() - lastGetGuildEmojis < 300000)
-            return cachedGuildEmojis;
-        lastGetGuildEmojis = System.currentTimeMillis();
-
-        return cachedGuildEmojis = channel.getGuild()
-                .getEmojis()
+    public static Map<String, String> getNameToUrlMap() {
+        return getNameToEmojiDataMap().entrySet()
                 .stream()
-                .collect(Collectors.groupingBy(
-                        RichCustomEmoji::getName,
-                        Collectors.collectingAndThen(
-                                Collectors.toList(),
-                                list -> list.stream()
-                                        .sorted(Comparator.comparing(RichCustomEmoji::getTimeCreated))
-                                        .toList()
-                        )
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().url()
                 ));
     }
 
-    public static Map<String, String> getNameToUrlMap(GuildMessageChannel channel){
+    public static Map<String, EmojiData> getNameToEmojiDataMap() {
         if (!isDiscordConnected())
             return Map.of();
 
-        if (System.currentTimeMillis() - lastGetNameToUrlMap < 300000)
-            return cachedNameToUrlMap;
-        lastGetNameToUrlMap = System.currentTimeMillis();
+        if (System.currentTimeMillis() - lastGetEmojiData < 300000)
+            return cachedEmojiData;
+        lastGetEmojiData = System.currentTimeMillis();
 
-        return cachedNameToUrlMap = channel.getGuild()
-                .getEmojis()
+        return cachedEmojiData = DiscordChannelRegistry.getAllContexts()
                 .stream()
+                .map(DiscordGuildContext::getGuild)
+                .flatMap(guild -> guild.getEmojis().stream())
                 .collect(Collectors.groupingBy(RichCustomEmoji::getName))
                 .entrySet()
                 .stream()
@@ -72,7 +63,7 @@ public class CustomEmojiProvider {
                             .mapToObj(i -> {
                                 RichCustomEmoji emoji = sortedEmojis.get(i);
                                 String name = i == 0 ? baseName : baseName + "~" + i;
-                                return Map.entry(name, emoji.getImageUrl());
+                                return Map.entry(name, new EmojiData(emoji.getImageUrl(), String.format("<:%s:%s>", baseName, emoji.getId())));
                             });
                 })
                 .collect(Collectors.toMap(
@@ -82,12 +73,15 @@ public class CustomEmojiProvider {
     }
 
     public static void loadClient(Map<String, String> rawEmojis){
+        if (!rawEmojis.isEmpty())
+            CLIENT_EMOJI_CACHE.clear();
+
         ExecutorService executor = Executors.newFixedThreadPool(10);
 
         rawEmojis.forEach((name, url) -> {
             if (!CLIENT_EMOJI_CACHE.containsKey(name)){
                 executor.submit(() -> {
-                    AbstractImage image = ImageStorage.parseEmoji(url);
+                    AbstractImage image = ImageStorage.parseEmojiOrSticker(url);
                     if (image != null)
                         CLIENT_EMOJI_CACHE.putIfAbsent(name, image);
                 });

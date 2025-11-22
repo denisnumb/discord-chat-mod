@@ -1,9 +1,10 @@
 package com.denisnumb.discord_chat_mod;
 
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
+import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersTransceiver;
 import com.vdurmont.emoji.EmojiParser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
@@ -13,7 +14,6 @@ import net.minecraft.network.chat.MutableComponent;
 
 import java.io.File;
 
-import static com.denisnumb.discord_chat_mod.ColorUtils.Color.LIME;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 
@@ -26,7 +26,7 @@ public class MinecraftClientEvents {
                 );
 
         Component clickToSendComponent = Component.literal(" " + getTranslateClient(CLICK_TO_SEND_SCREENSHOT)).withStyle(style ->
-                style.withColor(LIME)
+                style.withColor(ChatFormatting.GREEN.getColor())
                         .withClickEvent(new ClickEvent(
                                 ClickEvent.Action.RUN_COMMAND,
                                 "send_screenshot " + screenshotFile.getAbsolutePath()
@@ -42,7 +42,7 @@ public class MinecraftClientEvents {
     }
 
     public static Component handleChatMessage(Component message){
-        if (PlatformConfig.getConfig().isEmojifulCompatibilityEnabled()){
+        if (ConfigProvider.getConfig().isEmojifulCompatibilityEnabled()){
             if (!EmojiParser.extractEmojis(message.getString()).isEmpty()){
                 MutableComponent withReplacedEmojis = Component.empty();
                 for (Component comp : message.toFlatList())
@@ -58,5 +58,6 @@ public class MinecraftClientEvents {
     public static void handleJoinServer(){
         DiscordMentionsTransceiver.requestDiscordMemberData();
         DiscordEmojisTransceiver.requestDiscordEmojis();
+        DiscordStickersTransceiver.requestDiscordStickers();
     }
 }

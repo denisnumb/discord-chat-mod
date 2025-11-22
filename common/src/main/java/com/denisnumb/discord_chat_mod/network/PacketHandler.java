@@ -6,10 +6,20 @@ import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
 import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
+import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersPartPacket;
+import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersTransceiver;
 import net.minecraft.server.level.ServerPlayer;
 
 
 public class PacketHandler {
+    public static void handleDiscordStickersPacket(final DiscordStickersPartPacket data) {
+        DiscordStickersTransceiver.receiveDiscordStickersPart(data);
+    }
+
+    public static void handleRequestDiscordStickersPacket(ServerPlayer player){
+        DiscordStickersTransceiver.sendDiscordStickersDataToPlayer(player);
+    }
+
     public static void handleDiscordEmojisPacket(final DiscordEmojisPartPacket data) {
         DiscordEmojisTransceiver.receiveDiscordEmojisPart(data);
     }

@@ -2,7 +2,6 @@ package com.denisnumb.discord_chat_mod.network.emoji;
 
 
 import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
 import com.google.gson.Gson;
@@ -41,7 +40,7 @@ public class DiscordEmojisTransceiver {
 
     public static void sendDiscordEmojisDataToPlayer(ServerPlayer player) {
         long sendTime = System.currentTimeMillis();
-        byte[] data = gson.toJson(CustomEmojiProvider.getNameToUrlMap(DiscordChannelRegistry.defaultChannel), gsonType).getBytes();
+        byte[] data = gson.toJson(CustomEmojiProvider.getNameToUrlMap(), gsonType).getBytes();
         BigPacketsTransceiver.send(data, (partIndex, totalParts, part) ->
                 PlatformPacketDistributor.sendToPlayer(player, new DiscordEmojisPartPacket(sendTime, partIndex, totalParts, part))
         );

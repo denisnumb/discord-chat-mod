@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands.set_avatar;
 
-import com.denisnumb.discord_chat_mod.chat_images.ImageUtils;
+import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import com.mojang.brigadier.CommandDispatcher;

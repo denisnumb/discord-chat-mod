@@ -12,5 +12,8 @@ public enum MarkdownStyle{
     OBFUSCATED,
     URL,
     DISCORD_MENTION,
-    EMOJI
+    EMOJI,
+    COLOR_RANGE,
+    COLOR_SINGLE,
+    COLOR_OPEN
 }

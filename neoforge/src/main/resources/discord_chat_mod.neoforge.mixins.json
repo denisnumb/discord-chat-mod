@@ -1,15 +1,12 @@
 {
   "required": true,
-  "package": "com.denisnumb.discord_chat_mod.mixin",
+  "package": "com.denisnumb.discord_chat_mod.neoforge.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
   ],
   "client": [
-    "ChatComponentMixin",
-    "CommandSuggestionsMixin",
-    "GuiGraphicsMixin",
-    "IntegratedServerMixin",
-    "ScreenMixin"
+    "EditBoxMixin",
+    "ScreenshotMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,11 +1,13 @@
 package com.denisnumb.discord_chat_mod.discord;
 
-import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
@@ -13,16 +15,19 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 public class ChannelMembersProvider {
     private static long lastGetChannelMembers = 0;
     private static List<Member> cachedMembersList;
-    public static List<DiscordMemberData> clientMemberData = List.of();
+    public static List<DiscordUserData> CLIENT_MEMBER_CACHE = List.of();
 
-    public static List<DiscordMemberData> getMemberData(GuildMessageChannel channel) {
+    public static void dropTimeouts(){
+        lastGetChannelMembers = 0;
+    }
+
+    public static List<DiscordUserData> getMemberData(ChannelCategory channelCategoryToParseMembers) {
         if (!isDiscordConnected())
             return List.of();
 
-        return getList(channel).stream()
-                .map(member -> new DiscordMemberData(
-                        member.getEffectiveName(),
-                        member.getUser().getEffectiveName(),
+        return getList(channelCategoryToParseMembers).stream()
+                .map(member -> new DiscordUserData(
+                        getMemberDisplayName(member),
                         member.getUser().getName(),
                         member.getAsMention(),
                         member.getColor()
@@ -30,13 +35,35 @@ public class ChannelMembersProvider {
                 .toList();
     }
 
-    private static List<Member> getList(GuildMessageChannel channel){
-        if (System.currentTimeMillis() - lastGetChannelMembers < 5000) {
-            return cachedMembersList;
-        }
+    public static String getMemberDisplayName(Member member){
+        return DiscordChannelRegistry.getAllContexts().size() > 1
+                ? member.getUser().getEffectiveName()
+                : member.getEffectiveName();
+    }
 
+    private static List<Member> getList(ChannelCategory channelCategoryToParseMembers) {
+        if (System.currentTimeMillis() - lastGetChannelMembers < 5000)
+            return cachedMembersList;
         lastGetChannelMembers = System.currentTimeMillis();
-        List<Member> members = channel.getGuild().getMembers().stream().filter(member -> member.hasAccess(channel)).toList();
+
+        List<Member> members = DiscordChannelRegistry.getAllContexts()
+                .stream()
+                .flatMap(guildContext -> {
+                    var channel = guildContext.getDefaultChannelIfCategoryDisabled(channelCategoryToParseMembers);
+                    if (channel == null)
+                        return Stream.empty();
+                    return guildContext.getGuild().getMembers()
+                            .stream()
+                            .filter(member -> member.hasAccess(channel));
+                })
+                .collect(Collectors.toMap(
+                        member -> member.getUser().getIdLong(),
+                        Function.identity(),
+                        (first, duplicate) -> first
+                ))
+                .values()
+                .stream()
+                .toList();
 
         Stream<Member> onlineStream = members.stream()
                 .filter(member -> member.getOnlineStatus() != OnlineStatus.OFFLINE)

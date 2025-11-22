@@ -1,16 +1,20 @@
 package com.denisnumb.discord_chat_mod.discord;
 
-import com.denisnumb.discord_chat_mod.chat_images.ImageUtils;
-import com.denisnumb.discord_chat_mod.config.IPlatformConfig;
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
+import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
+import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import org.jetbrains.annotations.Nullable;
 
-import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,21 +22,12 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
+import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 
 public class DiscordChannelRegistry {
-    public static GuildMessageChannel defaultChannel;
-    public static GuildMessageChannel pinnedStatusMessageChannel;
-    public static GuildMessageChannel deathsChannel;
-    public static GuildMessageChannel advancementsChannel;
-    public static GuildMessageChannel serverStartStopChannel;
-    public static GuildMessageChannel playerJoinLeaveChannel;
-    public static GuildMessageChannel playerChatMessagesChannel;
-    public static GuildMessageChannel screenshotsChannel;
-    public static GuildMessageChannel tellrawChannel;
-    public static GuildMessageChannel sayChannel;
-
-    private static final Map<String, Optional<GuildMessageChannel>> CHANNEL_CACHE = new HashMap<>();
-    private static final Map<GuildMessageChannel, Webhook> CHANNEL_WEBHOOKS = new HashMap<>();
+    private static final Map<String, DiscordGuildContext> GUILD_CONTEXTS = new HashMap<>();
+    public static @Nullable GuildMessageChannel serverLogsChannel;
+    private static Icon webhookAvatar;
 
     private static final List<Permission> requiredPermissions = List.of(
             Permission.VIEW_CHANNEL,
@@ -40,65 +35,106 @@ public class DiscordChannelRegistry {
             Permission.MESSAGE_SEND_IN_THREADS,
             Permission.MESSAGE_EMBED_LINKS,
             Permission.MESSAGE_ATTACH_FILES,
-            Permission.MESSAGE_MANAGE,
+            Permission.PIN_MESSAGES,
             Permission.MESSAGE_HISTORY
     );
 
-    public static Optional<Webhook> getChannelWebhook(GuildMessageChannel channel){
-        if (PlatformConfig.getConfig().isWebhookModeEnabled() && CHANNEL_WEBHOOKS.containsKey(channel))
-            return Optional.of(CHANNEL_WEBHOOKS.get(channel));
-        return Optional.empty();
+    public static DiscordGuildContext getContext(String guildId) {
+        return GUILD_CONTEXTS.get(guildId);
     }
 
-    public static void clearChannelsCache(){
-        CHANNEL_CACHE.clear();
-        CHANNEL_WEBHOOKS.clear();
+    public static List<DiscordGuildContext> getAllContexts() {
+        return GUILD_CONTEXTS.values().stream().toList();
     }
 
-    public static void initDiscordChannels() throws IllegalStateException {
-        IPlatformConfig config = PlatformConfig.getConfig();
-
-        defaultChannel = getDiscordChannel(PlatformConfig.getConfig().discordChannelId())
-                .orElseThrow(() -> new IllegalStateException("Invalid channel"));
-
-        pinnedStatusMessageChannel = getDiscordChannel(config.pinnedStatusMessageChannelId()).orElse(defaultChannel);
-        deathsChannel = getDiscordChannel(config.deathsChannelId()).orElse(defaultChannel);
-        advancementsChannel = getDiscordChannel(config.advancementsChannelId()).orElse(defaultChannel);
-        serverStartStopChannel = getDiscordChannel(config.serverStartStopChannelId()).orElse(defaultChannel);
-        playerJoinLeaveChannel = getDiscordChannel(config.playerJoinLeaveChannelId()).orElse(defaultChannel);
-        playerChatMessagesChannel = getDiscordChannel(config.playerChatMessagesChannelId()).orElse(defaultChannel);
-        screenshotsChannel = getDiscordChannel(config.screenshotsChannelId()).orElse(defaultChannel);
-        tellrawChannel = getDiscordChannel(config.tellrawChannelId()).orElse(defaultChannel);
-        sayChannel = getDiscordChannel(config.sayChannelId()).orElse(defaultChannel);
+    public static boolean isChannelCategoryDisabled(@Nullable GuildMessageChannel channel){
+        return channel == null;
     }
 
-    private static Optional<GuildMessageChannel> getDiscordChannel(String channelId) {
-        if (CHANNEL_CACHE.containsKey(channelId))
-            return CHANNEL_CACHE.get(channelId);
+    public static void initDiscordChannels(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) throws Exception {
+        GUILD_CONTEXTS.clear();
+
+        IConfigProvider config = ConfigProvider.getConfig();
+
+        String webhookAvatarUrl = ImageUtils.isImageUrl(ImageUtils.getMimeType(config.webhookServerAvatarUrl()))
+                ? config.webhookServerAvatarUrl()
+                : jda.getSelfUser().getAvatarUrl();
+
+        webhookAvatar = webhookAvatarUrl == null
+                ? null
+                : Icon.from(getInputStreamFromUrl(webhookAvatarUrl));
+
+        serverLogsChannel = getDiscordChannel(null, config.serverLogsChannelId());
+
+        for (DiscordGuildsConfig.DiscordGuildConfig guildConfig : guildConfigs){
+            if (guildConfig.guildId().isEmpty())
+                continue;
+
+            Guild guild = jda.getGuildById(guildConfig.guildId());
+            if (guild == null) {
+                logErrorToServer(String.format(getTranslate(INVALID_GUILD_ERROR), guildConfig.guildId()));
+                continue;
+            }
+
+            DiscordGuildContext context = new DiscordGuildContext(guild, guildConfig.duplicateMessages(), guildConfig.enablePinnedStatusMessage());
+            try{
+                context.setDefaultChannel(getDiscordChannel(context, guildConfig.defaultChannelId()));
+            } catch (IllegalStateException e){
+                logErrorToServer(String.format(getTranslate(INVALID_DEFAULT_CHANNEL_ERROR), guild.getName()));
+                continue;
+            }
+
+            for (var entry : guildConfig.channelOverrides().entrySet()) {
+                ChannelCategory category = ChannelCategory.fromConfigName(entry.getKey());
+                String channelId = entry.getValue();
+
+                if (channelId.equals("-1")){
+                    if (category != ChannelCategory.PINNED_STATUS)
+                        context.setChannel(category, null);
+                    continue;
+                }
+
+                GuildMessageChannel channel = getDiscordChannel(context, channelId);
+                if (channel != null)
+                    context.setChannel(category, channel);
+            }
+
+            GUILD_CONTEXTS.put(guildConfig.guildId(), context);
+        }
+
+        if (GUILD_CONTEXTS.isEmpty())
+            logWarnToServer(getTranslate(NO_CONFIG_GUILDS_CONFIGURED));
+    }
+
+    private static @Nullable GuildMessageChannel getDiscordChannel(@Nullable DiscordGuildContext context, String channelId) {
+        if (context != null && context.CHANNEL_CACHE.containsKey(channelId))
+            return context.CHANNEL_CACHE.get(channelId);
 
         if (!channelId.isEmpty()){
-            try{
-                GuildMessageChannel channel = jda.getChannelById(GuildMessageChannel.class, channelId);
+            try {
+                GuildMessageChannel channel = context == null
+                        ? jda.getChannelById(GuildMessageChannel.class, channelId)
+                        : context.guild.getChannelById(GuildMessageChannel.class, channelId);
+
                 if (channel == null)
                     throw new IllegalArgumentException(String.format(getTranslate(INVALID_CHANNEL_ERROR), channelId));
 
                 checkDiscordBotPermissionsInChannel(channel);
-                initChannelWebhook(channel);
-                CHANNEL_CACHE.put(channelId, Optional.of(channel));
+                initChannelWebhook(context, channel);
+                if (context != null)
+                    context.CHANNEL_CACHE.put(channelId, channel);
 
-                return Optional.of(channel);
+                return channel;
             } catch (Exception e){
                 logErrorToServer(e.getMessage());
             }
         }
-        CHANNEL_CACHE.put(channelId, Optional.empty());
 
-        return Optional.empty();
+        return null;
     }
 
-    private static void initChannelWebhook(GuildMessageChannel channel){
-        IPlatformConfig config = PlatformConfig.getConfig();
-        if (!config.isWebhookModeEnabled())
+    private static void initChannelWebhook(@Nullable DiscordGuildContext context, GuildMessageChannel channel){
+        if (context == null || !ConfigProvider.getConfig().isWebhookModeEnabled())
             return;
 
         if (channel instanceof TextChannel textChannel){
@@ -120,17 +156,12 @@ public class DiscordChannelRegistry {
                     .orElse(null);
 
             try{
-                String avatarUrl = ImageUtils.isImageUrl(ImageUtils.getMimeType(config.webhookServerAvatarUrl()))
-                        ? config.webhookServerAvatarUrl()
-                        : jda.getSelfUser().getAvatarUrl();
-                Icon avatar = Icon.from(new URI(Objects.requireNonNull(avatarUrl)).toURL().openStream());
-
                 if (webhook == null)
-                    webhook = textChannel.createWebhook("DC & Chat Images").setAvatar(avatar).complete();
+                    webhook = textChannel.createWebhook("DC & Chat Images").setAvatar(webhookAvatar).complete();
                 else
-                    webhook.getManager().setAvatar(avatar).queue();
+                    webhook.getManager().setAvatar(webhookAvatar).queue();
 
-                CHANNEL_WEBHOOKS.put(channel, webhook);
+                context.registerWebhook(channel, webhook);
             } catch (Exception e) {
                 logWarnToServer(String.format(getTranslate(WEBHOOK_INITIALIZE_ERROR), e.getMessage()));
             }

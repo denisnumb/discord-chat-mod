@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "package": "com.denisnumb.discord_chat_mod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "chat_style.ServerGamePacketListenerImplMixin",
+    "chat_style.CombatTrackerAccessorMixin",
+    "chat_style.TamableAnimalMixin",
+    "chat_style.PlayerListMixin",
+    "chat_style.ServerPlayerMixin",
+    "chat_style.MappedRegistryMixin",
+    "chat_style.PlayerAdvancementsMixin"
+  ],
+  "client": [
+    "ChatComponentMixin",
+    "CommandSuggestionsMixin",
+    "GuiGraphicsMixin",
+    "IntegratedServerMixin",
+    "ScreenMixin",
+    "SuggestionsListAccessorMixin",
+    "ClientPacketListenerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

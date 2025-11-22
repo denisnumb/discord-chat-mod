@@ -2,6 +2,8 @@ package com.denisnumb.discord_chat_mod.markdown;
 
 import java.util.List;
 
+import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
+
 public class MarkdownToken {
     public String rawText;
     public String text;
@@ -12,6 +14,8 @@ public class MarkdownToken {
     public boolean strikethrough = false;
     public boolean obfuscated = false;
     public boolean isMention = false;
+    public Integer color = null;
+    public boolean isSpecialCharacters = false;
     private List<MarkdownToken> innerTokens;
 
     public MarkdownToken(String rawText){
@@ -27,8 +31,21 @@ public class MarkdownToken {
         return url != null && !url.isEmpty();
     }
 
+    public boolean isColored() {
+        return color != null;
+    }
+
     public boolean hasNoMarkdown(){
-        return !(isUrl() || bold || italic || underlined || strikethrough || obfuscated || isMention);
+        return !(isUrl()
+                || bold
+                || italic
+                || underlined
+                || strikethrough
+                || obfuscated
+                || isMention
+                || isColored()
+                || isSpecialCharacters
+        );
     }
 
     public List<MarkdownToken> getInnerTokens(){
@@ -48,15 +65,22 @@ public class MarkdownToken {
     }
 
     public void combineStyles(MarkdownToken another){
+        if (isSpecialCharacters)
+            return;
+
         url = isUrl() ? url : another.url;
         bold |= another.bold;
         italic |= another.italic;
         underlined |= another.underlined;
         strikethrough |= another.strikethrough;
         obfuscated |= another.obfuscated;
+        color = isColored() ? color : another.color;
     }
 
     public String toString(){
+        if (isSpecialCharacters)
+            return rawText;
+
         StringBuilder result = new StringBuilder("[");
 
         result.append(String.format("rawText=\"%s\", text=\"%s\"", rawText, text));
@@ -67,6 +91,7 @@ public class MarkdownToken {
         if (strikethrough) result.append(", strikethrough");
         if (obfuscated) result.append(", obfuscated");
         if (isMention) result.append(", isMention");
+        if (isColored()) result.append(String.format(", color=\"%s\"", getHexColor(color)));
         result.append("]");
 
         if (!getInnerTokens().isEmpty()){

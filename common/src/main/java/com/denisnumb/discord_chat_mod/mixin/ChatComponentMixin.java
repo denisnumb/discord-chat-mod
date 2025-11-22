@@ -1,10 +1,11 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.MinecraftClientEvents;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AnimatedImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
 import com.denisnumb.discord_chat_mod.chat_images.model.ImageSize;
-import com.denisnumb.discord_chat_mod.config.PlatformConfig;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.google.common.collect.Lists;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.GuiMessage;
@@ -20,10 +21,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
@@ -41,14 +39,25 @@ public abstract class ChatComponentMixin {
     @Shadow @Final private Minecraft minecraft;
     @Shadow @Final private List<GuiMessage.Line> trimmedMessages;
     @Shadow private int chatScrollbarPos;
-    @Shadow public abstract int getWidth();
     @Shadow protected abstract int getLineHeight();
     @Shadow public abstract boolean isChatFocused();
     @Shadow public abstract double getScale();
     @Shadow @Final private List<GuiMessage> allMessages;
     @Shadow public abstract int getLinesPerPage();
 
-    // get all message click event urls
+    @ModifyArg(
+            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/GuiMessage;<init>(ILnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V"
+            ),
+            index = 1,
+            require = 0
+    )
+    private Component handleChatMessageClient(Component component) {
+        return MinecraftClientEvents.handleChatMessage(component);
+    }
+
     @Unique
     private List<String> discord_minecraft_chat$getComponentUrls(Component component){
         return component.toFlatList().stream().filter(comp -> {
@@ -57,13 +66,11 @@ public abstract class ChatComponentMixin {
         }).map(comp -> comp.getStyle().getClickEvent().getValue()).toList();
     }
 
-    // get count of empty chat lines for display message
     @Unique
     private int discord_minecraft_chat$getImageLinesCount(int imageHeight){
         return Mth.ceil((float) imageHeight / getLineHeight()) + 1;
     }
 
-    // get guiMessage index for ChatComponent.allMessages by index of ChatComponent.trimmedMessages
     @Unique
     private int discord_minecraft_chat$getGuiMessageIndexByTrimmedMessageIndex(int targetIndex) {
         int messageIndex = -1;
@@ -118,12 +125,12 @@ public abstract class ChatComponentMixin {
 
     @ModifyConstant(method = "addMessageToQueue", constant = @Constant(intValue = 100), require = 0)
     private int modifyAddMessageToQueueMessageLimit(int original) {
-        return PlatformConfig.getConfig().maxChatHistory();
+        return ConfigProvider.getConfig().maxChatHistory();
     }
 
     @ModifyConstant(method = "addMessageToDisplayQueue", constant = @Constant(intValue = 100), require = 0)
     private int modifyAddMessageToDisplayQueueMessageLimit(int original) {
-        return PlatformConfig.getConfig().maxChatHistory();
+        return ConfigProvider.getConfig().maxChatHistory();
     }
 
     @Inject(method = "addMessageToQueue",
@@ -134,7 +141,7 @@ public abstract class ChatComponentMixin {
             )
     )
     private void removeOldFromAllMessages(GuiMessage message, CallbackInfo ci) {
-        while(allMessages.size() > PlatformConfig.getConfig().maxChatHistory()) {
+        while(allMessages.size() > ConfigProvider.getConfig().maxChatHistory()) {
             int parentAddedTime = allMessages.getLast().addedTime();
 
             do allMessages.removeLast();
@@ -151,7 +158,7 @@ public abstract class ChatComponentMixin {
             )
     )
     private void removeOldFromTrimmedMessages(GuiMessage message, CallbackInfo ci) {
-        while(trimmedMessages.size() > PlatformConfig.getConfig().maxChatHistory()) {
+        while(trimmedMessages.size() > ConfigProvider.getConfig().maxChatHistory()) {
             int parentAddedTime = trimmedMessages.getLast().addedTime();
 
             do trimmedMessages.removeLast();

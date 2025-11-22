@@ -1,7 +1,10 @@
 package com.denisnumb.discord_chat_mod.commands;
 
 import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.model.DiscordMemberData;
+import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
+import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.StringRange;
@@ -17,16 +20,20 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.playerChatMessagesChannel;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayers;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayersFromPlayer;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.SERVER_IS_NOT_CONNECTED_TO_DISCORD;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.UNKNOWN_MENTION;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendTextMessage;
+import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
+import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
+import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
 
 public class MentionCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -36,44 +43,41 @@ public class MentionCommand {
                                 .suggests(MENTIONS_PROVIDER)
                                 .executes(context -> {
                                     String name = StringArgumentType.getString(context, "name");
-                                    List<DiscordMemberData> memberData = ChannelMembersProvider.getMemberData(playerChatMessagesChannel);
+                                    List<DiscordUserData> memberData = ChannelMembersProvider.getMemberData(ChannelCategory.PLAYER_CHAT);
 
-                                    if (!isDiscordConnected()){
+                                    if (!isDiscordConnected()) {
                                         throw new SimpleCommandExceptionType(Component.literal(
                                                 getTranslate(SERVER_IS_NOT_CONNECTED_TO_DISCORD)
                                         )).create();
                                     }
 
-                                    Optional<DiscordMemberData> optionalMemberData = memberData.stream()
-                                            .filter(data -> data.guildNickname.equals(name))
+                                    Optional<DiscordUserData> optionalMemberData = memberData.stream()
+                                            .filter(data -> data.prettyMention.substring(1).equals(name))
                                             .findFirst();
 
                                     if (optionalMemberData.isEmpty()) {
                                         throw new SimpleCommandExceptionType(Component.literal(String.format(
-                                                getTranslate(UNKNOWN_MENTION),
-                                                name,
-                                                playerChatMessagesChannel.getName()
+                                                getTranslate(UNKNOWN_MENTION), name
                                         ))).create();
                                     }
 
-                                    if (context.getSource().getEntity() instanceof Player player){
-                                        DiscordMemberData member = optionalMemberData.get();
+                                    if (context.getSource().getEntity() instanceof Player player) {
+                                        DiscordUserData member = optionalMemberData.get();
 
-                                        sendMessageToAllPlayers(
-                                                Component.literal(String.format("<%s> ", player.getName().getString()))
-                                                        .append(Component.literal(String.format("@%s", name)).withStyle(style ->
-                                                                style.withColor(TextColor.parseColor(member.color).getOrThrow())
-                                                                        .withInsertion("@" + name)
-                                                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.discordNickName)))
-                                                        ))
-                                        );
+                                        Component mentionComponent = Component.literal(String.format("@%s", name))
+                                                .withStyle(style -> style.withColor(TextColor.parseColor(member.color).getOrThrow())
+                                                        .withInsertion("@" + name)
+                                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.discordName)))
+                                                );
 
-                                        sendTextMessage(
-                                                playerChatMessagesChannel,
-                                                player,
-                                                member.mentionString,
-                                                String.format("`<%s>` %s", player.getName().getString(), member.mentionString)
-                                        );
+                                        sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, player.getDisplayName(), MESSAGE, mentionComponent));
+
+                                        Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, member.mentionString), buildPlayerParameters(player));
+                                        Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
+                                        Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
+
+                                        if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
+                                            DiscordUtils.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
                                     }
                                     return 1;
                                 })
@@ -81,21 +85,20 @@ public class MentionCommand {
         );
     }
 
-    private static boolean matchesPartial(DiscordMemberData member, String partial) {
-        return member.guildNickname.toLowerCase().contains(partial)
-                || member.discordNickName.toLowerCase().contains(partial)
+    private static boolean matchesPartial(DiscordUserData member, String partial) {
+        return member.displayName.toLowerCase().contains(partial)
                 || member.discordName.toLowerCase().contains(partial);
     }
 
     private static final SuggestionProvider<CommandSourceStack> MENTIONS_PROVIDER = (context, builder) -> {
-        if (isDiscordConnected()){
+        if (isDiscordConnected()) {
             String partial = builder.getRemaining().toLowerCase();
             StringRange range = StringRange.between(builder.getStart(), builder.getInput().length());
 
-            List<Suggestion> suggestions = ChannelMembersProvider.getMemberData(playerChatMessagesChannel)
+            List<Suggestion> suggestions = ChannelMembersProvider.getMemberData(ChannelCategory.PLAYER_CHAT)
                     .stream()
                     .filter(data -> matchesPartial(data, partial))
-                    .map(data -> new Suggestion(range, data.getGuildNickname()))
+                    .map(data -> new Suggestion(range, data.getPrettyMention().substring(1)))
                     .toList();
 
             return CompletableFuture.completedFuture(new Suggestions(range, suggestions));
