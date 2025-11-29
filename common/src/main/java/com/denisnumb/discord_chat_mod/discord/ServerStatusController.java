@@ -116,7 +116,7 @@ public class ServerStatusController {
                         .replace(COUNTER, String.valueOf(i + 1)))
                 .collect(Collectors.joining(delimiter));
 
-        if (players.length > 2 || players.length == 0)
+        if (players.length > maxNicknames || players.length == 0)
             result += delimiter + ". . .";
 
         return result;
