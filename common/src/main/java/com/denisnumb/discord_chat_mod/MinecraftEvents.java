@@ -19,7 +19,6 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.processChatMessage;
 import static com.denisnumb.discord_chat_mod.advancement.AdvancementIconParser.parseAdvancementIcon;
 import static com.denisnumb.discord_chat_mod.advancement.AdvancementParser.*;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
@@ -54,21 +52,6 @@ public class MinecraftEvents {
         IConfigProvider config = ConfigProvider.getConfig();
         if (config.isWebhookModeEnabled() && config.isSetAvatarUrlCommandEnabled())
             SetAvatarCommand.register(dispatcher);
-    }
-
-    public static Component handleChatMessageText(ServerPlayer player, Component component) {
-        MinecraftUtils.ProcessChatMessageResult chatMessage = processChatMessage(component.getString(), ChannelCategory.PLAYER_CHAT);
-
-        handleDiscord(() -> {
-            Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(player));
-            Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
-            Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
-
-            if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
-                sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
-        });
-
-        return chatMessage.forMinecraft();
     }
 
     public static Optional<Component> handleChatMessage(ResourceKey<ChatType> chatType, MinecraftChatStyleProvider.ChatMessageComponents components) {
