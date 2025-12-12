@@ -254,7 +254,7 @@ public class DiscordEvents extends ListenerAdapter {
         so refetch the message a few times to get the embeds.
         Only refetch the message if it contains URLs.
          */
-        if (retries <= 0 || (embedUrls.isEmpty() && hasUrls(message.getContentRaw()))) {
+        if (retries > 0 && embedUrls.isEmpty() && hasUrls(message.getContentRaw())) {
             return message.getChannel()
                 .retrieveMessageById(message.getId())
                 .submit()
