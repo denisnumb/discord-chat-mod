@@ -271,11 +271,11 @@ public class DiscordEvents extends ListenerAdapter {
                 String url = embed.getUrl();
                 if (url == null)
                     return null;
-                URI uri = URI.create(url);
-                if (!DISCORD_HOSTS.contains(uri.getHost()))
-                    return null;
                 String mediaUrl = getMessageEmbedMediaUrl(embed);
                 if (mediaUrl == null)
+                    return null;
+                URI uri = URI.create(url);
+                if (!DISCORD_HOSTS.contains(uri.getHost()))
                     return null;
                 return Map.entry(url, mediaUrl);
             })
