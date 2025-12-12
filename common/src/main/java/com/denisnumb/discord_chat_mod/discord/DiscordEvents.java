@@ -249,20 +249,22 @@ public class DiscordEvents extends ListenerAdapter {
 
     private static @NotNull CompletableFuture<Map<String, String>> retrieveMessageEmbedUrls(Message message, int retries) {
         Map<String, String> embedUrls = getMessageEmbedUrls(message);
-        /*
-         * Links that have been sent for the first time may not have embeds generated yet,
-         * so refetch the message a few times to get the embeds.
-         * Only refetch the message if it contains URLs.
-         */
-        if (retries > 0 && embedUrls.isEmpty() && hasUrls(message.getContentRaw())) {
-            return message.getChannel()
-                .retrieveMessageById(message.getId())
-                .submit()
-                .exceptionally(ignored -> message)
-                .thenCompose(refetchedMessage -> retrieveMessageEmbedUrls(refetchedMessage, retries - 1));
-        } else {
-            return CompletableFuture.completedFuture(embedUrls);
+        try {
+            /*
+             * Links that have been sent for the first time may not have embeds generated yet,
+             * so refetch the message a few times to get the embeds.
+             * Only refetch the message if it contains URLs.
+             */
+            if (retries > 0 && embedUrls.isEmpty() && hasUrls(message.getContentRaw())) {
+                return message.getChannel()
+                    .retrieveMessageById(message.getId())
+                    .submit()
+                    .exceptionally(ignored -> message)
+                    .thenCompose(refetchedMessage -> retrieveMessageEmbedUrls(refetchedMessage, retries - 1));
+            }
+        } catch (Exception ignored) {
         }
+        return CompletableFuture.completedFuture(embedUrls);
     }
 
     private static @NotNull Map<String, String> getMessageEmbedUrls(Message message) {
