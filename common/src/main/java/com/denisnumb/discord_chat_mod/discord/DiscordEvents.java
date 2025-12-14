@@ -242,7 +242,7 @@ public class DiscordEvents extends ListenerAdapter {
 
     /**
      * Retrieves refreshed Discord attachment links asynchronously via message embeds.
-docs     *
+     *
      * @param message The message to retrieve the refreshed URLs from.
      *
      * @return A future that resolves to a mapping of URLs in the message text to the corresponding refreshed URL.
