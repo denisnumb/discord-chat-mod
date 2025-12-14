@@ -242,6 +242,10 @@ public class DiscordEvents extends ListenerAdapter {
 
     /**
      * Retrieves refreshed Discord attachment links asynchronously via message embeds.
+docs     *
+     * @param message The message to retrieve the refreshed URLs from.
+     *
+     * @return A future that resolves to a mapping of URLs in the message text to the corresponding refreshed URL.
      */
     private static @NotNull CompletableFuture<Map<String, String>> retrieveMessageEmbedUrls(Message message) {
         return retrieveMessageEmbedUrls(message, 3);
@@ -297,6 +301,9 @@ public class DiscordEvents extends ListenerAdapter {
         return mediaUrl;
     }
 
+    /**
+     * Checks if the {@code text} contains any Discord CDN URLs.
+     */
     private static boolean hasUrls(String text) {
         return MarkdownPattern.URL.matcher(text).results().anyMatch(matchResult -> {
             URI uri = URI.create(matchResult.group());
