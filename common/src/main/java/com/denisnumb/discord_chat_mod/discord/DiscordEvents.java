@@ -291,13 +291,14 @@ public class DiscordEvents extends ListenerAdapter {
     }
 
     private static @Nullable String getMessageEmbedMediaUrl(MessageEmbed embed) {
-        if (embed.getImage() != null)
+        if (embed.getImage() != null && embed.getImage().getUrl() != null)
             return embed.getImage().getUrl();
-        else if (embed.getVideoInfo() != null)
+        else if (embed.getVideoInfo() != null && embed.getVideoInfo().getUrl() != null)
             return embed.getVideoInfo().getUrl();
-        else if (embed.getThumbnail() != null)
+        else if (embed.getThumbnail() != null && embed.getThumbnail().getUrl() != null)
             return embed.getThumbnail().getUrl();
-        return null;
+        else
+            return null;
     }
 
     /**
