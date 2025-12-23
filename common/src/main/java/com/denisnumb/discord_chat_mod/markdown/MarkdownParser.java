@@ -29,6 +29,10 @@ public abstract class MarkdownParser {
     }
 
     public static List<MarkdownToken> parseMarkdown(String rawText){
+        return parseMarkdown(rawText, Map.of());
+    }
+
+    public static List<MarkdownToken> parseMarkdown(String rawText, Map<String, String> urlMapping) {
         ArrayList<MarkdownToken> tokens = new ArrayList<>();
         int currentPos = 0;
 
@@ -70,11 +74,12 @@ public abstract class MarkdownParser {
             switch (style){
                 case MarkdownStyle.URL -> {
                     token = new MarkdownToken(matchedText);
-                    token.url = matchedText;
+                    token.url = urlMapping.getOrDefault(matchedText, matchedText);
                 }
                 case MarkdownStyle.LINK -> {
                     token = new MarkdownToken(matchedText, innerText);
-                    token.url = matcher.group(2);
+                    String url = matcher.group(2);
+                    token.url = urlMapping.getOrDefault(url, url);
                 }
                 case MarkdownStyle.DISCORD_MENTION -> {
                     token = new MarkdownToken(matchedText);
