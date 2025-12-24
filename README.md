@@ -1,6 +1,14 @@
 # Discord Chat Mod
 
-MineCraft mod for combining the game chat with a channel in discord.
+MineCraft mod for combining the game chat with discord, chat customizing and chat image displaying.
+
+<a href="https://www.curseforge.com/minecraft/mc-mods/discord-chat-connect">
+  <img src="https://custom-icon-badges.demolab.com/badge/CurseForge-Download-orange?logo=curseforge&logoColor=white" height="40">
+</a>
+
+<a href="https://modrinth.com/mod/discord-chat-connect">
+  <img src="https://custom-icon-badges.demolab.com/badge/Modrinth-Download-1bd96a?logo=modrinth&logoColor=white" height="40">
+</a>
 
 ### **Quick start:** 
 
