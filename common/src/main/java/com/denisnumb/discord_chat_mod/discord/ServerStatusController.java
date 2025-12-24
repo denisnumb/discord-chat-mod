@@ -112,7 +112,7 @@ public class ServerStatusController {
 
         String result = IntStream.range(0, Math.min(maxNicknames, players.length))
                 .mapToObj(i -> nicknameStyle
-                        .replace(PLAYER, players[i])
+                        .replace(PLAYER, players[i].replace("_", "\\_"))
                         .replace(COUNTER, String.valueOf(i + 1)))
                 .collect(Collectors.joining(delimiter));
 

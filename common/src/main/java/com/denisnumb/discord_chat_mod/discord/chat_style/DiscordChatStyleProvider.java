@@ -66,9 +66,14 @@ public class DiscordChatStyleProvider {
         return Optional.of(EmbedBuilder.fromData(DataObject.fromJson(GSON.toJson(embed))).build());
     }
 
+    private static String escapeSpecialCharacters(String text){
+        return text.replace("\\", "\\\\")
+                .replace("\"", "\\\"");
+    }
+
     private static DiscordMessageComponents parseDiscordConfigTemplate(String jsonTemplate, Map<String, String> parameterMap) {
         for (Map.Entry<String, String> param : parameterMap.entrySet())
-            jsonTemplate = jsonTemplate.replace(param.getKey(), param.getValue());
+            jsonTemplate = jsonTemplate.replace(param.getKey(), escapeSpecialCharacters(param.getValue()));
 
         JsonObject parsedTemplate = GSON.fromJson(jsonTemplate, JsonObject.class);
 
