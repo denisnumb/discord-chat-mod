@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands;
 
-import com.denisnumb.discord_chat_mod.discord.StickersProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
@@ -22,8 +22,8 @@ import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlay
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendMessageFromPlayer;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.sendMessageFromPlayer;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;

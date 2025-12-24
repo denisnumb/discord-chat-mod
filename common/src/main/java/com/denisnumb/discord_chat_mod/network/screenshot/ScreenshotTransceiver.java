@@ -32,7 +32,7 @@ import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.SPOILER_PREFIX;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 

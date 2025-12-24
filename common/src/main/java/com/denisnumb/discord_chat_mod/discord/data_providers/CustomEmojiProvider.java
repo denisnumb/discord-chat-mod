@@ -1,7 +1,8 @@
-package com.denisnumb.discord_chat_mod.discord;
+package com.denisnumb.discord_chat_mod.discord.data_providers;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
+import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 

@@ -2,9 +2,9 @@ package com.denisnumb.discord_chat_mod.commands;
 
 import com.denisnumb.discord_chat_mod.ServerLogsRetranslator;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
-import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
-import com.denisnumb.discord_chat_mod.discord.StickersProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;

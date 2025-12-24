@@ -4,7 +4,7 @@ import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AnimatedImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
-import com.denisnumb.discord_chat_mod.discord.CustomEmojiProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

@@ -4,7 +4,7 @@ import com.denisnumb.discord_chat_mod.ColorUtils;
 import com.denisnumb.discord_chat_mod.DeathMessageUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
-import com.denisnumb.discord_chat_mod.discord.WebhookUtils;
+import com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;

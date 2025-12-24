@@ -2,8 +2,10 @@ package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
+import com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import net.dv8tion.jda.api.entities.Member;
@@ -38,9 +40,9 @@ import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInp
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUrlsUtils.retrieveMessageEmbedUrls;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
-import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.sendWebhookWithFiles;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordUrlsUtils.retrieveMessageEmbedUrls;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.sendWebhookWithFiles;
 
 public class DiscordEvents extends ListenerAdapter {
     @Override

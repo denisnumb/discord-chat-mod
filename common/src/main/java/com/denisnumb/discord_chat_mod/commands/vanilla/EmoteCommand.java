@@ -4,7 +4,7 @@ import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider;
-import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
+import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
@@ -23,7 +23,7 @@ import static com.denisnumb.discord_chat_mod.MinecraftUtils.processChatMessage;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.buildBound;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.handleDiscord;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
 
@@ -42,7 +42,7 @@ public class EmoteCommand {
                     Optional<DiscordChatStyleProvider.DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.ME_COMMAND_WEBHOOK, parameters);
 
                     if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
-                        DiscordUtils.sendMessageFromPlayer(ChannelCategory.ME_COMMAND, getAllContexts(), source.getPlayer(), webhookComponentsOpt.get(), chatComponentsOpt.get());
+                        DiscordMessageUtils.sendMessageFromPlayer(ChannelCategory.ME_COMMAND, getAllContexts(), source.getPlayer(), webhookComponentsOpt.get(), chatComponentsOpt.get());
                 });
 
                 Component senderComponent = source.getDisplayName();

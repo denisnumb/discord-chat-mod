@@ -1,5 +1,6 @@
-package com.denisnumb.discord_chat_mod.discord;
+package com.denisnumb.discord_chat_mod.discord.data_providers;
 
+import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import net.dv8tion.jda.api.OnlineStatus;

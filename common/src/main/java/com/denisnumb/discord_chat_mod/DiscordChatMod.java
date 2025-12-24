@@ -8,6 +8,9 @@ import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.*;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.chat_style.Parameters;
+import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.logging.LogUtils;
 import com.neovisionaries.ws.client.ProxySettings;
@@ -32,11 +35,11 @@ import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.isChannelCategoryDisabled;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.serverLogsChannel;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.initServerStatusController;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusMessageToUnavailable;
-import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.initWebhookSendExecutor;
-import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.stopWebhookSendExecutor;
+import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.initWebhookSendExecutor;
+import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.stopWebhookSendExecutor;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 
 public final class DiscordChatMod {

@@ -1,5 +1,7 @@
-package com.denisnumb.discord_chat_mod.discord;
+package com.denisnumb.discord_chat_mod.discord.utils;
 
+import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.mojang.logging.LogUtils;
@@ -27,11 +29,11 @@ import static com.denisnumb.discord_chat_mod.MinecraftUtils.logErrorToServer;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.discord.WebhookUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 
 
-public class DiscordUtils {
+public class DiscordMessageUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
     public record ImageData(String fileName, byte[] data){}
     private static ExecutorService EXECUTOR;

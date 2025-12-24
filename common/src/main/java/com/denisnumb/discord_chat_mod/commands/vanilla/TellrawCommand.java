@@ -22,7 +22,7 @@ import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getPlayerListBySelector;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
 

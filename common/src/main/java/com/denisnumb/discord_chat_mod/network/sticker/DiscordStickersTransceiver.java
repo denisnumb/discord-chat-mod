@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.network.sticker;
 
 
-import com.denisnumb.discord_chat_mod.discord.StickersProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
 import com.google.gson.Gson;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.denisnumb.discord_chat_mod.discord.StickersProvider.loadClient;
+import static com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider.loadClient;
 
 public class DiscordStickersTransceiver {
     private static final Logger LOGGER = LogUtils.getLogger();

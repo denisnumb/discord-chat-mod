@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.config.ConfigDefaults;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
@@ -30,7 +30,7 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.replaceEmojiCodesToDiscordMentions;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.replaceEmojiCodesToDiscordMentions;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
