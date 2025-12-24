@@ -66,6 +66,9 @@ public class AdvancementIconParser {
             String namespace = id.getNamespace();
             String name = id.getPath();
 
+            if (namespace.equals("minecraft"))
+                namespace = DiscordChatMod.MOD_ID;
+
             String textureName = resolveItemTexture(namespace, name);
 
             if (textureName.equals(name))
