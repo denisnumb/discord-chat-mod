@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.commands;
 
-import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
-import com.denisnumb.discord_chat_mod.discord.StickersProvider;
+import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
+import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
@@ -26,8 +26,8 @@ import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendMessageFromPlayer;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.sendMessageFromPlayer;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 
@@ -63,7 +63,7 @@ public class SendStickerCommand {
                                                     = new DiscordChatStyleProvider.DiscordMessageComponents(Optional.of(stickerData.imageUrl()), Optional.empty());
 
                                             chatComponentsOpt.ifPresent(discordMessageComponents ->
-                                                    DiscordUtils.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponents, discordMessageComponents, stickerData)
+                                                    DiscordMessageUtils.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponents, discordMessageComponents, stickerData)
                                             );
                                         });
                                     }

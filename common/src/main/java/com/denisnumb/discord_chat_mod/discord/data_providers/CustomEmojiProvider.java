@@ -1,9 +1,10 @@
-package com.denisnumb.discord_chat_mod.discord;
+package com.denisnumb.discord_chat_mod.discord.data_providers;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
+import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
-import net.dv8tion.jda.api.entities.sticker.GuildSticker;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -18,54 +19,52 @@ import java.util.stream.IntStream;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 
-public class StickersProvider {
-    public record StickerData(String imageUrl, String discordId, String originalName) {}
-    public static Map<String, AbstractImage> CLIENT_STICKER_CACHE = new HashMap<>();
-    private static long lastGetNameToRawStickerMapGet = 0;
-    private static Map<String, StickerData> cachedNameToRawStickerDataMap;
+public class CustomEmojiProvider {
+    public record EmojiData(String url, String mentionString) { }
+    public static Map<String, AbstractImage> CLIENT_EMOJI_CACHE = new HashMap<>();
+    private static long lastGetEmojiData = 0;
+    private static Map<String, EmojiData> cachedEmojiData;
 
     public static void dropTimeouts(){
-        lastGetNameToRawStickerMapGet = 0;
+        lastGetEmojiData = 0;
     }
 
     public static Map<String, String> getNameToUrlMap() {
-        return getNameToStickerDataMap().entrySet()
+        return getNameToEmojiDataMap().entrySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> entry.getValue().imageUrl
+                        entry -> entry.getValue().url()
                 ));
     }
 
-    public static Map<String, StickerData> getNameToStickerDataMap() {
+    public static Map<String, EmojiData> getNameToEmojiDataMap() {
         if (!isDiscordConnected())
             return Map.of();
 
-        if (System.currentTimeMillis() - lastGetNameToRawStickerMapGet < 300000)
-            return cachedNameToRawStickerDataMap;
-        lastGetNameToRawStickerMapGet = System.currentTimeMillis();
+        if (System.currentTimeMillis() - lastGetEmojiData < 300000)
+            return cachedEmojiData;
+        lastGetEmojiData = System.currentTimeMillis();
 
-        return cachedNameToRawStickerDataMap = DiscordChannelRegistry.getAllContexts()
+        return cachedEmojiData = DiscordChannelRegistry.getAllContexts()
                 .stream()
                 .map(DiscordGuildContext::getGuild)
-                .flatMap(guild -> guild.getStickers().stream())
-                .collect(Collectors.groupingBy(GuildSticker::getName))
+                .flatMap(guild -> guild.getEmojis().stream())
+                .collect(Collectors.groupingBy(RichCustomEmoji::getName))
                 .entrySet()
                 .stream()
                 .flatMap(entry -> {
                     String baseName = entry.getKey();
-                    List<GuildSticker> sortedStickers = entry.getValue()
+                    List<RichCustomEmoji> sortedEmojis = entry.getValue()
                             .stream()
-                            .sorted(Comparator.comparing(GuildSticker::getTimeCreated))
+                            .sorted(Comparator.comparing(RichCustomEmoji::getTimeCreated))
                             .toList();
 
-                    return IntStream.range(0, sortedStickers.size())
+                    return IntStream.range(0, sortedEmojis.size())
                             .mapToObj(i -> {
-                                GuildSticker sticker = sortedStickers.get(i);
-                                String guildName = sticker.getGuild() == null ? "" : String.format("(%s)", sticker.getGuild().getName());
-                                String nameWithIndex = i == 0 ? baseName : String.format("%s %d", baseName, i);
-                                String name = String.format("%s %s", nameWithIndex, guildName);
-                                return Map.entry(name, new StickerData(sticker.getIconUrl(), sticker.getId(), sticker.getName()));
+                                RichCustomEmoji emoji = sortedEmojis.get(i);
+                                String name = i == 0 ? baseName : baseName + "~" + i;
+                                return Map.entry(name, new EmojiData(emoji.getImageUrl(), String.format("<:%s:%s>", baseName, emoji.getId())));
                             });
                 })
                 .collect(Collectors.toMap(
@@ -74,18 +73,18 @@ public class StickersProvider {
                 ));
     }
 
-    public static void loadClient(Map<String, String> rawStickers){
-        if (!rawStickers.isEmpty())
-            CLIENT_STICKER_CACHE.clear();
+    public static void loadClient(Map<String, String> rawEmojis){
+        if (!rawEmojis.isEmpty())
+            CLIENT_EMOJI_CACHE.clear();
 
         ExecutorService executor = Executors.newFixedThreadPool(10);
 
-        rawStickers.forEach((name, url) -> {
-            if (!CLIENT_STICKER_CACHE.containsKey(name)){
+        rawEmojis.forEach((name, url) -> {
+            if (!CLIENT_EMOJI_CACHE.containsKey(name)){
                 executor.submit(() -> {
                     AbstractImage image = ImageStorage.parseEmojiOrSticker(url);
                     if (image != null)
-                        CLIENT_STICKER_CACHE.putIfAbsent(name, image);
+                        CLIENT_EMOJI_CACHE.putIfAbsent(name, image);
                 });
             }
         });

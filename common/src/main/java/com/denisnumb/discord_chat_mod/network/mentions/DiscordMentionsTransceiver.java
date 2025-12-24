@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.network.mentions;
 
-import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;

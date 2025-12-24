@@ -29,7 +29,7 @@ import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COUNTER;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 
 public class ServerStatusController {

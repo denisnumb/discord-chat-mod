@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.commands;
 
-import com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
+import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
+import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
@@ -77,7 +77,7 @@ public class MentionCommand {
                                         Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
 
                                         if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
-                                            DiscordUtils.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
+                                            DiscordMessageUtils.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
                                     }
                                     return 1;
                                 })

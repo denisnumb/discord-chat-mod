@@ -21,8 +21,8 @@ import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps
 import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.buildBound;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.DiscordUtils.sendMessageFromServer;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
+import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.sendMessageFromServer;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 
 public class SayCommand {

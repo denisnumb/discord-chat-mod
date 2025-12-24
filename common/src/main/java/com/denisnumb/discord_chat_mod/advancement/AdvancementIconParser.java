@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod.advancement;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
-import com.denisnumb.discord_chat_mod.discord.DiscordUtils;
+import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -59,7 +59,7 @@ public class AdvancementIconParser {
         return defaultName;
     }
 
-    public static Optional<DiscordUtils.ImageData> parseAdvancementIcon(DisplayInfo displayInfo) {
+    public static Optional<DiscordMessageUtils.ImageData> parseAdvancementIcon(DisplayInfo displayInfo) {
         try {
             ItemStack stack = displayInfo.getIcon();
             ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
@@ -76,12 +76,12 @@ public class AdvancementIconParser {
 
             try (InputStream input = getResourceAsStream(String.format("/assets/%s/textures/item/%s.png", namespace, textureName))) {
                 if (input != null)
-                    return Optional.of(new DiscordUtils.ImageData("icon.png", ImageUtils.scaleImage(input.readAllBytes(), 3)));
+                    return Optional.of(new DiscordMessageUtils.ImageData("icon.png", ImageUtils.scaleImage(input.readAllBytes(), 3)));
             }
 
             try (InputStream input = getResourceAsStream(String.format("/assets/%s/textures/block/%s.png", namespace, textureName))) {
                 if (input != null)
-                    return Optional.of(new DiscordUtils.ImageData("icon.png", ImageUtils.scaleImage(input.readAllBytes(), 3)));
+                    return Optional.of(new DiscordMessageUtils.ImageData("icon.png", ImageUtils.scaleImage(input.readAllBytes(), 3)));
             }
 
         } catch (Exception e) {

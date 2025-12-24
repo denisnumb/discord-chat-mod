@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHANNEL_MENTION_COLOR;
 import static com.denisnumb.discord_chat_mod.ColorUtils.getHexColor;
-import static com.denisnumb.discord_chat_mod.discord.ChannelMembersProvider.getMemberDisplayName;
+import static com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider.getMemberDisplayName;
 
 public class DiscordMentionData {
     public DiscordUserData memberData;
