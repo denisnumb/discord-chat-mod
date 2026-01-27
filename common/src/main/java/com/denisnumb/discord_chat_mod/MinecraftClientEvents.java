@@ -22,18 +22,13 @@ public class MinecraftClientEvents {
         Component screenshotName = Component.literal(screenshotFile.getName())
                 .withStyle(ChatFormatting.UNDERLINE)
                 .withStyle(style ->
-                        style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, screenshotFile.getAbsolutePath()))
+                        style.withClickEvent(new ClickEvent.OpenFile(screenshotFile.getAbsolutePath()))
                 );
 
         Component clickToSendComponent = Component.literal(" " + getTranslateClient(CLICK_TO_SEND_SCREENSHOT)).withStyle(style ->
                 style.withColor(ChatFormatting.GREEN.getColor())
-                        .withClickEvent(new ClickEvent(
-                                ClickEvent.Action.RUN_COMMAND,
-                                "send_screenshot " + screenshotFile.getAbsolutePath()
-                        )).withHoverEvent(new HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
-                                Component.literal(getTranslateClient(CLICK_TO_SEND_SCREENSHOT_HINT))
-                        ))
+                        .withClickEvent(new ClickEvent.RunCommand("send_screenshot " + screenshotFile.getAbsolutePath()))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(getTranslateClient(CLICK_TO_SEND_SCREENSHOT_HINT))))
         );
 
         return Component.literal(getTranslateClient("screenshot.success").replace("%s", ""))

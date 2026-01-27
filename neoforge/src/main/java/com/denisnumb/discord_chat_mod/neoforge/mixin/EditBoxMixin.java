@@ -2,6 +2,7 @@ package com.denisnumb.discord_chat_mod.neoforge.mixin;
 
 import com.denisnumb.discord_chat_mod.markdown.MarkdownEditBoxParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -78,11 +79,11 @@ public abstract class EditBoxMixin {
         }
     }
 
-    @ModifyArg(
+    @ModifyExpressionValue(
             method = "renderWidget",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I",
+                    target = "Lnet/minecraft/client/gui/components/EditBox;applyFormat(Ljava/lang/String;I)Lnet/minecraft/util/FormattedCharSequence;",
                     ordinal = 0
             ),
             require = 0
@@ -103,7 +104,7 @@ public abstract class EditBoxMixin {
             method = "renderWidget",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I",
+                    target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)V",
                     ordinal = 1
             ),
             require = 0

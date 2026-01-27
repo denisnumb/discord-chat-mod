@@ -5,7 +5,6 @@ import com.denisnumb.discord_chat_mod.chat_images.model.*;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -114,9 +113,9 @@ public class ImageStorage {
         );
 
         CountDownLatch latch = new CountDownLatch(1);
-        RenderSystem.recordRenderCall(() -> {
+        Minecraft.getInstance().execute(() -> {
             try {
-                Minecraft.getInstance().getTextureManager().register(textureLocation, new DynamicTexture(nativeImage));
+                Minecraft.getInstance().getTextureManager().register(textureLocation, new DynamicTexture(textureLocation::getPath, nativeImage));
             } finally {
                 latch.countDown();
             }
@@ -207,9 +206,9 @@ public class ImageStorage {
                 );
 
                 NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
-                RenderSystem.recordRenderCall(() -> {
+                Minecraft.getInstance().execute(() -> {
                     try {
-                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(nativeImage));
+                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(frameLocation::getPath, nativeImage));
                     } finally {
                         latch.countDown();
                     }
@@ -308,9 +307,9 @@ public class ImageStorage {
                 );
 
                 NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
-                RenderSystem.recordRenderCall(() -> {
+                Minecraft.getInstance().execute(() -> {
                     try {
-                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(nativeImage));
+                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(frameLocation::getPath, nativeImage));
                     } finally {
                         latch.countDown();
                     }
@@ -345,9 +344,9 @@ public class ImageStorage {
         );
 
         CountDownLatch latch = new CountDownLatch(1);
-        RenderSystem.recordRenderCall(() -> {
+        Minecraft.getInstance().execute(() -> {
             try {
-                Minecraft.getInstance().getTextureManager().register(spoilerTextureLocation, new DynamicTexture(image));
+                Minecraft.getInstance().getTextureManager().register(spoilerTextureLocation, new DynamicTexture(spoilerTextureLocation::getPath, image));
             } finally {
                 latch.countDown();
             }

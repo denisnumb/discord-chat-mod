@@ -14,6 +14,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
@@ -48,7 +49,7 @@ public class SendStickerCommand {
 
                                         Component messageWithStickerComponent = Component.literal(stickerMessageContent)
                                                 .withStyle(style -> style.withItalic(true)
-                                                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, stickerData.imageUrl())));
+                                                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(stickerData.imageUrl()))));
 
                                         sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, player.getDisplayName(), MESSAGE, messageWithStickerComponent));
 

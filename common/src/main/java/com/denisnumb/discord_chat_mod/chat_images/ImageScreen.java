@@ -3,10 +3,12 @@ package com.denisnumb.discord_chat_mod.chat_images;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AnimatedImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -32,9 +34,7 @@ public class ImageScreen extends Screen {
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         super.render(graphics, mouseX, mouseY, partialTicks);
 
-        RenderSystem.disableDepthTest();
         graphics.fill(0, 0, this.width, this.height, 0x88000000);
-        RenderSystem.enableDepthTest();
 
         int maxWidth = (int) (this.width * 0.7);
         int maxHeight = (int) (this.height * 0.7);
@@ -49,7 +49,7 @@ public class ImageScreen extends Screen {
                 ? gif.getCurrentFrame()
                 : ((Image) image).resourceLocation;
 
-        graphics.blit(resourceLocation,
+        graphics.blit(RenderPipelines.GUI_TEXTURED, resourceLocation,
                 centerX, centerY,
                 0, 0,
                 renderWidth, renderHeight,
@@ -58,26 +58,26 @@ public class ImageScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            boolean outsideImage = mouseX < centerX
-                    || mouseX > centerX + renderWidth
-                    || mouseY < centerY
-                    || mouseY > centerY + renderHeight;
+    public boolean mouseClicked(@NotNull MouseButtonEvent event, boolean bl) {
+        if (event.button() == 0) {
+            boolean outsideImage = event.x() < centerX
+                    || event.x() > centerX + renderWidth
+                    || event.y() < centerY
+                    || event.y() > centerY + renderHeight;
             if (outsideImage) {
                 Minecraft.getInstance().setScreen(null);
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, bl);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256) {
+    public boolean keyPressed(@NotNull KeyEvent event) {
+        if (event.key() == 256) {
             Minecraft.getInstance().setScreen(null);
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 }

@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 @Mixin(Screenshot.class)
 public class ScreenshotMixin {
-    @Inject(method = "method_1661(Lcom/mojang/blaze3d/platform/NativeImage;Ljava/io/File;Ljava/util/function/Consumer;)V",
+    @Inject(method = "method_22691(Lcom/mojang/blaze3d/platform/NativeImage;Ljava/io/File;Ljava/util/function/Consumer;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/mojang/blaze3d/platform/NativeImage;writeToFile(Ljava/io/File;)V",

@@ -25,6 +25,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -113,7 +114,7 @@ public abstract class CommandSuggestionsMixin {
         guiGraphics.fill(boxX, boxY, boxX + boxSize, boxY + boxSize, fillColor);
 
         guiGraphics.blit(
-                imageLocation,
+                RenderPipelines.GUI_TEXTURED, imageLocation,
                 boxX + 2, boxY + 2,
                 0, 0,
                 boxSize - 4, boxSize - 4,

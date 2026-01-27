@@ -35,7 +35,7 @@ public class TellrawCommand {
                                 .then(Commands.argument("message", ComponentArgument.textComponent(context))
                                         .executes(ctx -> {
                                             Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "targets");
-                                            Component message = ComponentArgument.getComponent(ctx, "message");
+                                            Component message = ComponentArgument.getResolvedComponent(ctx, "message");
 
                                             if (ctx.getInput().split(" ", 3)[1].equals("@a")){
                                                 handleDiscord(() -> {
@@ -68,7 +68,7 @@ public class TellrawCommand {
             Component component = componentContents.resolve(null, null, 0);
 
             if (componentContents instanceof SelectorContents selectorContents){
-                List<ServerPlayer> playerList = getPlayerListBySelector(selectorContents.getPattern());
+                List<ServerPlayer> playerList = getPlayerListBySelector(selectorContents.selector().pattern());
                 String result = component.getString();
 
                 if (!playerList.isEmpty())

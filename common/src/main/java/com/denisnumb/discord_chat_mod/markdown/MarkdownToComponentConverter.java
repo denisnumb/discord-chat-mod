@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.markdown;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import net.minecraft.network.chat.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -52,7 +53,7 @@ public class MarkdownToComponentConverter{
 
             if (mentionData.memberData != null){
                 component = component.withStyle(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(mentionData.memberData.discordName)))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(mentionData.memberData.discordName)))
                         .withInsertion(mentionData.prettyMention));
             }
         }
@@ -67,7 +68,7 @@ public class MarkdownToComponentConverter{
                         .withObfuscated(token.obfuscated);
 
                 if (token.obfuscated)
-                    style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(finalTextPart)));
+                    style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal(finalTextPart)));
 
                 if (token.isColored())
                     style = style.withColor(token.color);
@@ -75,8 +76,8 @@ public class MarkdownToComponentConverter{
                 if (token.isUrl()){
                     String hoverValue = token.obfuscated ? String.format("%s (%s)", finalTextPart, token.url) : token.url;
                     style = style.withColor(CHAT_LINK_COLOR)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, token.url))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(hoverValue)));
+                            .withClickEvent(new ClickEvent.OpenUrl(URI.create(token.url)))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(hoverValue)));
                 }
 
                 return style;
