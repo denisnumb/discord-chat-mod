@@ -18,24 +18,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.io.File;
+import java.net.URI;
 
 @Mixin(Screen.class)
 public abstract class ScreenMixin {
     @Shadow protected Minecraft minecraft;
-    @Shadow public static boolean hasShiftDown() { return false; }
 
     @Inject(method = "handleComponentClicked", at = @At("HEAD"), cancellable = true)
     private void handleComponentClicked(Style style, CallbackInfoReturnable<Boolean> cir){
         if (style != null){
             ClickEvent clickEvent = style.getClickEvent();
             if (clickEvent != null){
-                if (clickEvent.getAction() == ClickEvent.Action.OPEN_URL && ImageUtils.isLocalResourceUrl(clickEvent.getValue())){
+                if (clickEvent instanceof ClickEvent.OpenUrl(URI uri) && ImageUtils.isLocalResourceUrl(uri.toString())){
                     cir.setReturnValue(true);
                 }
-                if (clickEvent.getAction() == ClickEvent.Action.RUN_COMMAND){
-                    String value = StringUtil.filterText(clickEvent.getValue());
+                if (clickEvent instanceof ClickEvent.RunCommand(String command)){
+                    String value = StringUtil.filterText(command);
                     if (value.startsWith("send_screenshot")) {
-                        boolean sendAsSpoiler = hasShiftDown();
+                        boolean sendAsSpoiler = Minecraft.getInstance().hasShiftDown();
                         String filePath = value.replace("send_screenshot ", "");
                         discord_minecraft_chat$sendScreenshot(filePath, sendAsSpoiler);
                         cir.setReturnValue(true);

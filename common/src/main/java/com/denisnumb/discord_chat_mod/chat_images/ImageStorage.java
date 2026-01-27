@@ -114,9 +114,9 @@ public class ImageStorage {
         );
 
         CountDownLatch latch = new CountDownLatch(1);
-        RenderSystem.recordRenderCall(() -> {
+        Minecraft.getInstance().execute(() -> {
             try {
-                Minecraft.getInstance().getTextureManager().register(textureLocation, new DynamicTexture(nativeImage));
+                Minecraft.getInstance().getTextureManager().register(textureLocation, new DynamicTexture(textureLocation::getPath, nativeImage));
             } finally {
                 latch.countDown();
             }
@@ -207,9 +207,9 @@ public class ImageStorage {
                 );
 
                 NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
-                RenderSystem.recordRenderCall(() -> {
+                Minecraft.getInstance().execute(() -> {
                     try {
-                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(nativeImage));
+                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(frameLocation::getPath, nativeImage));
                     } finally {
                         latch.countDown();
                     }
@@ -308,9 +308,9 @@ public class ImageStorage {
                 );
 
                 NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
-                RenderSystem.recordRenderCall(() -> {
+                Minecraft.getInstance().execute(() -> {
                     try {
-                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(nativeImage));
+                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(frameLocation::getPath, nativeImage));
                     } finally {
                         latch.countDown();
                     }
@@ -345,9 +345,9 @@ public class ImageStorage {
         );
 
         CountDownLatch latch = new CountDownLatch(1);
-        RenderSystem.recordRenderCall(() -> {
+        Minecraft.getInstance().execute(() -> {
             try {
-                Minecraft.getInstance().getTextureManager().register(spoilerTextureLocation, new DynamicTexture(image));
+                Minecraft.getInstance().getTextureManager().register(spoilerTextureLocation, new DynamicTexture(spoilerTextureLocation::getPath, image));
             } finally {
                 latch.countDown();
             }

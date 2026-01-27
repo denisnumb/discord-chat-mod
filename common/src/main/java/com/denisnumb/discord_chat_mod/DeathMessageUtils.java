@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,8 +22,8 @@ import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 
 public class DeathMessageUtils {
     private static final Style INTENTIONAL_GAME_DESIGN_STYLE = Style.EMPTY
-            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://bugs.mojang.com/browse/MCPE-28723"))
-            .withHoverEvent(new HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("MCPE-28723")));
+            .withClickEvent(new ClickEvent.OpenUrl(URI.create("https://bugs.mojang.com/browse/MCPE-28723")))
+            .withHoverEvent(new HoverEvent.ShowText(Component.literal("MCPE-28723")));
 
     public static final String DEATH_CAUSE_REPLACEMENT_TAG = "{death.cause}";
     public static final String DIED_ENTITY_REPLACEMENT_TAG = "{died.entity}";

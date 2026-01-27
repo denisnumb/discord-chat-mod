@@ -67,7 +67,7 @@ public class MentionCommand {
                                         Component mentionComponent = Component.literal(String.format("@%s", name))
                                                 .withStyle(style -> style.withColor(TextColor.parseColor(member.color).getOrThrow())
                                                         .withInsertion("@" + name)
-                                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.discordName)))
+                                                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.discordName)))
                                                 );
 
                                         sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, player.getDisplayName(), MESSAGE, mentionComponent));

@@ -18,7 +18,8 @@
     "IntegratedServerMixin",
     "ScreenMixin",
     "SuggestionsListAccessorMixin",
-    "ClientPacketListenerMixin"
+    "ClientPacketListenerMixin",
+    "StringSplitterMixin"
   ],
   "injectors": {
     "defaultRequire": 1

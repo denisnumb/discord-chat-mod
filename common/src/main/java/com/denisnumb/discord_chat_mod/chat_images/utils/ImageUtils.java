@@ -22,7 +22,7 @@ import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.MAX_WIDTH;
 
 public class ImageUtils {
     public static final String SPOILER_PREFIX = "/SPOILER_";
-    public static final String LOCAL_RESOURCE_PREFIX = "localResource://";
+    public static final String LOCAL_RESOURCE_PREFIX = "https://localResource/";
 
     public static boolean isTenorGifUrl(String url) {
         return url.startsWith("https://tenor.com/");
@@ -142,8 +142,8 @@ public class ImageUtils {
                 srcX = Math.min(srcX, width - 1);
                 srcY = Math.min(srcY, height - 1);
 
-                int color = image.getPixelRGBA(srcX, srcY);
-                small.setPixelRGBA(x, y, color);
+                int color = image.getPixel(srcX, srcY);
+                small.setPixel(x, y, color);
             }
         }
 
@@ -155,8 +155,8 @@ public class ImageUtils {
                 srcX = Math.min(srcX, small.getWidth() - 1);
                 srcY = Math.min(srcY, small.getHeight() - 1);
 
-                int color = small.getPixelRGBA(srcX, srcY);
-                image.setPixelRGBA(x, y, color);
+                int color = small.getPixel(srcX, srcY);
+                image.setPixel(x, y, color);
             }
         }
 
@@ -188,9 +188,9 @@ public class ImageUtils {
                 if (px < 0 || px >= width || py < 0 || py >= height)
                     continue;
 
-                int baseColor = image.getPixelRGBA(px, py);
+                int baseColor = image.getPixel(px, py);
                 int blended = blendARGB(baseColor, overlayColor);
-                image.setPixelRGBA(px, py, blended);
+                image.setPixel(px, py, blended);
             }
         }
     }

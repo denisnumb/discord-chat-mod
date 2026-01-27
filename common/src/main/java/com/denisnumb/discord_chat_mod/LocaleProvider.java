@@ -28,7 +28,7 @@ public class LocaleProvider {
     private static final Type TYPE = new TypeToken<Map<String, String>>(){}.getType();
     private static final Map<String, String> LANGUAGE_DATA = new HashMap<>();
     private static final String CACHE_DIR_NAME = "locale_cache";
-    private static final String BASE_GITHUB_URL = "https://raw.githubusercontent.com/denisnumb/discord-chat-mod/1.21.1/data/minecraft_locales/";
+    private static final String BASE_GITHUB_URL = "https://raw.githubusercontent.com/denisnumb/discord-chat-mod/1.21.10/data/minecraft_locales/";
 
     public interface LocaleLoader {
         void loadLocalization();

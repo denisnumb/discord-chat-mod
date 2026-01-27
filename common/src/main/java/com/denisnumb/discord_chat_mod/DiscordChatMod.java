@@ -54,7 +54,7 @@ public final class DiscordChatMod {
         if (server.isPublished())
             initJDA();
 
-        CustomChatTypeRegistry.registerChatTypes(server.registryAccess().registryOrThrow(Registries.CHAT_TYPE));
+        CustomChatTypeRegistry.registerChatTypes(server.registryAccess().lookupOrThrow(Registries.CHAT_TYPE));
     }
 
     public static void onServerStarted() {

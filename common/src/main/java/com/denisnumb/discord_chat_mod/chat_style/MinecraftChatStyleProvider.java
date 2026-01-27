@@ -24,7 +24,7 @@ public class MinecraftChatStyleProvider {
         Component title = Component.literal(translatedTitle);
         Component description = ComponentUtils.mergeStyles(title.copy(), Style.EMPTY.withColor(advancementStyle.getColor())).append("\n")
                 .append(Component.literal(translatedDescription));
-        Component result = title.copy().withStyle((style) -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, description)));
+        Component result = title.copy().withStyle((style) -> style.withHoverEvent(new HoverEvent.ShowText(description)));
 
         return ComponentUtils.wrapInSquareBrackets(result).withStyle(advancementStyle);
     }

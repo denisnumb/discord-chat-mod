@@ -13,8 +13,10 @@ import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Final;
@@ -62,8 +64,9 @@ public abstract class ChatComponentMixin {
     private List<String> discord_minecraft_chat$getComponentUrls(Component component){
         return component.toFlatList().stream().filter(comp -> {
             ClickEvent clickEvent = comp.getStyle().getClickEvent();
-            return clickEvent != null && clickEvent.getAction() == ClickEvent.Action.OPEN_URL;
-        }).map(comp -> comp.getStyle().getClickEvent().getValue()).toList();
+            return clickEvent != null && clickEvent.action() == ClickEvent.Action.OPEN_URL;
+        }).filter(comp -> comp.getStyle().getClickEvent() instanceof ClickEvent.OpenUrl)
+                .map(comp -> ((ClickEvent.OpenUrl)comp.getStyle().getClickEvent()).uri().toString()).toList();
     }
 
     @Unique
@@ -104,11 +107,8 @@ public abstract class ChatComponentMixin {
                 int linesCount = discord_minecraft_chat$getImageLinesCount(image.imageSize.height());
                 Component imageComponent = Component.literal(" ".repeat(image.imageSize.width() / minecraft.font.width(" ")))
                         .withStyle(style ->
-                                style.withHoverEvent(new HoverEvent(
-                                                HoverEvent.Action.SHOW_TEXT,
-                                                Component.literal(getTranslateClient(CLICK_TO_OPEN_IMAGE)))
-                                        )
-                                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "open_image " + image.url))
+                                style.withHoverEvent(new HoverEvent.ShowText(Component.literal(getTranslateClient(CLICK_TO_OPEN_IMAGE))))
+                                        .withClickEvent(new ClickEvent.RunCommand("open_image " + image.url))
                         );
                 FormattedCharSequence imageCharSequence = imageComponent.getVisualOrderText();
 
@@ -194,8 +194,8 @@ public abstract class ChatComponentMixin {
                 messagesY.put(guiMessageIndex, messageY);
         }
 
-        graphics.pose().pushPose();
-        graphics.pose().translate(4.0F, 0.0F, 50.0F);
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(4.0F, 0.0F);
 
         for (Map.Entry<Integer, List<String>> entry : allChatUrls.entrySet()) {
             int messageIndex = entry.getKey();
@@ -239,11 +239,11 @@ public abstract class ChatComponentMixin {
                 if (endY > chatBottomY)
                     visibleHeight -= Math.abs(endY - chatBottomY);
 
-                graphics.blit(resourceLocation,
-                        0, startY,
-                        0, startV,
-                        imageWidth, visibleHeight,
-                        imageWidth, imageHeight
+                graphics.blit(RenderPipelines.GUI_TEXTURED, resourceLocation,
+                        0, startY,                  // x, y
+                        0, startV,                    // u, v
+                        imageWidth, visibleHeight,    // size on screen
+                        imageWidth, imageHeight       // real image size
                 );
 
                 if (abstractImage.isSpoilerAndNotOpened()) {
@@ -264,18 +264,18 @@ public abstract class ChatComponentMixin {
                         int textX = centerX - (int)(originalTextWidth * scale / 2);
                         int textY = fullCenterY - (int)(originalTextHeight * scale / 2);
 
-                        graphics.pose().pushPose();
-                        graphics.pose().translate(textX, textY, 0);
-                        graphics.pose().scale(scale, scale, 1.0f);
+                        graphics.pose().pushMatrix();
+                        graphics.pose().translate(textX, textY);
+                        graphics.pose().scale(scale, scale);
 
                         graphics.drawString(minecraft.font,
                                 spoilerText,
                                 0, 0,
-                                0xFFFFFF,
+                                ARGB.color(0xFFFFFF, -1),
                                 true
                         );
 
-                        graphics.pose().popPose();
+                        graphics.pose().popMatrix();
                     }
                 }
 
@@ -283,6 +283,6 @@ public abstract class ChatComponentMixin {
             }
         }
 
-        graphics.pose().popPose();
+        graphics.pose().popMatrix();
     }
 }

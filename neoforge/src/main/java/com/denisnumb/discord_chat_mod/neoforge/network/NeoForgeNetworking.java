@@ -17,7 +17,7 @@ import net.neoforged.neoforge.network.handling.MainThreadPayloadHandler;
 import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = DiscordChatMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = DiscordChatMod.MOD_ID)
 public class NeoForgeNetworking {
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {
@@ -46,8 +46,9 @@ public class NeoForgeNetworking {
                 new MainThreadPayloadHandler<>((data, context) -> {
                     if (context.player() instanceof ServerPlayer player)
                         PacketHandler.handleScreenshotPartPacketServerSide(data, player);
-                    else
-                        PacketHandler.handleScreenshotPartPacketClientSide(data);
+                }),
+                new MainThreadPayloadHandler<>((data, context) -> {
+                    PacketHandler.handleScreenshotPartPacketClientSide(data);
                 })
         );
 

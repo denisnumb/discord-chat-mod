@@ -70,8 +70,10 @@ public class CustomChatTypeRegistry {
             Component sender,
             @Nullable Component originalMessage
     ) {
-        return new ChatType.Bound(registryAccess.registryOrThrow(Registries.CHAT_TYPE)
-                .getHolderOrThrow(chatType),
+        Registry<ChatType> registry = registryAccess.lookupOrThrow(Registries.CHAT_TYPE);
+
+        return new ChatType.Bound(
+                registry.wrapAsHolder(registry.getValueOrThrow(chatType)),
                 sender,
                 originalMessage == null
                         ? Optional.empty()

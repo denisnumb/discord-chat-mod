@@ -85,7 +85,7 @@ public class AdvancementIconParser {
             }
 
         } catch (Exception e) {
-            LOGGER.error("AdvancementIconParseError [{}]: {}", displayInfo.getIcon().getDescriptionId(), e.getMessage());
+            LOGGER.error("AdvancementIconParseError [{}]: {}", displayInfo.getIcon().getItem().getDescriptionId(), e.getMessage());
         }
 
         return Optional.empty();

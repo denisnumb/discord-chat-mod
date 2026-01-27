@@ -24,6 +24,7 @@ import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.net.URI;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -145,8 +146,8 @@ public class DiscordEvents extends ListenerAdapter {
                 .withColor(roleColor.getRGB())
                 .withStyle(style ->
                         style.withInsertion("@" + ChannelMembersProvider.getMemberDisplayName(member))
-                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/mention " + ChannelMembersProvider.getMemberDisplayName(member)))
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.getUser().getName())))
+                                .withClickEvent(new ClickEvent.SuggestCommand("/mention " + ChannelMembersProvider.getMemberDisplayName(member)))
+                                .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.getUser().getName())))
                 )
         );
 
@@ -190,8 +191,8 @@ public class DiscordEvents extends ListenerAdapter {
                 for (var file : attachments) {
                     attachmentPart.append(Component.literal(file.getFileName() + (++index < attachments.size() ? "\n" : ""))
                         .withColor(CHAT_LINK_COLOR).withStyle(style -> style.withItalic(true)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl()))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(file.getUrl())))
+                            .withClickEvent(new ClickEvent.OpenUrl(URI.create(file.getUrl())))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(file.getUrl())))
                         )
                     );
                 }
@@ -205,7 +206,7 @@ public class DiscordEvents extends ListenerAdapter {
                 stickerPart.append(Component.literal(String.format(getTranslate(STICKER), sticker.getName()))
                     .withStyle(style -> style
                         .withItalic(true)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, sticker.getIconUrl()))
+                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(sticker.getIconUrl())))
                     )
                 );
 

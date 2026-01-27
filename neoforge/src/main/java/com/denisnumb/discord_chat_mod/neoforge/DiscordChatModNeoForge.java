@@ -23,6 +23,8 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforgespi.language.IModInfo;
 
+import java.nio.file.Path;
+
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.*;
 
@@ -34,7 +36,7 @@ public final class DiscordChatModNeoForge {
         LocaleProvider.setLocaleLoader(localeLoader);
         modEventBus.addListener(localeLoader::loadLocalizationFromSetup);
         NeoForge.EVENT_BUS.register(this);
-        ConfigManager.load(FMLEnvironment.dist == Dist.CLIENT);
+        ConfigManager.load(FMLEnvironment.getDist() == Dist.CLIENT);
         ConfigProvider.setConfigProvider(new ConfigProviderImpl());
         PlatformPacketDistributor.setHandler(new NeoForgePacketDistributor());
     }
@@ -58,7 +60,7 @@ public final class DiscordChatModNeoForge {
 
                 String localePath = String.format("/assets/%s/lang/%s.json", namespace, configLocale);
                 try {
-                    loadLocaleFromPath(modList.getModFileById(namespace).getFile().findResource(localePath));
+                    loadLocaleFromPath(Path.of(modList.getModFileById(namespace).getFile().getContents().findFile(localePath).orElseThrow()));
                 } catch (Exception e) {
                     LOGGER.warn("Failed to load localization {}", localePath);
                 }

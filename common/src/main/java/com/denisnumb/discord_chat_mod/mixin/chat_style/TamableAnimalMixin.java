@@ -20,7 +20,7 @@ public abstract class TamableAnimalMixin extends LivingEntity {
             method = "die",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/LivingEntity;sendSystemMessage(Lnet/minecraft/network/chat/Component;)V"
+                    target = "Lnet/minecraft/server/level/ServerPlayer;sendSystemMessage(Lnet/minecraft/network/chat/Component;)V"
             ),
             require = 0
     )

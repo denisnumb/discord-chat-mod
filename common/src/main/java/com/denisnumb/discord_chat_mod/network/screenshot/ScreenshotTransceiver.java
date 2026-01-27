@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -120,7 +121,7 @@ public class ScreenshotTransceiver {
         networkPool.execute(() -> {
             try {
                 byte[] data = gson.toJson(new ImageData(uniqueFilename, screenshotData.data())).getBytes();
-                List<ServerPlayer> playerList = Objects.requireNonNull(fromPlayer.getServer()).getPlayerList().getPlayers();
+                List<ServerPlayer> playerList = Objects.requireNonNull(fromPlayer.level().getServer()).getPlayerList().getPlayers();
 
                 for (ServerPlayer player : playerList) {
                     try {
@@ -132,7 +133,7 @@ public class ScreenshotTransceiver {
                 }
 
                 Component screenshotComponent = Component.literal(getTranslate(SCREENSHOT)).withStyle(style ->
-                        style.withColor(CHAT_LINK_COLOR).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, uniqueFilename))
+                        style.withColor(CHAT_LINK_COLOR).withClickEvent(new ClickEvent.OpenUrl(URI.create(uniqueFilename)))
                 );
                 sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, fromPlayer.getDisplayName(), MESSAGE, screenshotComponent));
             } catch (Exception e) {
@@ -164,8 +165,8 @@ public class ScreenshotTransceiver {
     private static void handleSuccessfulDiscordSend(String screenshotUrl, Player player) {
         Component screenshotComponent = Component.literal(getTranslate(SCREENSHOT))
                 .withStyle(style -> style.withColor(CHAT_LINK_COLOR)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, screenshotUrl))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(screenshotUrl)))
+                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(screenshotUrl)))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(screenshotUrl)))
                 );
 
         sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, player.getDisplayName(), MESSAGE, screenshotComponent));
@@ -173,6 +174,6 @@ public class ScreenshotTransceiver {
 
     private static void sendErrorMessageToPlayer(Player player, String errorMessage) {
         String message = String.format(getTranslate(SCREENSHOT_SENDING_ERROR_WITH_REASON), errorMessage);
-        player.sendSystemMessage(Component.literal(message).withStyle(ChatFormatting.RED));
+        player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.RED), false);
     }
 }
