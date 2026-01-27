@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
@@ -54,19 +55,6 @@ public class LocaleProvider {
                 : Language.getInstance().getOrDefault(key);
     }
 
-    public static boolean loadLocaleFromPath(@Nullable Path localePath){
-        try{
-            if (localePath != null && Files.exists(localePath)){
-                addLanguageData(GSON.fromJson(Files.readString(localePath), TYPE));
-                return true;
-            }
-        } catch (Exception e){
-            LOGGER.warn("Failed to load localization {}", localePath);
-        }
-
-        return false;
-    }
-
     public static void loadMinecraftLocale(String locale){
         if (loadLocaleFromPath(getCachedFile(locale)))
             return;
@@ -80,6 +68,39 @@ public class LocaleProvider {
             LOGGER.warn("Failed to load minecraft localization from {}", url);
             e.printStackTrace();
         }
+    }
+
+    public static void loadLocaleFromResource(@Nullable String localeResourcePath){
+        try{
+            InputStream localeInputStream = getLocaleInputStream(localeResourcePath);
+            if (localeInputStream != null){
+                addLanguageData(GSON.fromJson(new String(localeInputStream.readAllBytes()), TYPE));
+            }
+        } catch (Exception e){
+            LOGGER.warn("Failed to load localization {}", localeResourcePath);
+        }
+    }
+
+    private static boolean loadLocaleFromPath(@Nullable Path localePath){
+        try{
+            if (localePath != null && Files.exists(localePath)){
+                addLanguageData(GSON.fromJson(Files.readString(localePath), TYPE));
+                return true;
+            }
+        } catch (Exception e){
+            LOGGER.warn("Failed to load localization {}", localePath);
+        }
+
+        return false;
+    }
+
+    @Nullable
+    private static InputStream getLocaleInputStream(String pathToLocale) throws IllegalStateException {
+        InputStream input = DiscordChatMod.class.getResourceAsStream(pathToLocale);
+        if (input != null)
+            return input;
+
+        return DiscordChatMod.class.getClassLoader().getResourceAsStream(pathToLocale);
     }
 
     private static void addLanguageData(Map<String, String> languageData){

@@ -42,7 +42,7 @@ public final class DiscordChatModFabric implements ModInitializer{
                     continue;
                 }
 
-                loadLocaleFromPath(mod.findPath(String.format("assets/%s/lang/%s.json", namespace, configLocale)).orElse(null));
+                loadLocaleFromResource(String.format("/assets/%s/lang/%s.json", namespace, configLocale));
             }
         }
     }
