@@ -35,7 +35,7 @@ public abstract class ScreenMixin {
                 if (clickEvent instanceof ClickEvent.RunCommand(String command)){
                     String value = StringUtil.filterText(command);
                     if (value.startsWith("send_screenshot")) {
-                        boolean sendAsSpoiler = Minecraft.getInstance().hasShiftDown();
+                        boolean sendAsSpoiler = Screen.hasShiftDown();
                         String filePath = value.replace("send_screenshot ", "");
                         discord_minecraft_chat$sendScreenshot(filePath, sendAsSpoiler);
                         cir.setReturnValue(true);
