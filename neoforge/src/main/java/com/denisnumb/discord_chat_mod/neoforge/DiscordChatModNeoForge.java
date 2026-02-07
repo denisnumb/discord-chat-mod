@@ -33,7 +33,7 @@ public final class DiscordChatModNeoForge {
         LocaleProvider.setLocaleLoader(localeLoader);
         modEventBus.addListener(localeLoader::loadLocalizationFromSetup);
         NeoForge.EVENT_BUS.register(this);
-        ConfigManager.load(FMLEnvironment.getDist() == Dist.CLIENT);
+        ConfigManager.load(FMLEnvironment.dist.isClient());
         ConfigProvider.setConfigProvider(new ConfigProviderImpl());
         PlatformPacketDistributor.setHandler(new NeoForgePacketDistributor());
     }
