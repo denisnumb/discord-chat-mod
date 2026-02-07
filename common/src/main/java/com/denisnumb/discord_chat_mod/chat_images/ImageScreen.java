@@ -55,10 +55,9 @@ public class ImageScreen extends Screen {
         );
     }
 
-    // ИЗМЕНЕНИЕ 1: Адаптация обработки клика мыши под 1.21.8
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) { // button 0 - левая кнопка мыши
+        if (button == 0) {
             boolean outsideImage = mouseX < centerX
                     || mouseX > centerX + renderWidth
                     || mouseY < centerY

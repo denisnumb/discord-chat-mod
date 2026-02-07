@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[10,)"
+loaderVersion = "[9,)"
 issueTrackerURL = "https://github.com/denisnumb/discord-minecraft-chat/issues"
 license = "All Rights Reserved"
 
@@ -17,14 +17,14 @@ displayURL="https://www.curseforge.com/minecraft/mc-mods/discord-chat-connect"
 [[dependencies.discord_chat_mod]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.9,)"
+versionRange = "[21.8,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.discord_chat_mod]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.9,)"
+versionRange = "[1.21.8,)"
 ordering = "NONE"
 side = "BOTH"
 
