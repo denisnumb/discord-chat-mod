@@ -15,7 +15,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -87,8 +87,8 @@ public class MinecraftEvents {
         if (!displayInfo.shouldAnnounceChat())
             return Optional.empty();
 
-        ResourceLocation advancementId = advancementHolder.id();
-        ResourceLocation advancementResourceLocation = ResourceLocation.fromNamespaceAndPath(
+        Identifier advancementId = advancementHolder.id();
+        Identifier advancementIdentifier = Identifier.fromNamespaceAndPath(
                 advancementId.getNamespace(),
                 "advancement/" + advancementId.getPath() + ".json"
         );
@@ -96,7 +96,7 @@ public class MinecraftEvents {
         String title = displayInfo.getTitle().getString();
         String description = displayInfo.getDescription().getString();
 
-        JsonObject advancementJson = getAdvancementFileAsJsonObject(advancementResourceLocation);
+        JsonObject advancementJson = getAdvancementFileAsJsonObject(advancementIdentifier);
         if (advancementJson != null) {
             title = getTranslatedAdvancementTitle(advancementJson, title);
             description = getTranslatedAdvancementDescription(advancementJson, description);

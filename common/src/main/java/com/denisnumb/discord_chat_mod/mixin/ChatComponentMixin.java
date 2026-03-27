@@ -15,7 +15,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -217,8 +217,8 @@ public abstract class ChatComponentMixin {
                 AbstractImage abstractImage = IMAGE_CACHE.get(imageUrl);
                 ImageSize imageSize = abstractImage.imageSize;
 
-                ResourceLocation resourceLocation = abstractImage.isSpoilerAndNotOpened()
-                        ? abstractImage.spoilerResourceLocation
+                Identifier resourceLocation = abstractImage.isSpoilerAndNotOpened()
+                        ? abstractImage.spoilerIdentifier
                         : abstractImage instanceof AnimatedImage gif
                         ? gif.getCurrentFrame()
                         : ((Image) abstractImage).resourceLocation;

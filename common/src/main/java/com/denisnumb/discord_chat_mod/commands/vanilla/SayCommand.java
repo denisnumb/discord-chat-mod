@@ -27,7 +27,7 @@ public class SayCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
         dispatcher.register(
                 Commands.literal("say")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                         .then(Commands.argument("message", MessageArgument.message())
                                 .executes(context -> {
                                     MessageArgument.resolveChatMessage(context, "message", (resolvedMessage) -> {

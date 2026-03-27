@@ -10,7 +10,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 public class ImageScreen extends Screen {
@@ -45,7 +45,7 @@ public class ImageScreen extends Screen {
         centerX = (this.width - renderWidth) / 2;
         centerY = (this.height - renderHeight) / 2;
 
-        ResourceLocation resourceLocation = image instanceof AnimatedImage gif
+        Identifier resourceLocation = image instanceof AnimatedImage gif
                 ? gif.getCurrentFrame()
                 : ((Image) image).resourceLocation;
 

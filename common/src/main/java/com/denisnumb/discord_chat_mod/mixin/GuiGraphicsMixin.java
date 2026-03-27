@@ -10,7 +10,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsMixin {
     @Unique private static final Pattern EMOJI_PATTERN = Pattern.compile(":([a-zA-Z0-9_]{2,}(~([1-9][0-9]*))?):");
-    @Shadow public abstract void blit(RenderPipeline renderPipeline, ResourceLocation atlasLocation, int x, int y, float uOffset, float vOffset, int width, int height, int textureWidth, int textureHeight);
+    @Shadow public abstract void blit(RenderPipeline renderPipeline, Identifier atlasLocation, int x, int y, float uOffset, float vOffset, int width, int height, int textureWidth, int textureHeight);
 
     @Unique
     private static FormattedCharSequence discord_minecraft_chat$substringFormatted(FormattedCharSequence text, int start, int end) {
@@ -102,7 +102,7 @@ public abstract class GuiGraphicsMixin {
 
             if (abstractImage != null) {
 
-                ResourceLocation emoji =
+                Identifier emoji =
                         abstractImage instanceof AnimatedImage gif
                                 ? gif.getCurrentFrame()
                                 : ((Image) abstractImage).resourceLocation;

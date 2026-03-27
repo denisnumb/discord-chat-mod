@@ -5,7 +5,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -31,30 +31,30 @@ public class CustomChatTypeRegistry {
     public static final String TEAM_MSG_COMMAND_OUTGOING_PATH = "team_msg_command_outgoing";
 
     public static void registerChatTypes(Registry<ChatType> registry) {
-        CHAT = ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, CHAT_PATH));
+        CHAT = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, CHAT_PATH));
         Registry.register(registry, CHAT, buildChatType(CHAT));
 
-        SAY_COMMAND = ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, SAY_COMMAND_PATH));
+        SAY_COMMAND = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, SAY_COMMAND_PATH));
         Registry.register(registry, SAY_COMMAND, buildChatType(SAY_COMMAND));
 
-        EMOTE_COMMAND = ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, EMOTE_COMMAND_PATH));
+        EMOTE_COMMAND = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, EMOTE_COMMAND_PATH));
         Registry.register(registry, EMOTE_COMMAND, buildChatType(EMOTE_COMMAND));
 
-        MSG_COMMAND_INCOMING = ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, MSG_COMMAND_INCOMING_PATH));
+        MSG_COMMAND_INCOMING = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, MSG_COMMAND_INCOMING_PATH));
         Registry.register(registry, MSG_COMMAND_INCOMING, buildChatType(MSG_COMMAND_INCOMING));
 
-        MSG_COMMAND_OUTGOING = ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, MSG_COMMAND_OUTGOING_PATH));
+        MSG_COMMAND_OUTGOING = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, MSG_COMMAND_OUTGOING_PATH));
         Registry.register(registry, MSG_COMMAND_OUTGOING, buildChatType(MSG_COMMAND_OUTGOING));
 
-        TEAM_MSG_COMMAND_INCOMING = ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, TEAM_MSG_COMMAND_INCOMING_PATH));
+        TEAM_MSG_COMMAND_INCOMING = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, TEAM_MSG_COMMAND_INCOMING_PATH));
         Registry.register(registry, TEAM_MSG_COMMAND_INCOMING, buildChatType(TEAM_MSG_COMMAND_INCOMING));
 
-        TEAM_MSG_COMMAND_OUTGOING = ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, TEAM_MSG_COMMAND_OUTGOING_PATH));
+        TEAM_MSG_COMMAND_OUTGOING = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, TEAM_MSG_COMMAND_OUTGOING_PATH));
         Registry.register(registry, TEAM_MSG_COMMAND_OUTGOING, buildChatType(TEAM_MSG_COMMAND_OUTGOING));
     }
 
     public static String[] getParametersByChatType(ResourceKey<ChatType> chatType) {
-        return switch (chatType.location().getPath()) {
+        return switch (chatType.identifier().getPath()) {
             case CHAT_PATH, SAY_COMMAND_PATH, EMOTE_COMMAND_PATH -> new String[] { PLAYER, MESSAGE };
             case MSG_COMMAND_INCOMING_PATH -> new String[] { SENDER, MESSAGE};
             case MSG_COMMAND_OUTGOING_PATH -> new String[] { RECEIVER, MESSAGE };
@@ -82,7 +82,7 @@ public class CustomChatTypeRegistry {
     }
 
     private static ChatType buildChatType(ResourceKey<ChatType> key) {
-        String narrateTranslationKey = key.location().getPath().equals(EMOTE_COMMAND_PATH)
+        String narrateTranslationKey = key.identifier().getPath().equals(EMOTE_COMMAND_PATH)
                 ? "chat.type.emote"
                 : "chat.type.text.narrate";
 

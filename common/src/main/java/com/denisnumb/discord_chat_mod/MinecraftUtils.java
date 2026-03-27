@@ -15,6 +15,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.MinecraftServer;
@@ -68,7 +69,7 @@ public class MinecraftUtils {
         try {
             CommandSourceStack fakeSource = server.createCommandSourceStack()
                     .withSuppressedOutput()
-                    .withPermission(4);
+                    .withPermission(LevelBasedPermissionSet.ADMIN);
             EntitySelectorParser parser = new EntitySelectorParser(new StringReader(selector), true);
 
             return parser.parse().findPlayers(fakeSource);
