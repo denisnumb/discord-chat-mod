@@ -53,7 +53,7 @@ public abstract class GuiGraphicsMixin {
             method = "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/render/state/GuiTextRenderState;<init>(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;Lorg/joml/Matrix3x2f;IIIIZLnet/minecraft/client/gui/navigation/ScreenRectangle;)V"
+                    target = "Lnet/minecraft/client/gui/render/state/GuiTextRenderState;<init>(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;Lorg/joml/Matrix3x2fc;IIIIZZLnet/minecraft/client/gui/navigation/ScreenRectangle;)V"
             )
     )
     private void handleCustomDiscordEmojis(Args args) {
