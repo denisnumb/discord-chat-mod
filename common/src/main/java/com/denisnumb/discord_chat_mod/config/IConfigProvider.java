@@ -23,6 +23,9 @@ public interface IConfigProvider {
     int commandLogMinPermissionLevel();
     Set<String> commandLogIgnoredCommands();
 
+    boolean isSlashCommandsEnabled();
+    java.util.List<String> slashCommandAllowedRoles();
+
     boolean isWebhookModeEnabled();
     String webhookServerName();
     String webhookServerAvatarUrl();
