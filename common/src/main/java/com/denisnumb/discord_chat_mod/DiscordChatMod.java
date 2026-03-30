@@ -41,6 +41,7 @@ import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.upda
 import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.initWebhookSendExecutor;
 import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.stopWebhookSendExecutor;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
+import com.denisnumb.discord_chat_mod.discord.slash_commands.DiscordSlashCommands;
 
 public final class DiscordChatMod {
     public static final String MOD_ID = "discord_chat_mod";
@@ -138,6 +139,7 @@ public final class DiscordChatMod {
             initDiscordSendExecutor();
             DiscordChannelRegistry.initDiscordChannels(config.discordGuildConfigs());
             initServerStatusController();
+            DiscordSlashCommands.register(jda);
             AvatarUrlStorage.load(server);
 
             if (!isChannelCategoryDisabled(serverLogsChannel))
@@ -153,6 +155,7 @@ public final class DiscordChatMod {
 
     public static void stopJDA() {
         if (jda != null) {
+            DiscordSlashCommands.unregister(jda);
             updateServerStatusMessageToUnavailable();
             ServerLogsRetranslator.stop();
             stopWebhookSendExecutor();

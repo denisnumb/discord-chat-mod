@@ -11,6 +11,13 @@ public class ConfigDefaults {
     public static final int UTC_OFFSET_HOURS_DEFAULT = 0;
 
     // =================================================================================================================
+    //                                          DISCORD SLASH COMMANDS DEFAULTS
+    // =================================================================================================================
+
+    public static final boolean ENABLE_SLASH_COMMANDS_DEFAULT = true;
+    public static final java.util.List<String> SLASH_COMMAND_ALLOWED_ROLES_DEFAULT = java.util.List.of();
+
+    // =================================================================================================================
     //                                              WEBHOOK MODE DEFAULTS
     // =================================================================================================================
 

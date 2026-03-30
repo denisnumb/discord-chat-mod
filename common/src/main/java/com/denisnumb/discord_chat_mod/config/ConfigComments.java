@@ -53,6 +53,24 @@ public class ConfigComments {
             """;
 
     // =================================================================================================================
+    //                                          DISCORD SLASH COMMANDS COMMENTS
+    // =================================================================================================================
+
+    public static final String ENABLE_SLASH_COMMANDS_COMMENT
+            = " Enable Discord slash commands (/list, /uptime, /tps, /cmd)";
+
+    public static final String SLASH_COMMAND_ALLOWED_ROLES_COMMENT
+            = """
+             List of Discord role IDs or role names that are allowed to use the /cmd slash command.\
+
+             The /cmd command lets users execute Minecraft server commands from Discord.\
+
+             If empty, /cmd is disabled for everyone. /list, /uptime, and /tps are always available.\
+
+             Example: ["Admin", "Moderator"] or ["123456789012345678"]\
+            """;
+
+    // =================================================================================================================
     //                                          DISCORD GUILD CONFIG COMMENTS
     // =================================================================================================================
 

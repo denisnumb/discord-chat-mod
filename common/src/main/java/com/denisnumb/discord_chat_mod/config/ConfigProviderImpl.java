@@ -52,6 +52,16 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public boolean isSlashCommandsEnabled() {
+        return CommonConfig.enableSlashCommands;
+    }
+
+    @Override
+    public java.util.List<String> slashCommandAllowedRoles() {
+        return CommonConfig.slashCommandAllowedRoles;
+    }
+
+    @Override
     public boolean isWebhookModeEnabled() {
         return WebhookModeConfig.enableWebhookMode;
     }

@@ -16,6 +16,9 @@ public interface IConfigProvider {
     String modLocale();
     int utcOffsetHours();
 
+    boolean isSlashCommandsEnabled();
+    java.util.List<String> slashCommandAllowedRoles();
+
     boolean isWebhookModeEnabled();
     String webhookServerName();
     String webhookServerAvatarUrl();
