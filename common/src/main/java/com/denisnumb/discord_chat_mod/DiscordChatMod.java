@@ -43,7 +43,8 @@ import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.init
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusMessageToUnavailable;
 import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.initWebhookSendExecutor;
 import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.stopWebhookSendExecutor;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
+import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
+import com.denisnumb.discord_chat_mod.discord.slash_commands.DiscordSlashCommands;
 
 public final class DiscordChatMod {
     public static final String MOD_ID = "discord_chat_mod";
@@ -160,6 +161,7 @@ public final class DiscordChatMod {
             initDiscordSendExecutor();
             DiscordChannelRegistry.initDiscordChannels(config.discordGuildConfigs());
             initServerStatusController();
+            DiscordSlashCommands.register(jda);
             AvatarUrlStorage.load(server);
 
             if (!isChannelCategoryDisabled(serverLogsChannel))
@@ -176,6 +178,7 @@ public final class DiscordChatMod {
 
     public static void stopJDA() {
         if (jda != null) {
+            DiscordSlashCommands.unregister(jda);
             updateServerStatusMessageToUnavailable();
             ServerLogsRetranslator.stop();
             stopWebhookSendExecutor();
@@ -195,8 +198,7 @@ public final class DiscordChatMod {
                 jda.getGatewayPool().shutdownNow();
                 jda.getCallbackPool().shutdownNow();
                 jda.getRateLimitPool().shutdownNow();
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) {}
             jda = null;
 
             LOGGER.info("Discord disconnected");

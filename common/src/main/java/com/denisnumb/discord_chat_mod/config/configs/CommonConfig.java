@@ -19,6 +19,8 @@ public class CommonConfig {
     public static String discordErrorsChatPlayerSelector;
     public static String modLocale;
     public static int utcOffsetHours;
+    public static boolean enableSlashCommands;
+    public static java.util.List<String> slashCommandAllowedRoles;
     public static boolean enableBotPresenceStatus;
     public static boolean mentionBots;
     public static boolean commandLogEnabled;
@@ -61,6 +63,14 @@ public class CommonConfig {
         if (utcOffsetHours > 14) utcOffsetHours = 14;
         commonConfig.set("utcOffsetHours", utcOffsetHours);
         commonConfig.setComment("utcOffsetHours", UTC_OFFSET_HOURS_COMMENT + String.format("\n Default: %d\n Range: -12 ~ 14", UTC_OFFSET_HOURS_DEFAULT));
+
+        enableSlashCommands = commonConfig.getOrElse("enableSlashCommands", ENABLE_SLASH_COMMANDS_DEFAULT);
+        commonConfig.set("enableSlashCommands", enableSlashCommands);
+        commonConfig.setComment("enableSlashCommands", ENABLE_SLASH_COMMANDS_COMMENT);
+
+        slashCommandAllowedRoles = commonConfig.getOrElse("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_DEFAULT);
+        commonConfig.set("slashCommandAllowedRoles", slashCommandAllowedRoles);
+        commonConfig.setComment("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_COMMENT);
 
         enableBotPresenceStatus = commonConfig.getOrElse("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_DEFAULT);
         commonConfig.set("enableBotPresenceStatus", enableBotPresenceStatus);

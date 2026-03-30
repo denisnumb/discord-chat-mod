@@ -47,7 +47,6 @@ public class PlayerListMixin {
         return MinecraftEvents.handleJoinLeave(serverPlayer, true).orElse(value).copy();
     }
 
-    //Run this after fabric's PlayerListMixin.java to obey ALLOW_CHAT_MESSAGE system
     @ModifyArgs(
             method = "broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/ChatType$Bound;)V",
             at = @At(
@@ -89,7 +88,6 @@ public class PlayerListMixin {
             bound = styledBound;
         }
 
-        //broadcastChatMessage(originalMessage, don't change, player, bound);
         args.set(0, originalMessage);
         args.set(2, player);
         args.set(3, bound);

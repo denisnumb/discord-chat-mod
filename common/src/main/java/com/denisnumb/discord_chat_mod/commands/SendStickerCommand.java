@@ -27,7 +27,6 @@ import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.sendMessageFromPlayer;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 
