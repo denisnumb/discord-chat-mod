@@ -33,6 +33,7 @@ public class ModLanguageKey {
     public static final String UNKNOWN_STICKER = "discord_chat_mod.command.send_sticker.unknown";
     public static final String COLORED_TEXT_EXAMPLE = "discord_chat_mod.colored_text_example";
     public static final String CONFIG_RELOADED = "discord_chat_mod.command.reload_config.success";
+    public static final String REPLY = "discord_chat_mod.reply";
     public static final String FORWARDED_GUILD_MESSAGE = "discord_chat_mod.forwarded_guild_message";
     public static final String NO_CONFIG_GUILDS_CONFIGURED = "discord_chat_mod.warn.no_guilds_configured";
 }

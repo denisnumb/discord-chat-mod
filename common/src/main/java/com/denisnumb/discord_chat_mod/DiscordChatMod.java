@@ -165,7 +165,7 @@ public final class DiscordChatMod {
             AvatarUrlStorage.load(server);
 
             if (!isChannelCategoryDisabled(serverLogsChannel))
-                ServerLogsRetranslator.init(config.serverLogsToDiscordLoggingLevel());
+                ServerLogsRetranslator.init(config.serverLogsToDiscordLoggingLevel(), config.serverLogsPattern(), config.isServerLogsCommandsOnly());
 
             LOGGER.info("Discord connected");
             trySendServerStartMessage();
