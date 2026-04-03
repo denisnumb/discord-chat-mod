@@ -28,6 +28,16 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public String serverLogsPattern() {
+        return CommonConfig.serverLogsPattern;
+    }
+
+    @Override
+    public boolean isServerLogsCommandsOnly() {
+        return CommonConfig.serverLogsCommandsOnly;
+    }
+
+    @Override
     public boolean isDiscordMessagesLoggingEnabled() {
         return CommonConfig.logDiscordMessages;
     }

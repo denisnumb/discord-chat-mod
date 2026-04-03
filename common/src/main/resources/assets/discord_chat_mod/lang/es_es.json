@@ -31,6 +31,7 @@
     "discord_chat_mod.command.send_sticker.unknown": "No existe ningún sticker con el nombre %s",
     "discord_chat_mod.colored_text_example": "Ejemplo de texto coloreado",
     "discord_chat_mod.command.reload_config.success": "Configuración recargada",
+    "discord_chat_mod.reply": "(Respuesta a %s)",
     "discord_chat_mod.forwarded_guild_message": "> Mensaje de %s del servidor %s",
     "discord_chat_mod.warn.no_guilds_configured": "No hay ningun servidor de Discord configurado en la configuración del mod"
 }

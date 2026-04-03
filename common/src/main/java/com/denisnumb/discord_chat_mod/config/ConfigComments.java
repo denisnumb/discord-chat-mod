@@ -35,6 +35,16 @@ public class ConfigComments {
     public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT
             = " The minimum level of logs that will be sent to Discord.\n Possible values: ERROR, WARN, INFO";
 
+    public static final String SERVER_LOGS_PATTERN_COMMENT
+            = " Log4j pattern for formatting server logs sent to Discord."
+            + "\n Common placeholders: %d{HH:mm:ss} (time), %t (thread), %level (level), %logger{1} (class), %msg (message), %n (newline)"
+            + "\n Example (clean): \"[%d{HH:mm:ss}] %msg%n\""
+            + "\n Example (verbose): \"[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n\"";
+
+    public static final String SERVER_LOGS_COMMANDS_ONLY_COMMENT
+            = " If true, only player command executions will be sent to the server logs Discord channel."
+            + "\n This filters out all other log messages and only shows lines like: \"Player executed command\"";
+
     public static final String LOG_DISCORD_MESSAGES_COMMENT = " Do logging to the server console messages from discord";
 
     public static final String LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT = " Notify about internal Discord interaction errors in the server's in-game chat";
