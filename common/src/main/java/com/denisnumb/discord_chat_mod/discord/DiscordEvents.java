@@ -35,6 +35,7 @@ import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getServerPlayerCount;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayers;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.FORWARDED_GUILD_MESSAGE;
+import static com.denisnumb.discord_chat_mod.ModLanguageKey.REPLY;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.STICKER;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
@@ -150,6 +151,25 @@ public class DiscordEvents extends ListenerAdapter {
                 )
         );
 
+        MutableComponent replyPrefix = Component.empty();
+        Message referencedMessage = message.getReferencedMessage();
+        if (referencedMessage != null) {
+            String replyAuthor = referencedMessage.getMember() != null
+                    ? referencedMessage.getMember().getEffectiveName()
+                    : referencedMessage.getAuthor().getEffectiveName();
+            String replyText = String.format(getTranslate(REPLY), replyAuthor);
+            String rawPreview = referencedMessage.getContentDisplay();
+            String previewText = rawPreview.length() > 50 ? rawPreview.substring(0, 50) + "..." : rawPreview;
+
+            replyPrefix = Component.literal(replyText + " ")
+                    .withColor(0x7A7A7A)
+                    .withStyle(style -> style
+                            .withItalic(true)
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(replyAuthor + ": " + previewText)))
+                    );
+        }
+        final Component replyComponent = replyPrefix;
+
         CompletableFuture<List<Component>> componentsFuture;
 
         if (!message.getContentRaw().isEmpty()) {
@@ -175,9 +195,15 @@ public class DiscordEvents extends ListenerAdapter {
                     content = content.replace(entry.getKey(), entry.getValue().prettyMention);
                 return Component.literal(content);
             }).thenApply(textPart -> {
-                addComponentsPart(components, configTemplate, guildComponent, userNameComponent, textPart);
+                Component messagePart = replyComponent.getString().isEmpty()
+                        ? textPart
+                        : Component.empty().append(replyComponent).append(textPart);
+                addComponentsPart(components, configTemplate, guildComponent, userNameComponent, messagePart);
                 return components;
             });
+        } else if (!replyComponent.getString().isEmpty()) {
+            addComponentsPart(components, configTemplate, guildComponent, userNameComponent, replyComponent);
+            componentsFuture = CompletableFuture.completedFuture(components);
         } else {
             componentsFuture = CompletableFuture.completedFuture(components);
         }
