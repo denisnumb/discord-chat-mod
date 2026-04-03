@@ -10,6 +10,8 @@ public interface IConfigProvider {
     String discordBotToken();
     String serverLogsChannelId();
     String serverLogsToDiscordLoggingLevel();
+    String serverLogsPattern();
+    boolean isServerLogsCommandsOnly();
     boolean isDiscordMessagesLoggingEnabled();
     boolean isLoggingDiscordErrorsToServerChatEnabled();
     String discordErrorsChatPlayerSelector();

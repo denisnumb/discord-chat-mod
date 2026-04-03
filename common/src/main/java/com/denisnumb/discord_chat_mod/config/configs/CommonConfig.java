@@ -8,6 +8,8 @@ import static com.denisnumb.discord_chat_mod.config.ConfigComments.ENABLE_PINNED
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.LOG_DISCORD_MESSAGES_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.MOD_LOCALE_COMMENT;
+import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_COMMANDS_ONLY_COMMENT;
+import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_PATTERN_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.UTC_OFFSET_HOURS_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
@@ -17,6 +19,8 @@ public class CommonConfig {
     public static String discordBotToken;
     public static String serverLogsChannelId;
     public static String serverLogsToDiscordLoggingLevel;
+    public static String serverLogsPattern;
+    public static boolean serverLogsCommandsOnly;
     public static boolean logDiscordMessages;
     public static boolean logDiscordErrorsToServerChat;
     public static String discordErrorsChatPlayerSelector;
@@ -39,6 +43,14 @@ public class CommonConfig {
             serverLogsToDiscordLoggingLevel = SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_DEFAULT;
         commonConfig.set("serverLogsToDiscordLoggingLevel", serverLogsToDiscordLoggingLevel);
         commonConfig.setComment("serverLogsToDiscordLoggingLevel", SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT);
+
+        serverLogsPattern = commonConfig.getOrElse("serverLogsPattern", SERVER_LOGS_PATTERN_DEFAULT);
+        commonConfig.set("serverLogsPattern", serverLogsPattern);
+        commonConfig.setComment("serverLogsPattern", SERVER_LOGS_PATTERN_COMMENT);
+
+        serverLogsCommandsOnly = commonConfig.getOrElse("serverLogsCommandsOnly", SERVER_LOGS_COMMANDS_ONLY_DEFAULT);
+        commonConfig.set("serverLogsCommandsOnly", serverLogsCommandsOnly);
+        commonConfig.setComment("serverLogsCommandsOnly", SERVER_LOGS_COMMANDS_ONLY_COMMENT);
 
         logDiscordMessages = commonConfig.getOrElse("logDiscordMessages", LOG_DISCORD_MESSAGES_DEFAULT);
         commonConfig.set("logDiscordMessages", logDiscordMessages);

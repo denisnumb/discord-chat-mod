@@ -4,6 +4,8 @@ public class ConfigDefaults {
     public static final String DISCORD_BOT_TOKEN_DEFAULT = "";
     public static final String SERVER_LOGS_CHANNEL_ID_DEFAULT = "";
     public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_DEFAULT = "INFO";
+    public static final String SERVER_LOGS_PATTERN_DEFAULT = "[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n";
+    public static final boolean SERVER_LOGS_COMMANDS_ONLY_DEFAULT = false;
     public static final boolean LOG_DISCORD_MESSAGES_DEFAULT = true;
     public static final boolean LOG_DISCORD_ERRORS_TO_SERVER_CHAT_DEFAULT = true;
     public static final String DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_DEFAULT = "@a";
