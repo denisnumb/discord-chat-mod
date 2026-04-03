@@ -31,6 +31,7 @@
   "discord_chat_mod.command.send_sticker.unknown": "%sという名前のステッカーはありません",
   "discord_chat_mod.colored_text_example": "色付きテキストの例",
   "discord_chat_mod.command.reload_config.success": "設定が再読み込みされました",
+  "discord_chat_mod.reply": "(%sへの返信)",
   "discord_chat_mod.forwarded_guild_message": "> ギルド %s の %s からのメッセージ",
   "discord_chat_mod.warn.no_guilds_configured": "mod設定にDiscordギルドが設定されていません"
 }
