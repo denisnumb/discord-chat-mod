@@ -31,6 +31,7 @@
   "discord_chat_mod.command.send_sticker.unknown": "Il n'y a pas d'autocollant avec le nom %s",
   "discord_chat_mod.colored_text_example": "Exemple de texte coloré",
   "discord_chat_mod.command.reload_config.success": "Configuration rechargée",
+  "discord_chat_mod.reply": "(Réponse à %s)",
   "discord_chat_mod.forwarded_guild_message": "> Message de %s sur la guilde %s",
   "discord_chat_mod.warn.no_guilds_configured": "Aucun serveur Discord n'est configuré dans la configuration du mod."
 }
