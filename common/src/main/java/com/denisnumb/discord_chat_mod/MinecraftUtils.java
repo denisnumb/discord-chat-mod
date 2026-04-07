@@ -23,6 +23,8 @@ import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
+import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,9 +121,7 @@ public class MinecraftUtils {
     }
 
     public static int getServerPlayerCount(@Nullable MinecraftServer server) {
-        if (server != null && server.getPlayerList() != null)
-            return server.getPlayerCount();
-        return 0;
+        return VanishCompatProvider.get().getVisiblePlayerCount(server);
     }
 
     public static int getServerMaxPlayers(@Nullable MinecraftServer server) {
@@ -132,7 +132,7 @@ public class MinecraftUtils {
 
     public static String[] getServerPlayerNames(@Nullable MinecraftServer server) {
         if (server != null && server.getPlayerList() != null)
-            return server.getPlayerNames();
+            return VanishCompatProvider.get().filterVanishedPlayers(server, server.getPlayerNames());
         return new String[0];
     }
 

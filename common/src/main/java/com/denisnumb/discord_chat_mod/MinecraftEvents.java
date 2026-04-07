@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
+
 import static com.denisnumb.discord_chat_mod.advancement.AdvancementIconParser.parseAdvancementIcon;
 import static com.denisnumb.discord_chat_mod.advancement.AdvancementParser.*;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
@@ -130,6 +132,9 @@ public class MinecraftEvents {
     }
 
     public static Optional<Component> handleJoinLeave(Player player, boolean isJoin) {
+        if (VanishCompatProvider.get().isVanished(player))
+            return Optional.empty();
+
         handleDiscord(() -> {
             MessageType messageType = isJoin ? MessageType.JOIN : MessageType.LEFT;
             getDiscordMessageComponents(messageType, buildPlayerParameters(player))

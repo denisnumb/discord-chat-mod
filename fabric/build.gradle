@@ -54,6 +54,7 @@ dependencies {
     shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0"))
     compileOnly("org.apache.logging.log4j:log4j-core:2.20.0")
 
+
     minecraftRuntimeLibraries "net.dv8tion:JDA:6.1.1"
     minecraftRuntimeLibraries "org.json:json:20231013"
     minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-webp:3.12.0"
@@ -73,6 +74,9 @@ shadowJar {
     configurations = [project.configurations.shadowBundle]
     archiveClassifier = 'dev-shadow'
     mergeServiceFiles()
+
+    // Exclude Vanish API stubs - the real Vanish mod provides these at runtime
+    exclude 'me/drex/vanish/**'
 
     relocate("com.squareup", "com.shadow.com.squareup")
     relocate("com.neovisionaries", "com.shadow.com.neovisionaries")

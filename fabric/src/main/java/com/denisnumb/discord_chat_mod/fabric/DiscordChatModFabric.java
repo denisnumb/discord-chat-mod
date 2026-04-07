@@ -5,6 +5,7 @@ import com.denisnumb.discord_chat_mod.LocaleProvider;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
 import com.denisnumb.discord_chat_mod.config.ConfigProviderImpl;
+import com.denisnumb.discord_chat_mod.fabric.compat.VanishCompat;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricNetworking;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricPacketDistributor;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
@@ -25,6 +26,7 @@ public final class DiscordChatModFabric implements ModInitializer{
         LocaleProvider.setLocaleLoader(new FabricLocaleLoader());
         loadLocalization();
         PlatformPacketDistributor.setHandler(new FabricPacketDistributor());
+        VanishCompat.init();
         ServerLifecycleEvents.SERVER_STARTING.register(DiscordChatMod::onServerStarting);
         ServerLifecycleEvents.SERVER_STARTED.register(server -> DiscordChatMod.onServerStarted());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> DiscordChatMod.onServerStopped());
