@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class AdvancementParser {
             .create();
 
     @Nullable
-    public static JsonObject getAdvancementFileAsJsonObject(ResourceLocation resourceLocation)
+    public static JsonObject getAdvancementFileAsJsonObject(Identifier resourceLocation)
     {
         try {
             Optional<Resource> resource = server.getResourceManager().getResource(resourceLocation);

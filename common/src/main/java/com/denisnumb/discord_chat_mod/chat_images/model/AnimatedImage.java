@@ -1,34 +1,34 @@
 package com.denisnumb.discord_chat_mod.chat_images.model;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
 public class AnimatedImage extends AbstractImage {
-    public final List<ResourceLocation> frames;
+    public final List<Identifier> frames;
     public final int frameDuration;
 
     public AnimatedImage(
             String url,
-            List<ResourceLocation> frames,
+            List<Identifier> frames,
             ImageSize imageSize,
             ImageSize originalSize,
             int frameDuration,
             boolean isSpoiler,
-            ResourceLocation spoilerResourceLocation
+            Identifier spoilerIdentifier
     ) {
-        super(url, imageSize, originalSize, isSpoiler, spoilerResourceLocation);
+        super(url, imageSize, originalSize, isSpoiler, spoilerIdentifier);
         this.frames = frames;
         this.frameDuration = frameDuration;
     }
 
-    public ResourceLocation getCurrentFrame() {
+    public Identifier getCurrentFrame() {
         long time = System.currentTimeMillis();
         int totalDuration = frames.size() * frameDuration;
         long timeInLoop = time % totalDuration;
 
         int elapsedTime = 0;
-        for (ResourceLocation frame : frames) {
+        for (Identifier frame : frames) {
             elapsedTime += frameDuration;
             if (elapsedTime > timeInLoop)
                 return frame;

@@ -31,6 +31,7 @@
   "discord_chat_mod.command.send_sticker.unknown": "Não existe nenhum adesivo com o nome %s",
   "discord_chat_mod.colored_text_example": "Exemplo de texto colorido",
   "discord_chat_mod.command.reload_config.success": "Configuração recarregada",
+  "discord_chat_mod.reply": "(Resposta a %s)",
   "discord_chat_mod.forwarded_guild_message": "> Mensagem de %s na guilda %s",
   "discord_chat_mod.warn.no_guilds_configured": "Não há guildas do Discord configuradas nas configurações do mod"
 }

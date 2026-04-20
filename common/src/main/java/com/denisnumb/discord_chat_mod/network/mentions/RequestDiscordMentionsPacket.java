@@ -3,7 +3,7 @@ package com.denisnumb.discord_chat_mod.network.mentions;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.MOD_ID;
@@ -11,7 +11,7 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.MOD_ID;
 
 public class RequestDiscordMentionsPacket implements CustomPacketPayload {
     public static final Type<RequestDiscordMentionsPacket> TYPE
-            = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "/network/request_discord_mentions_packet"));
+            = new Type<>(Identifier.fromNamespaceAndPath(MOD_ID, "/network/request_discord_mentions_packet"));
 
 
     public static final StreamCodec<ByteBuf, RequestDiscordMentionsPacket> STREAM_CODEC = new StreamCodec<>() {

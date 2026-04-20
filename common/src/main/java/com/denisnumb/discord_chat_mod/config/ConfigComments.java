@@ -35,6 +35,16 @@ public class ConfigComments {
     public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT
             = " The minimum level of logs that will be sent to Discord.\n Possible values: ERROR, WARN, INFO";
 
+    public static final String SERVER_LOGS_PATTERN_COMMENT
+            = " Log4j pattern for formatting server logs sent to Discord."
+            + "\n Common placeholders: %d{HH:mm:ss} (time), %t (thread), %level (level), %logger{1} (class), %msg (message), %n (newline)"
+            + "\n Example (clean): \"[%d{HH:mm:ss}] %msg%n\""
+            + "\n Example (verbose): \"[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n\"";
+
+    public static final String SERVER_LOGS_COMMANDS_ONLY_COMMENT
+            = " If true, only player command executions will be sent to the server logs Discord channel."
+            + "\n This filters out all other log messages and only shows lines like: \"Player executed command\"";
+
     public static final String LOG_DISCORD_MESSAGES_COMMENT = " Do logging to the server console messages from discord";
 
     public static final String LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT = " Notify about internal Discord interaction errors in the server's in-game chat";
@@ -50,6 +60,24 @@ public class ConfigComments {
              The offset of the current time from UTC in hours.\
 
              Used to generate timestamps for message style configurations.\
+            """;
+
+    // =================================================================================================================
+    //                                          DISCORD SLASH COMMANDS COMMENTS
+    // =================================================================================================================
+
+    public static final String ENABLE_SLASH_COMMANDS_COMMENT
+            = " Enable Discord slash commands (/list, /uptime, /tps, /cmd)";
+
+    public static final String SLASH_COMMAND_ALLOWED_ROLES_COMMENT
+            = """
+             List of Discord role IDs or role names that are allowed to use the /cmd slash command.\
+
+             The /cmd command lets users execute Minecraft server commands from Discord.\
+
+             If empty, /cmd is disabled for everyone. /list, /uptime, and /tps are always available.\
+
+             Example: ["Admin", "Moderator"] or ["123456789012345678"]\
             """;
 
     // =================================================================================================================

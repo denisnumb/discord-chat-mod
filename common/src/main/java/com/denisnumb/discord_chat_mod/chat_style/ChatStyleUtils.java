@@ -54,7 +54,7 @@ public class ChatStyleUtils {
     public static String getConfigTemplateByChatType(ResourceKey<ChatType> key) {
         IConfigProvider config = ConfigProvider.getConfig();
 
-        return switch (key.location().getPath()) {
+        return switch (key.identifier().getPath()) {
             case CHAT_PATH -> config.minecraftPlayerMessageStyle();
             case SAY_COMMAND_PATH -> config.minecraftSayCommandStyle();
             case MSG_COMMAND_INCOMING_PATH -> setConfigTemplateTranslatableParameters(

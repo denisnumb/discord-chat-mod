@@ -21,7 +21,7 @@ public class ReloadConfigCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
         dispatcher.register(Commands.literal("reload_discord_chat_mod_config")
-                .requires(source -> source.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                 .executes(ctx -> {
                     if (isReloadingNow)
                         return 0;

@@ -27,6 +27,16 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public String serverLogsPattern() {
+        return CommonConfig.serverLogsPattern;
+    }
+
+    @Override
+    public boolean isServerLogsCommandsOnly() {
+        return CommonConfig.serverLogsCommandsOnly;
+    }
+
+    @Override
     public boolean isDiscordMessagesLoggingEnabled() {
         return CommonConfig.logDiscordMessages;
     }
@@ -49,6 +59,16 @@ public class ConfigProviderImpl implements IConfigProvider {
     @Override
     public int utcOffsetHours() {
         return CommonConfig.utcOffsetHours;
+    }
+
+    @Override
+    public boolean isSlashCommandsEnabled() {
+        return CommonConfig.enableSlashCommands;
+    }
+
+    @Override
+    public java.util.List<String> slashCommandAllowedRoles() {
+        return CommonConfig.slashCommandAllowedRoles;
     }
 
     @Override

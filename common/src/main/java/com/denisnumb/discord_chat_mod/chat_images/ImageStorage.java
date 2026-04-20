@@ -8,7 +8,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -106,10 +106,10 @@ public class ImageStorage {
         NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
 
         boolean isSpoiler = ImageUtils.isSpoilerImageUrl(imageUrl);
-        ResourceLocation spoilerTextureLocation = isSpoiler
+        Identifier spoilerTextureLocation = isSpoiler
                 ? registerSpoilerImage(imageUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)))
                 : null;
-        ResourceLocation textureLocation = ResourceLocation.parse(
+        Identifier textureLocation = Identifier.parse(
                 DiscordChatMod.MOD_ID + "/chat_image/" + imageUrl.hashCode()
         );
 
@@ -148,11 +148,11 @@ public class ImageStorage {
     }
 
     private static void loadWebpAnimatedWebpFromUrl(String webpUrl) throws Exception {
-        List<ResourceLocation> frames = new ArrayList<>();
+        List<Identifier> frames = new ArrayList<>();
         ImageSize frameSize = null;
         int frameDuration = -1;
         boolean isSpoiler = ImageUtils.isSpoilerImageUrl(webpUrl);
-        ResourceLocation spoilerTextureLocation = null;
+        Identifier spoilerTextureLocation = null;
 
         byte[] webpData;
         try (InputStream input = getInputStreamFromUrl(webpUrl)) {
@@ -202,7 +202,7 @@ public class ImageStorage {
                         spoilerTextureLocation = registerSpoilerImage(webpUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
                 }
 
-                ResourceLocation frameLocation = ResourceLocation.parse(
+                Identifier frameLocation = Identifier.parse(
                         DiscordChatMod.MOD_ID + "/chat_webp/" + webpUrl.hashCode() + "_" + i
                 );
 
@@ -241,12 +241,12 @@ public class ImageStorage {
         if (isTenorGifUrl(gifUrl))
             gifUrl = getTenorGifSourceUrl(gifUrl);
 
-        List<ResourceLocation> frames = new ArrayList<>();
+        List<Identifier> frames = new ArrayList<>();
         ImageSize frameSize = null;
         int frameDuration = -1;
 
         boolean isSpoiler = ImageUtils.isSpoilerImageUrl(gifUrl);
-        ResourceLocation spoilerTextureLocation = null;
+        Identifier spoilerTextureLocation = null;
 
         try (ImageInputStream input = ImageIO.createImageInputStream(getInputStreamFromUrl(gifUrl))) {
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("gif");
@@ -303,7 +303,7 @@ public class ImageStorage {
                         spoilerTextureLocation = registerSpoilerImage(gifUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
                 }
 
-                ResourceLocation frameLocation = ResourceLocation.parse(
+                Identifier frameLocation = Identifier.parse(
                         DiscordChatMod.MOD_ID + "/chat_gif/" + gifUrl.hashCode() + "_" + i
                 );
 
@@ -337,10 +337,10 @@ public class ImageStorage {
         }
     }
 
-    private static ResourceLocation registerSpoilerImage(String imageUrl, NativeImage image) throws InterruptedException {
+    private static Identifier registerSpoilerImage(String imageUrl, NativeImage image) throws InterruptedException {
         ImageUtils.applyPixelation(image, image.getHeight() / 6);
         ImageUtils.applySpoilerOverlay(image);
-        ResourceLocation spoilerTextureLocation = ResourceLocation.parse(
+        Identifier spoilerTextureLocation = Identifier.parse(
                 DiscordChatMod.MOD_ID + "/chat_image_spoiler/" + imageUrl.hashCode()
         );
 

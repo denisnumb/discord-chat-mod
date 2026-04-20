@@ -31,6 +31,7 @@
   "discord_chat_mod.command.send_sticker.unknown": "没有名为 %s 的贴纸",
   "discord_chat_mod.colored_text_example": "彩色文本示例",
   "discord_chat_mod.command.reload_config.success": "配置已重新加载",
+  "discord_chat_mod.reply": "(回复 %s)",
   "discord_chat_mod.forwarded_guild_message": "> 来自公会 %s 的 %s 的消息",
   "discord_chat_mod.warn.no_guilds_configured": "模组配置中未配置任何 Discord 公会"
 }

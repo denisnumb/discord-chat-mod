@@ -1,19 +1,19 @@
 package com.denisnumb.discord_chat_mod.chat_images.model;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class Image extends AbstractImage {
-    public final ResourceLocation resourceLocation;
+    public final Identifier resourceLocation;
 
     public Image(
             String url,
             ImageSize imageSize,
             ImageSize originalSize,
-            ResourceLocation resourceLocation,
+            Identifier resourceLocation,
             boolean isSpoiler,
-            ResourceLocation spoilerResourceLocation
+            Identifier spoilerIdentifier
     ){
-        super(url, imageSize, originalSize, isSpoiler, spoilerResourceLocation);
+        super(url, imageSize, originalSize, isSpoiler, spoilerIdentifier);
         this.resourceLocation = resourceLocation;
     }
 }

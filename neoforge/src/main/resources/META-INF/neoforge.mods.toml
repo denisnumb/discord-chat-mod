@@ -17,14 +17,14 @@ displayURL="https://www.curseforge.com/minecraft/mc-mods/discord-chat-connect"
 [[dependencies.discord_chat_mod]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.10,)"
+versionRange = "[21.11,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.discord_chat_mod]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.10,)"
+versionRange = "[1.21.11,)"
 ordering = "NONE"
 side = "BOTH"
 

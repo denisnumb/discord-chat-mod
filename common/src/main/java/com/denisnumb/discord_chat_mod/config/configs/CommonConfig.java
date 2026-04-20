@@ -8,6 +8,8 @@ import static com.denisnumb.discord_chat_mod.config.ConfigComments.ENABLE_PINNED
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.LOG_DISCORD_MESSAGES_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.MOD_LOCALE_COMMENT;
+import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_COMMANDS_ONLY_COMMENT;
+import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_PATTERN_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.UTC_OFFSET_HOURS_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
@@ -17,11 +19,15 @@ public class CommonConfig {
     public static String discordBotToken;
     public static String serverLogsChannelId;
     public static String serverLogsToDiscordLoggingLevel;
+    public static String serverLogsPattern;
+    public static boolean serverLogsCommandsOnly;
     public static boolean logDiscordMessages;
     public static boolean logDiscordErrorsToServerChat;
     public static String discordErrorsChatPlayerSelector;
     public static String modLocale;
     public static int utcOffsetHours;
+    public static boolean enableSlashCommands;
+    public static java.util.List<String> slashCommandAllowedRoles;
 
     public static void loadCommonConfig(CommentedConfig commonConfig){
         discordBotToken = commonConfig.getOrElse("discordBotToken", DISCORD_BOT_TOKEN_DEFAULT);
@@ -37,6 +43,14 @@ public class CommonConfig {
             serverLogsToDiscordLoggingLevel = SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_DEFAULT;
         commonConfig.set("serverLogsToDiscordLoggingLevel", serverLogsToDiscordLoggingLevel);
         commonConfig.setComment("serverLogsToDiscordLoggingLevel", SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT);
+
+        serverLogsPattern = commonConfig.getOrElse("serverLogsPattern", SERVER_LOGS_PATTERN_DEFAULT);
+        commonConfig.set("serverLogsPattern", serverLogsPattern);
+        commonConfig.setComment("serverLogsPattern", SERVER_LOGS_PATTERN_COMMENT);
+
+        serverLogsCommandsOnly = commonConfig.getOrElse("serverLogsCommandsOnly", SERVER_LOGS_COMMANDS_ONLY_DEFAULT);
+        commonConfig.set("serverLogsCommandsOnly", serverLogsCommandsOnly);
+        commonConfig.setComment("serverLogsCommandsOnly", SERVER_LOGS_COMMANDS_ONLY_COMMENT);
 
         logDiscordMessages = commonConfig.getOrElse("logDiscordMessages", LOG_DISCORD_MESSAGES_DEFAULT);
         commonConfig.set("logDiscordMessages", logDiscordMessages);
@@ -59,5 +73,13 @@ public class CommonConfig {
         if (utcOffsetHours > 14) utcOffsetHours = 14;
         commonConfig.set("utcOffsetHours", utcOffsetHours);
         commonConfig.setComment("utcOffsetHours", UTC_OFFSET_HOURS_COMMENT + String.format("\n Default: %d\n Range: -12 ~ 14", UTC_OFFSET_HOURS_DEFAULT));
+
+        enableSlashCommands = commonConfig.getOrElse("enableSlashCommands", ENABLE_SLASH_COMMANDS_DEFAULT);
+        commonConfig.set("enableSlashCommands", enableSlashCommands);
+        commonConfig.setComment("enableSlashCommands", ENABLE_SLASH_COMMANDS_COMMENT);
+
+        slashCommandAllowedRoles = commonConfig.getOrElse("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_DEFAULT);
+        commonConfig.set("slashCommandAllowedRoles", slashCommandAllowedRoles);
+        commonConfig.setComment("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_COMMENT);
     }
 }

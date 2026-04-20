@@ -30,7 +30,7 @@ public class TellrawCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context){
         dispatcher.register(
                 Commands.literal("tellraw")
-                        .requires(source -> source.hasPermission(2))
+                        .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                         .then(Commands.argument("targets", EntityArgument.players())
                                 .then(Commands.argument("message", ComponentArgument.textComponent(context))
                                         .executes(ctx -> {

@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.isChannelCategoryDisabled;
@@ -21,21 +22,27 @@ import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.serv
 
 public class ServerLogsRetranslator {
     private static boolean DO_LOGGING = false;
+    private static boolean commandsOnly = false;
+    private static final Pattern COMMAND_PATTERN = Pattern.compile(".+ issued server command: .+|.+ executed .+");
 
-    public static void init(String loggingLevel) {
+    public static void init(String loggingLevel, String logPattern, boolean commandsOnlyFilter) {
+        commandsOnly = commandsOnlyFilter;
         DiscordLogBuffer.init();
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
 
         PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern("[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n")
+                .withPattern(logPattern)
                 .build();
 
         Appender appender = new AbstractAppender("DiscordAppender", null, layout, false, null) {
             @Override
             public void append(LogEvent event) {
-                if (DO_LOGGING)
+                if (DO_LOGGING) {
+                    if (commandsOnly && !COMMAND_PATTERN.matcher(event.getMessage().getFormattedMessage()).matches())
+                        return;
                     DiscordLogBuffer.add(new String(getLayout().toByteArray(event)));
+                }
             }
         };
 

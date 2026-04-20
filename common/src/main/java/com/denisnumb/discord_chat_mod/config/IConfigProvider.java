@@ -10,11 +10,16 @@ public interface IConfigProvider {
     String discordBotToken();
     String serverLogsChannelId();
     String serverLogsToDiscordLoggingLevel();
+    String serverLogsPattern();
+    boolean isServerLogsCommandsOnly();
     boolean isDiscordMessagesLoggingEnabled();
     boolean isLoggingDiscordErrorsToServerChatEnabled();
     String discordErrorsChatPlayerSelector();
     String modLocale();
     int utcOffsetHours();
+
+    boolean isSlashCommandsEnabled();
+    java.util.List<String> slashCommandAllowedRoles();
 
     boolean isWebhookModeEnabled();
     String webhookServerName();

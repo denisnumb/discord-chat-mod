@@ -15,7 +15,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -136,7 +136,7 @@ public abstract class ChatComponentMixin {
     @Inject(method = "addMessageToQueue",
             at = @At(
                     value = "INVOKE",
-                    target = "Ljava/util/List;add(ILjava/lang/Object;)V",
+                    target = "Ljava/util/List;addFirst(Ljava/lang/Object;)V",
                     shift = At.Shift.AFTER
             )
     )
@@ -152,9 +152,8 @@ public abstract class ChatComponentMixin {
     @Inject(method = "addMessageToDisplayQueue",
             at = @At(
                     value = "INVOKE",
-                    target = "Ljava/util/List;add(ILjava/lang/Object;)V",
-                    shift = At.Shift.BY,
-                    by = 2
+                    target = "Ljava/util/List;addFirst(Ljava/lang/Object;)V",
+                    shift = At.Shift.AFTER
             )
     )
     private void removeOldFromTrimmedMessages(GuiMessage message, CallbackInfo ci) {
@@ -166,8 +165,8 @@ public abstract class ChatComponentMixin {
         }
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
-    private void render(GuiGraphics graphics, int tickCount, int mouseX, int mouseY, boolean focused, CallbackInfo ci){
+    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;IIIZZ)V", at = @At("TAIL"))
+    private void render(GuiGraphics graphics, net.minecraft.client.gui.Font font, int tickCount, int mouseX, int mouseY, boolean focused, boolean focusedB, CallbackInfo ci){
         Map<Integer, List<String>> allChatUrls = new HashMap<>();
         for (int i = 0; i < allMessages.size(); ++i) {
             GuiMessage guiMessage = allMessages.get(i);
@@ -217,8 +216,8 @@ public abstract class ChatComponentMixin {
                 AbstractImage abstractImage = IMAGE_CACHE.get(imageUrl);
                 ImageSize imageSize = abstractImage.imageSize;
 
-                ResourceLocation resourceLocation = abstractImage.isSpoilerAndNotOpened()
-                        ? abstractImage.spoilerResourceLocation
+                Identifier resourceLocation = abstractImage.isSpoilerAndNotOpened()
+                        ? abstractImage.spoilerIdentifier
                         : abstractImage instanceof AnimatedImage gif
                         ? gif.getCurrentFrame()
                         : ((Image) abstractImage).resourceLocation;

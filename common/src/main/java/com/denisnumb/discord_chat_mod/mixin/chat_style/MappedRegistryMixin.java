@@ -18,7 +18,7 @@ public class MappedRegistryMixin<T> {
             cancellable = true
     )
     private void validateWrite(ResourceKey<T> resourceKey, CallbackInfo ci) {
-        if (resourceKey.location().getNamespace().equals(MOD_ID))
+        if (resourceKey.identifier().getNamespace().equals(MOD_ID))
             ci.cancel();
     }
 }
