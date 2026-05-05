@@ -17,6 +17,7 @@ public interface IConfigProvider {
     String discordErrorsChatPlayerSelector();
     String modLocale();
     int utcOffsetHours();
+    boolean isBotPresenceStatusEnabled();
 
     boolean isSlashCommandsEnabled();
     java.util.List<String> slashCommandAllowedRoles();
