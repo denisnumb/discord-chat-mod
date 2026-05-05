@@ -9,6 +9,7 @@ public class ConfigDefaults {
     public static final String DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_DEFAULT = "@a";
     public static final String MOD_LOCALE_DEFAULT = "en_us";
     public static final int UTC_OFFSET_HOURS_DEFAULT = 0;
+    public static final boolean ENABLE_BOT_PRESENCE_STATUS_DEFAULT = true;
 
     // =================================================================================================================
     //                                              WEBHOOK MODE DEFAULTS
