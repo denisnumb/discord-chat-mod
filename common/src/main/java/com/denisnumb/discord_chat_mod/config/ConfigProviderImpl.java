@@ -52,6 +52,11 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public boolean isBotPresenceStatusEnabled() {
+        return CommonConfig.enableBotPresenceStatus;
+    }
+
+    @Override
     public boolean isWebhookModeEnabled() {
         return WebhookModeConfig.enableWebhookMode;
     }
