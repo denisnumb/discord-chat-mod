@@ -130,7 +130,11 @@ public class ServerStatusController {
             });
         }
 
-        jda.getPresence().setActivity(Activity.customStatus(getOnlineCountString()));
+        if (ConfigProvider.getConfig().isBotPresenceStatusEnabled()) {
+            jda.getPresence().setActivity(Activity.customStatus(getOnlineCountString()));
+        } else {
+            jda.getPresence().setActivity(null);
+        }
     }
 
     private static String getOnlineCountString() {

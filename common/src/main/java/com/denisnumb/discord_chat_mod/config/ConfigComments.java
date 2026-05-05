@@ -52,6 +52,13 @@ public class ConfigComments {
              Used to generate timestamps for message style configurations.\
             """;
 
+    public static final String ENABLE_BOT_PRESENCE_STATUS_COMMENT
+            = """
+             If true, the bot's Discord presence (custom status) will display the current online player count, e.g. "Online: 3/20".\
+
+             Set to false to disable the presence status entirely (the bot will appear without a custom status).\
+            """;
+
     // =================================================================================================================
     //                                          DISCORD GUILD CONFIG COMMENTS
     // =================================================================================================================
