@@ -28,6 +28,7 @@ public class CommonConfig {
     public static int utcOffsetHours;
     public static boolean enableSlashCommands;
     public static java.util.List<String> slashCommandAllowedRoles;
+    public static boolean enableBotPresenceStatus;
 
     public static void loadCommonConfig(CommentedConfig commonConfig){
         discordBotToken = commonConfig.getOrElse("discordBotToken", DISCORD_BOT_TOKEN_DEFAULT);
@@ -81,5 +82,9 @@ public class CommonConfig {
         slashCommandAllowedRoles = commonConfig.getOrElse("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_DEFAULT);
         commonConfig.set("slashCommandAllowedRoles", slashCommandAllowedRoles);
         commonConfig.setComment("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_COMMENT);
+
+        enableBotPresenceStatus = commonConfig.getOrElse("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_DEFAULT);
+        commonConfig.set("enableBotPresenceStatus", enableBotPresenceStatus);
+        commonConfig.setComment("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_COMMENT);
     }
 }
