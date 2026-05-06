@@ -22,6 +22,7 @@ public class CommonConfig {
     public static String discordErrorsChatPlayerSelector;
     public static String modLocale;
     public static int utcOffsetHours;
+    public static boolean enableBotPresenceStatus;
 
     public static void loadCommonConfig(CommentedConfig commonConfig){
         discordBotToken = commonConfig.getOrElse("discordBotToken", DISCORD_BOT_TOKEN_DEFAULT);
@@ -59,5 +60,9 @@ public class CommonConfig {
         if (utcOffsetHours > 14) utcOffsetHours = 14;
         commonConfig.set("utcOffsetHours", utcOffsetHours);
         commonConfig.setComment("utcOffsetHours", UTC_OFFSET_HOURS_COMMENT + String.format("\n Default: %d\n Range: -12 ~ 14", UTC_OFFSET_HOURS_DEFAULT));
+
+        enableBotPresenceStatus = commonConfig.getOrElse("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_DEFAULT);
+        commonConfig.set("enableBotPresenceStatus", enableBotPresenceStatus);
+        commonConfig.setComment("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_COMMENT);
     }
 }
