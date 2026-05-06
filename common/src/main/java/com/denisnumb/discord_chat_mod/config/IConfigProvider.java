@@ -15,6 +15,7 @@ public interface IConfigProvider {
     String discordErrorsChatPlayerSelector();
     String modLocale();
     int utcOffsetHours();
+    boolean isBotPresenceStatusEnabled();
 
     boolean isWebhookModeEnabled();
     String webhookServerName();
