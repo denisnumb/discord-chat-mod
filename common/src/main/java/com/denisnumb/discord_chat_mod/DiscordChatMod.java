@@ -51,8 +51,11 @@ public final class DiscordChatMod {
 
     public static void onServerStarting(MinecraftServer minecraftServer) {
         server = minecraftServer;
-        if (server.isPublished())
-            initJDA();
+        if (server.isPublished()) {
+            Thread t = new Thread(DiscordChatMod::initJDA);
+            t.setDaemon(true);
+            t.start();
+        }
 
         CustomChatTypeRegistry.registerChatTypes(server.registryAccess().registryOrThrow(Registries.CHAT_TYPE));
     }
