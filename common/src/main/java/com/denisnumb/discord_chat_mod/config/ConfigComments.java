@@ -69,6 +69,19 @@ public class ConfigComments {
              Set to false to disable the presence status entirely (the bot will appear without a custom status).\
             """;
 
+    public static final String COMMAND_LOG_ENABLED_COMMENT
+            = " Enable logging of commands executed by players to a Discord channel." +
+            "\n Only commands from players whose permission level is at least commandLogMinPermissionLevel are logged.";
+
+    public static final String COMMAND_LOG_MIN_PERMISSION_LEVEL_COMMENT
+            = " Minimum permission level required for a player's commands to be logged (0-4)." +
+            "\n 0 = all players, 2 = operators (default), 3 = admins, 4 = owners.";
+
+    public static final String COMMAND_LOG_IGNORED_COMMANDS_COMMENT
+            = " Comma-separated list of root command names to skip (without the leading /)." +
+            "\n Matching is case-insensitive. Example: \"msg, tell, w, help, list\"" +
+            "\n Leave blank to log every command that passes the permission level filter.";
+
     // =================================================================================================================
     //                                          DISCORD SLASH COMMANDS COMMENTS
     // =================================================================================================================
@@ -200,6 +213,10 @@ public class ConfigComments {
     public static final String ME_CHANNEL_ID_COMMENT
             = " Overrides the default channel for messages sent using /me command. If empty, uses defaultChannelId." +
             "\n Specify \"-1\" to disable sending messages send using /me command to Discord";
+
+    public static final String COMMAND_LOG_CHANNEL_ID_COMMENT
+            = " Overrides the default channel for logged player commands. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending command log messages to Discord";
 
     // =================================================================================================================
     //                                      MINECRAFT CHAT CUSTOMIZATION COMMENTS
@@ -460,8 +477,15 @@ public class ConfigComments {
     public static final String DISCORD_TELLRAW_COMMAND_STYLE_COMMENT
             = """
              Chat message from send using /tellraw @a command\
-            
+
              Parameters: {message}\
+            """;
+
+    public static final String DISCORD_COMMAND_LOG_STYLE_COMMENT
+            = """
+             Command executed by a player above the configured permission level\
+
+             Parameters: {player}, {command}\
             """;
 
     public static final String DISCORD_SCREENSHOT_MESSAGE_STYLE_COMMENT
