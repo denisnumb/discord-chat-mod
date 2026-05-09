@@ -3,6 +3,7 @@
   "package": "com.denisnumb.discord_chat_mod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "PerformCommandMixin",
     "chat_style.ServerGamePacketListenerImplMixin",
     "chat_style.CombatTrackerAccessorMixin",
     "chat_style.TamableAnimalMixin",
