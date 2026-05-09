@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.config;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
 
 import java.util.List;
+import java.util.Set;
 
 public interface IConfigProvider {
     List<DiscordGuildsConfig.DiscordGuildConfig> discordGuildConfigs();
@@ -16,6 +17,10 @@ public interface IConfigProvider {
     String modLocale();
     int utcOffsetHours();
     boolean isBotPresenceStatusEnabled();
+
+    boolean isCommandLogEnabled();
+    int commandLogMinPermissionLevel();
+    Set<String> commandLogIgnoredCommands();
 
     boolean isWebhookModeEnabled();
     String webhookServerName();
@@ -64,6 +69,7 @@ public interface IConfigProvider {
     String discordMeCommandStyle();
     String discordMeCommandWebhookStyle();
     String discordTellrawCommandStyle();
+    String discordCommandLogStyle();
     String discordScreenshotMessageStyle();
     String discordScreenshotMessageWebhookStyle();
     String discordServerStartedMessageStyle();
