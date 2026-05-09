@@ -21,5 +21,6 @@ public enum MessageType {
     SAY_COMMAND,
     ME_COMMAND,
     ME_COMMAND_WEBHOOK,
-    TELLRAW_COMMAND
+    TELLRAW_COMMAND,
+    COMMAND_LOG
 }
