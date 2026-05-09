@@ -132,6 +132,37 @@ public class MinecraftEvents {
         return Optional.empty();
     }
 
+    public static void handleCommandExecution(CommandSourceStack source, String command) {
+        IConfigProvider config = ConfigProvider.getConfig();
+        if (!config.isCommandLogEnabled())
+            return;
+
+        Player player = source.getPlayer();
+        if (player == null)
+            return;
+
+        if (!source.hasPermission(config.commandLogMinPermissionLevel()))
+            return;
+
+        String trimmed = command.startsWith("/") ? command.substring(1) : command;
+        int spaceIdx = trimmed.indexOf(' ');
+        String rootCommand = (spaceIdx == -1 ? trimmed : trimmed.substring(0, spaceIdx))
+                .toLowerCase(java.util.Locale.ROOT);
+        if (rootCommand.isEmpty() || config.commandLogIgnoredCommands().contains(rootCommand))
+            return;
+
+        String displayCommand = "/" + trimmed;
+
+        handleDiscord(() -> {
+            Map<String, String> parameters = mergeMaps(
+                    Map.of(COMMAND, displayCommand),
+                    buildPlayerParameters(player)
+            );
+            getDiscordMessageComponents(MessageType.COMMAND_LOG, parameters)
+                    .ifPresent(components -> sendMessageFromServer(ChannelCategory.COMMAND_LOG, getAllContexts(), components));
+        });
+    }
+
     public static Optional<Component> handleJoinLeave(Player player, boolean isJoin) {
         handleDiscord(() -> {
             MessageType messageType = isJoin ? MessageType.JOIN : MessageType.LEFT;
