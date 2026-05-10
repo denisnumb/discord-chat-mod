@@ -2,6 +2,11 @@ package com.denisnumb.discord_chat_mod.config.configs;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.ENABLE_PINNED_STATUS_MESSAGE_COMMENT;
@@ -23,6 +28,9 @@ public class CommonConfig {
     public static String modLocale;
     public static int utcOffsetHours;
     public static boolean enableBotPresenceStatus;
+    public static boolean commandLogEnabled;
+    public static int commandLogMinPermissionLevel;
+    public static Set<String> commandLogIgnoredCommands = Collections.emptySet();
 
     public static void loadCommonConfig(CommentedConfig commonConfig){
         discordBotToken = commonConfig.getOrElse("discordBotToken", DISCORD_BOT_TOKEN_DEFAULT);
@@ -64,5 +72,24 @@ public class CommonConfig {
         enableBotPresenceStatus = commonConfig.getOrElse("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_DEFAULT);
         commonConfig.set("enableBotPresenceStatus", enableBotPresenceStatus);
         commonConfig.setComment("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_COMMENT);
+
+        commandLogEnabled = commonConfig.getOrElse("commandLogEnabled", COMMAND_LOG_ENABLED_DEFAULT);
+        commonConfig.set("commandLogEnabled", commandLogEnabled);
+        commonConfig.setComment("commandLogEnabled", COMMAND_LOG_ENABLED_COMMENT);
+
+        commandLogMinPermissionLevel = commonConfig.getOrElse("commandLogMinPermissionLevel", COMMAND_LOG_MIN_PERMISSION_LEVEL_DEFAULT);
+        if (commandLogMinPermissionLevel < 0) commandLogMinPermissionLevel = 0;
+        if (commandLogMinPermissionLevel > 4) commandLogMinPermissionLevel = 4;
+        commonConfig.set("commandLogMinPermissionLevel", commandLogMinPermissionLevel);
+        commonConfig.setComment("commandLogMinPermissionLevel", COMMAND_LOG_MIN_PERMISSION_LEVEL_COMMENT);
+
+        String ignoredCommandsRaw = commonConfig.getOrElse("commandLogIgnoredCommands", COMMAND_LOG_IGNORED_COMMANDS_DEFAULT);
+        commandLogIgnoredCommands = Arrays.stream(ignoredCommandsRaw.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(s -> s.toLowerCase(java.util.Locale.ROOT))
+                .collect(Collectors.toUnmodifiableSet());
+        commonConfig.set("commandLogIgnoredCommands", ignoredCommandsRaw);
+        commonConfig.setComment("commandLogIgnoredCommands", COMMAND_LOG_IGNORED_COMMANDS_COMMENT);
     }
 }
