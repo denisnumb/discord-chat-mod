@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +43,7 @@ public class DiscordMentionsTransceiver {
     public static void sendDiscordMemberDataToPlayer(ServerPlayer player) {
         long sendTime = System.currentTimeMillis();
 
-        byte[] data = gson.toJson(ChannelMembersProvider.getMemberData(ChannelCategory.PLAYER_CHAT), gsonType).getBytes();
+        byte[] data = gson.toJson(ChannelMembersProvider.getMemberData(ChannelCategory.PLAYER_CHAT), gsonType).getBytes(StandardCharsets.UTF_8);
         BigPacketsTransceiver.send(data, (partIndex, totalParts, part) ->
                 PlatformPacketDistributor.sendToPlayer(player, new DiscordMentionsPartPacket(sendTime, partIndex, totalParts, part))
         );
@@ -55,6 +56,6 @@ public class DiscordMentionsTransceiver {
                 packet.partIndex(),
                 packet.totalParts(),
                 packet.data()
-        ).ifPresent(bytes -> ChannelMembersProvider.CLIENT_MEMBER_CACHE = gson.fromJson(new String(bytes), gsonType));
+        ).ifPresent(bytes -> ChannelMembersProvider.CLIENT_MEMBER_CACHE = gson.fromJson(new String(bytes, StandardCharsets.UTF_8), gsonType));
     }
 }
