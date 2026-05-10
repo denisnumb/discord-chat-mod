@@ -4,6 +4,7 @@ import com.denisnumb.discord_chat_mod.config.configs.*;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig.DiscordGuildConfig;
 
 import java.util.List;
+import java.util.Set;
 
 public class ConfigProviderImpl implements IConfigProvider {
     @Override
@@ -54,6 +55,21 @@ public class ConfigProviderImpl implements IConfigProvider {
     @Override
     public boolean isBotPresenceStatusEnabled() {
         return CommonConfig.enableBotPresenceStatus;
+    }
+
+    @Override
+    public boolean isCommandLogEnabled() {
+        return CommonConfig.commandLogEnabled;
+    }
+
+    @Override
+    public int commandLogMinPermissionLevel() {
+        return CommonConfig.commandLogMinPermissionLevel;
+    }
+
+    @Override
+    public Set<String> commandLogIgnoredCommands() {
+        return CommonConfig.commandLogIgnoredCommands;
     }
 
     @Override
@@ -274,6 +290,11 @@ public class ConfigProviderImpl implements IConfigProvider {
     @Override
     public String discordTellrawCommandStyle() {
         return DiscordChatStyleConfig.discordTellrawCommandStyle;
+    }
+
+    @Override
+    public String discordCommandLogStyle() {
+        return DiscordChatStyleConfig.discordCommandLogStyle;
     }
 
     @Override
