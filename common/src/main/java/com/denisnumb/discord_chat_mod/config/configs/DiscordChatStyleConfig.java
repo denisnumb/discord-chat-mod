@@ -30,6 +30,7 @@ public class DiscordChatStyleConfig {
     public static String discordMeCommandStyle;
     public static String discordMeCommandWebhookStyle;
     public static String discordTellrawCommandStyle;
+    public static String discordCommandLogStyle;
     public static String discordScreenshotMessageStyle;
     public static String discordScreenshotMessageWebhookStyle;
     public static String discordServerStartedMessageStyle;
@@ -118,6 +119,11 @@ public class DiscordChatStyleConfig {
         discordChatStyle.set("discordTellrawCommandStyle", discordTellrawCommandStyle.replace("\r", ""));
         discordChatStyle.setComment("discordTellrawCommandStyle", DISCORD_TELLRAW_COMMAND_STYLE_COMMENT);
         discordTellrawCommandStyle = validateJsonValue(discordTellrawCommandStyle, DISCORD_TELLRAW_COMMAND_STYLE_DEFAULT);
+
+        discordCommandLogStyle = existedDiscordChatStyle.getOrElse("discordCommandLogStyle", DISCORD_COMMAND_LOG_STYLE_DEFAULT);
+        discordChatStyle.set("discordCommandLogStyle", discordCommandLogStyle.replace("\r", ""));
+        discordChatStyle.setComment("discordCommandLogStyle", DISCORD_COMMAND_LOG_STYLE_COMMENT);
+        discordCommandLogStyle = validateJsonValue(discordCommandLogStyle, DISCORD_COMMAND_LOG_STYLE_DEFAULT);
 
         discordScreenshotMessageStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageStyle", DISCORD_SCREENSHOT_MESSAGE_STYLE_DEFAULT);
         discordChatStyle.set("discordScreenshotMessageStyle", discordScreenshotMessageStyle.replace("\r", ""));
