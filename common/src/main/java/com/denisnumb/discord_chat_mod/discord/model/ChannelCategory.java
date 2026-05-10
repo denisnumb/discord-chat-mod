@@ -14,7 +14,8 @@ public enum ChannelCategory {
     SCREENSHOTS("screenshotsChannelId"),
     TELLRAW_COMMAND("tellrawChannelId"),
     SAY_COMMAND("sayChannelId"),
-    ME_COMMAND("meChannelId");
+    ME_COMMAND("meChannelId"),
+    COMMAND_LOG("commandLogChannelId");
 
     private final String configName;
 
@@ -38,6 +39,7 @@ public enum ChannelCategory {
             case TELLRAW_COMMAND -> TELLRAW_CHANNEL_ID_COMMENT;
             case SAY_COMMAND -> SAY_CHANNEL_ID_COMMENT;
             case ME_COMMAND -> ME_CHANNEL_ID_COMMENT;
+            case COMMAND_LOG -> COMMAND_LOG_CHANNEL_ID_COMMENT;
         };
     }
 

@@ -185,6 +185,7 @@ public class DiscordChatStyleProvider {
                 case ME_COMMAND -> parseDiscordConfigTemplate(config.discordMeCommandStyle(), parameterMap);
                 case ME_COMMAND_WEBHOOK -> parseDiscordConfigTemplate(config.discordMeCommandWebhookStyle(), parameterMap);
                 case TELLRAW_COMMAND -> parseDiscordConfigTemplate(config.discordTellrawCommandStyle(), parameterMap);
+                case COMMAND_LOG -> parseDiscordConfigTemplate(config.discordCommandLogStyle(), parameterMap);
             };
 
             return Optional.of(result);

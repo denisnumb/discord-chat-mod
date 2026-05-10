@@ -13,6 +13,10 @@ public class ConfigDefaults {
     public static final int UTC_OFFSET_HOURS_DEFAULT = 0;
     public static final boolean ENABLE_BOT_PRESENCE_STATUS_DEFAULT = true;
 
+    public static final boolean COMMAND_LOG_ENABLED_DEFAULT = false;
+    public static final int COMMAND_LOG_MIN_PERMISSION_LEVEL_DEFAULT = 2;
+    public static final String COMMAND_LOG_IGNORED_COMMANDS_DEFAULT = "";
+
     // =================================================================================================================
     //                                          DISCORD SLASH COMMANDS DEFAULTS
     // =================================================================================================================
@@ -213,6 +217,21 @@ public class ConfigDefaults {
             """
             {
                 "content": "{message}"
+            }
+            """;
+
+    public static final String DISCORD_COMMAND_LOG_STYLE_DEFAULT =
+            """
+            {
+                "embed": {
+                    "description": "`{command}`",
+                    "color": "#F1C40F",
+                    "author": {
+                        "name": "{player}",
+                        "icon_url": "{player_avatar_url}"
+                    },
+                    "timestamp": "{datetime}"
+                }
             }
             """;
 

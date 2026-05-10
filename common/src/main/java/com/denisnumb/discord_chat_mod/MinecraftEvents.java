@@ -13,6 +13,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -129,6 +130,44 @@ public class MinecraftEvents {
         if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
             return getStyledAdvancementMessage(player, advancementHolder, title, description);
         return Optional.empty();
+    }
+
+    public static void handleCommandExecution(CommandSourceStack source, String command) {
+        IConfigProvider config = ConfigProvider.getConfig();
+        if (!config.isCommandLogEnabled())
+            return;
+
+        Player player = source.getPlayer();
+        if (player == null)
+            return;
+
+        net.minecraft.server.permissions.PermissionCheck levelCheck = switch (Math.max(0, Math.min(4, config.commandLogMinPermissionLevel()))) {
+            case 0 -> Commands.LEVEL_ALL;
+            case 1 -> Commands.LEVEL_MODERATORS;
+            case 3 -> Commands.LEVEL_ADMINS;
+            case 4 -> Commands.LEVEL_OWNERS;
+            default -> Commands.LEVEL_GAMEMASTERS;
+        };
+        if (!Commands.hasPermission(levelCheck).test(source))
+            return;
+
+        String trimmed = command.startsWith("/") ? command.substring(1) : command;
+        int spaceIdx = trimmed.indexOf(' ');
+        String rootCommand = (spaceIdx == -1 ? trimmed : trimmed.substring(0, spaceIdx))
+                .toLowerCase(java.util.Locale.ROOT);
+        if (rootCommand.isEmpty() || config.commandLogIgnoredCommands().contains(rootCommand))
+            return;
+
+        String displayCommand = "/" + trimmed;
+
+        handleDiscord(() -> {
+            Map<String, String> parameters = mergeMaps(
+                    Map.of(COMMAND, displayCommand),
+                    buildPlayerParameters(player)
+            );
+            getDiscordMessageComponents(MessageType.COMMAND_LOG, parameters)
+                    .ifPresent(components -> sendMessageFromServer(ChannelCategory.COMMAND_LOG, getAllContexts(), components));
+        });
     }
 
     public static Optional<Component> handleJoinLeave(Player player, boolean isJoin) {

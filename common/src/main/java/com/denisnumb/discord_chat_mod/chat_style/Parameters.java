@@ -40,4 +40,5 @@ public class Parameters {
     public static final String DATETIME = "{datetime}";
     public static final String GUILD = "{guild}";
     public static final String COUNTER = "{counter}";
+    public static final String COMMAND = "{command}";
 }
