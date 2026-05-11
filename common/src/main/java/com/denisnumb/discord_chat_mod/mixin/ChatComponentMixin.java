@@ -97,7 +97,7 @@ public abstract class ChatComponentMixin {
             int parentAddedTime = trimmedMessages.get(trimmedMessages.size() - 1).addedTime();
 
             do trimmedMessages.remove(trimmedMessages.size() - 1);
-            while (trimmedMessages.get(trimmedMessages.size() - 1).addedTime() == parentAddedTime);
+            while (!trimmedMessages.isEmpty() && trimmedMessages.get(trimmedMessages.size() - 1).addedTime() == parentAddedTime);
         }
     }
 
@@ -115,7 +115,7 @@ public abstract class ChatComponentMixin {
             int parentAddedTime = allMessages.get(allMessages.size() - 1).addedTime();
 
             do allMessages.remove(allMessages.size() - 1);
-            while (allMessages.get(allMessages.size() - 1).addedTime() == parentAddedTime);
+            while (!allMessages.isEmpty() && allMessages.get(allMessages.size() - 1).addedTime() == parentAddedTime);
         }
     }
 
