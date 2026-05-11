@@ -145,7 +145,7 @@ public abstract class ChatComponentMixin {
             int parentAddedTime = allMessages.getLast().addedTime();
 
             do allMessages.removeLast();
-            while (allMessages.getLast().addedTime() == parentAddedTime);
+            while (!allMessages.isEmpty() && allMessages.getLast().addedTime() == parentAddedTime);
         }
     }
 
@@ -161,7 +161,7 @@ public abstract class ChatComponentMixin {
             int parentAddedTime = trimmedMessages.getLast().addedTime();
 
             do trimmedMessages.removeLast();
-            while (trimmedMessages.getLast().addedTime() == parentAddedTime);
+            while (!trimmedMessages.isEmpty() && trimmedMessages.getLast().addedTime() == parentAddedTime);
         }
     }
 
