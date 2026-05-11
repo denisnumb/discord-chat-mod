@@ -12,6 +12,7 @@ public class ConfigDefaults {
     public static final String MOD_LOCALE_DEFAULT = "en_us";
     public static final int UTC_OFFSET_HOURS_DEFAULT = 0;
     public static final boolean ENABLE_BOT_PRESENCE_STATUS_DEFAULT = true;
+    public static final boolean MENTION_BOTS_DEFAULT = true;
 
     public static final boolean COMMAND_LOG_ENABLED_DEFAULT = false;
     public static final int COMMAND_LOG_MIN_PERMISSION_LEVEL_DEFAULT = 2;
