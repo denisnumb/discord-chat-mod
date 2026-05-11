@@ -19,6 +19,7 @@ public interface IConfigProvider {
     String modLocale();
     int utcOffsetHours();
     boolean isBotPresenceStatusEnabled();
+    boolean mentionBots();
 
     boolean isSlashCommandsEnabled();
     java.util.List<String> slashCommandAllowedRoles();

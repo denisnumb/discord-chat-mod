@@ -69,6 +69,13 @@ public class ConfigComments {
              Set to false to disable the presence status entirely (the bot will appear without a custom status).\
             """;
 
+    public static final String MENTION_BOTS_COMMENT
+            = """
+             If true, Discord bots are included in the @-autocomplete shown in Minecraft chat and can be mentioned from the server.\
+
+             Set to false to hide bots from the autocomplete and stop resolving "@botname" in player messages into a Discord mention.\
+            """;
+
     public static final String COMMAND_LOG_ENABLED_COMMENT
             = " Enable logging of commands executed by players to a Discord channel." +
             "\n Only commands from players whose permission level is at least commandLogMinPermissionLevel are logged.";

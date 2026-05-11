@@ -34,6 +34,7 @@ public class CommonConfig {
     public static boolean enableSlashCommands;
     public static java.util.List<String> slashCommandAllowedRoles;
     public static boolean enableBotPresenceStatus;
+    public static boolean mentionBots;
     public static boolean commandLogEnabled;
     public static int commandLogMinPermissionLevel;
     public static Set<String> commandLogIgnoredCommands = Collections.emptySet();
@@ -94,6 +95,10 @@ public class CommonConfig {
         enableBotPresenceStatus = commonConfig.getOrElse("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_DEFAULT);
         commonConfig.set("enableBotPresenceStatus", enableBotPresenceStatus);
         commonConfig.setComment("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_COMMENT);
+
+        mentionBots = commonConfig.getOrElse("mentionBots", MENTION_BOTS_DEFAULT);
+        commonConfig.set("mentionBots", mentionBots);
+        commonConfig.setComment("mentionBots", MENTION_BOTS_COMMENT);
 
         commandLogEnabled = commonConfig.getOrElse("commandLogEnabled", COMMAND_LOG_ENABLED_DEFAULT);
         commonConfig.set("commandLogEnabled", commandLogEnabled);

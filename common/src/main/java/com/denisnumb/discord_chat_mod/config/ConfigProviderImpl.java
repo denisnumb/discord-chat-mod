@@ -78,6 +78,11 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public boolean mentionBots() {
+        return CommonConfig.mentionBots;
+    }
+
+    @Override
     public boolean isCommandLogEnabled() {
         return CommonConfig.commandLogEnabled;
     }
