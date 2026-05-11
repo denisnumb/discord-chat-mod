@@ -30,6 +30,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
@@ -49,6 +50,7 @@ public final class DiscordChatMod {
     public static JDA jda;
     public static MinecraftServer server;
     private static final DiscordEvents discordEvents = new DiscordEvents();
+    private static final AtomicBoolean serverStartPending = new AtomicBoolean(false);
 
     public static void onServerStarting(MinecraftServer minecraftServer) {
         server = minecraftServer;
@@ -63,11 +65,24 @@ public final class DiscordChatMod {
 
     public static void onServerStarted() {
         ServerLogsRetranslator.start();
+        serverStartPending.set(true);
+        trySendServerStartMessage();
+    }
+
+    private static void trySendServerStartMessage() {
+        if (!isDiscordConnected())
+            return;
+        if (DiscordChannelRegistry.getAllContexts().isEmpty())
+            return;
+        if (!serverStartPending.compareAndSet(true, false))
+            return;
+
         getDiscordMessageComponents(MessageType.SERVER_START, Map.of())
                 .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
     }
 
     public static void onServerStopped() {
+        serverStartPending.set(false);
         getDiscordMessageComponents(MessageType.SERVER_STOP, Map.of())
                 .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
         stopJDA();
@@ -149,6 +164,7 @@ public final class DiscordChatMod {
                 ServerLogsRetranslator.init(config.serverLogsToDiscordLoggingLevel(), config.serverLogsPattern(), config.isServerLogsCommandsOnly());
 
             LOGGER.info("Discord connected");
+            trySendServerStartMessage();
         } catch (Exception e) {
             logErrorToServer(String.format("DiscordConnectError: %s", e.getMessage()));
             e.printStackTrace();
