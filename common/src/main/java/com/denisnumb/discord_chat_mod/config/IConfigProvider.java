@@ -17,6 +17,7 @@ public interface IConfigProvider {
     String modLocale();
     int utcOffsetHours();
     boolean isBotPresenceStatusEnabled();
+    boolean mentionBots();
 
     boolean isCommandLogEnabled();
     int commandLogMinPermissionLevel();
