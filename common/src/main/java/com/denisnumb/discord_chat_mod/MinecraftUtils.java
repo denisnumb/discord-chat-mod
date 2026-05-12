@@ -31,6 +31,7 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.replaceEmojiCodesToDiscordMentions;
+import static com.denisnumb.discord_chat_mod.discord.utils.XaeroWaypointTransformer.transform;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -57,6 +58,8 @@ public class MinecraftUtils {
 
             forDiscord = MarkdownParser.removeColorTags(replaceEmojiCodesToDiscordMentions(message));
         }
+
+        forDiscord = transform(forDiscord);
 
         Component forMinecraft = new MarkdownToComponentConverter(MarkdownParser.parseMarkdown(message), mentions)
                 .convertMarkdownTokensToComponent();

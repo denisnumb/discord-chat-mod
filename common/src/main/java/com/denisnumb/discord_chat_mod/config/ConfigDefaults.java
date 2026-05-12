@@ -28,6 +28,13 @@ public class ConfigDefaults {
     public static final String WEBHOOK_PLAYER_DEFAULT_AVATAR_URL_DEFAULT = "https://mc-heads.net/avatar/steve_head_png";
 
     // =================================================================================================================
+    //                                                WEB MAP DEFAULTS
+    // =================================================================================================================
+
+    public static final boolean ENABLE_XAERO_WAYPOINT_PARSING_DEFAULT = true;
+    public static final String WEB_MAP_URL_TEMPLATE_DEFAULT = "";
+
+    // =================================================================================================================
     //                                              DISCORD PROXY DEFAULTS
     // =================================================================================================================
 
