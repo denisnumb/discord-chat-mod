@@ -11,6 +11,8 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 
+    compileOnly("de.bluecolored.bluemap:BlueMapAPI:2.7.2")
+
     implementation("net.dv8tion:JDA:6.1.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
