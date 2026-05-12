@@ -35,6 +35,10 @@ public interface IConfigProvider {
     String proxyUser();
     String proxyPassword();
 
+    boolean isXaeroWaypointParsingEnabled();
+    String webMapUrlTemplate();
+    java.util.Map<String, String> webMapDimensions();
+
     boolean isMinecraftChatCustomizationEnabled();
     String minecraftDiscordMessagesStyle();
     String minecraftPlayerMessageStyle();

@@ -138,6 +138,49 @@ public class ConfigComments {
             "\n Default: %s", WEBHOOK_PLAYER_DEFAULT_AVATAR_URL_DEFAULT);
 
     // =================================================================================================================
+    //                                                WEB MAP COMMENTS
+    // =================================================================================================================
+
+    public static final String ENABLE_XAERO_WAYPOINT_PARSING_COMMENT
+            = """
+             If true, raw Xaero waypoint share strings (e.g. "xaero-waypoint:Home:H:957:65:4616:5:false:0:Internal-overworld-waypoints")\
+
+             sent from Minecraft to Discord will be rewritten into a friendlier form: "[Overworld] Home (957, 65, 4616)".\
+
+             If webMapUrlTemplate is also configured and the dimension is listed in [webMapConfig.dimensions], the\
+
+             rewrite becomes a clickable Discord markdown link to the configured web map.\
+
+             This only affects the text sent to Discord, the in-game chat is left untouched so Xaero's minimap can\
+
+             still parse the waypoint.\
+            """;
+
+    public static final String WEB_MAP_URL_TEMPLATE_COMMENT
+            = """
+             URL template used when rewriting Xaero waypoints into clickable links on Discord.\
+
+             Leave blank to render waypoints as plain text without a link.\
+
+             Available placeholders: {world}, {x}, {y}, {z}\
+
+             Example for BlueMap: "https://example.com/bluemap/#{world}:{x}:{y}:{z}:1500:0:0:0:0:perspective"\
+
+             Example for Dynmap: "https://example.com/dynmap/?worldname={world}&mapname=flat&zoom=6&x={x}&y={y}&z={z}"\
+            """;
+
+    public static final String WEB_MAP_DIMENSIONS_COMMENT
+            = """
+             Mapping of Minecraft dimension ids to web-map identifiers. Each key is a full Minecraft dimension id,\
+
+             each value is the identifier used by your web map (substituted into {world} in webMapUrlTemplate).\
+
+             Add entries for modded dimensions as needed. Dimensions not listed here render as plain text without\
+
+             a link. Labels shown in the [Dimension] prefix are derived from the dimension id automatically.\
+            """;
+
+    // =================================================================================================================
     //                                              DISCORD PROXY COMMENTS
     // =================================================================================================================
 

@@ -128,6 +128,21 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public boolean isXaeroWaypointParsingEnabled() {
+        return WebMapConfig.enableXaeroWaypointParsing;
+    }
+
+    @Override
+    public String webMapUrlTemplate() {
+        return WebMapConfig.webMapUrlTemplate;
+    }
+
+    @Override
+    public java.util.Map<String, String> webMapDimensions() {
+        return WebMapConfig.webMapDimensions;
+    }
+
+    @Override
     public boolean isMinecraftChatCustomizationEnabled() {
         return MinecraftChatStyleConfig.enableMinecraftChatCustomization;
     }

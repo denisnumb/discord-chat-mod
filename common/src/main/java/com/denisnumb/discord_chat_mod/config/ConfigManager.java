@@ -15,6 +15,7 @@ import static com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConf
 import static com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig.loadDiscordGuildsConfig;
 import static com.denisnumb.discord_chat_mod.config.configs.DiscordProxyConfig.loadDiscordProxyConfig;
 import static com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig.loadMinecraftChatStyleConfig;
+import static com.denisnumb.discord_chat_mod.config.configs.WebMapConfig.loadWebMapConfig;
 import static com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig.loadWebhookModeConfig;
 
 public class ConfigManager {
@@ -62,6 +63,7 @@ public class ConfigManager {
         loadCommonConfig(commonConfig);
         commonConfig.set("guilds", loadDiscordGuildsConfig(commonConfig));
         commonConfig.set("webhookModeConfig", loadWebhookModeConfig(commonConfig));
+        commonConfig.set("webMapConfig", loadWebMapConfig(commonConfig));
         commonConfig.set("discordProxyConfig", loadDiscordProxyConfig(commonConfig));
         commonConfig.set("minecraftChatStyle", loadMinecraftChatStyleConfig(commonConfig));
         commonConfig.set("discordChatStyle", loadDiscordChatStyleConfig(commonConfig));
