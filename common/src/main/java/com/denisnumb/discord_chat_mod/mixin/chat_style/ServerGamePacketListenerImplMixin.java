@@ -84,7 +84,7 @@ public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPack
 
         MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.CHAT,
-                new ChatMessageComponents(playerComponent, withMarkdown, null)
+                new ChatMessageComponents(playerComponent, withMarkdown, null, player)
         ).ifPresent(styledContent -> {
             ChatType.Bound styledBound = buildBound(CustomChatTypeRegistry.CHAT, player.level().registryAccess(), playerComponent, withMarkdown);
             args.set(0, originalMessage.withUnsignedContent(styledContent));

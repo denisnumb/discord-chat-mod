@@ -239,6 +239,8 @@ public class ConfigComments {
 
              {HH}, {MM}, {SS} — Hours, minutes, and seconds at the time the message was sent. Example usage: "[{HH}:{MM}] <{player}> {message}"\
 
+             {x}, {y}, {z}, {dimension} — the player's coordinates and dimension name\
+
              You can read more about this configuration section and see examples here: https://github.com/denisnumb/discord-chat-mod/wiki/Minecraft-Chat-Customization\
 
              [!] If enabled, make sure you don't have any other chat styling mods installed.\
@@ -390,6 +392,8 @@ public class ConfigComments {
              Global parameters available for all styles listed below:\
 
              {player_avatar_url} — link to the player's avatar (available wherever the {player} parameter is present)\
+
+             {x}, {y}, {z}, {dimension} — the player's coordinates and dimension name (available wherever the {player} parameter is present)\
 
              {timestamp} — current number of seconds in the system. It's convenient to substitute when using Discord timestamps, for example: <t:{timestamp}:R>\
 
