@@ -75,7 +75,7 @@ public class MinecraftEvents {
         }
 
         if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
-            return getStyledDeathMessage(components);
+            return getStyledDeathMessage(components, entity);
         return Optional.empty();
     }
 
