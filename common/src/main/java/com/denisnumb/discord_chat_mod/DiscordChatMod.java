@@ -20,6 +20,8 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import net.dv8tion.jda.internal.utils.JDALogger;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import okhttp3.Credentials;
@@ -114,6 +116,7 @@ public final class DiscordChatMod {
 
     public static void initJDA(){
         try {
+            JDALogger.setFallbackLoggerEnabled(false);
             IConfigProvider config = ConfigProvider.getConfig();
 
             WebSocketFactory webSocketFactory = new WebSocketFactory();
@@ -147,6 +150,7 @@ public final class DiscordChatMod {
                             GatewayIntent.GUILD_EXPRESSIONS)
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
+                    .disableCache(CacheFlag.VOICE_STATE, CacheFlag.SCHEDULED_EVENTS)
                     .addEventListeners(discordEvents)
                     .setHttpClientBuilder(httpClientBuilder)
                     .setWebsocketFactory(webSocketFactory)
