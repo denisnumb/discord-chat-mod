@@ -165,7 +165,7 @@ public class DiscordEvents extends ListenerAdapter {
                     .withColor(0x7A7A7A)
                     .withStyle(style -> style
                             .withItalic(true)
-                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(replyAuthor + ": " + previewText)))
+                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(replyAuthor + ": " + previewText)))
                     );
         }
         final Component replyComponent = replyPrefix;
