@@ -56,7 +56,8 @@ public class TeamMsgCommand {
                 new MinecraftChatStyleProvider.ChatMessageComponents(
                         commandSourceStack.getDisplayName(),
                         playerChatMessageStyled.decoratedContent(),
-                        playerTeam.getFormattedDisplayName().withStyle(SUGGEST_STYLE)
+                        playerTeam.getFormattedDisplayName().withStyle(SUGGEST_STYLE),
+                        entity
                 )
         ).ifPresentOrElse(
                 styledContent -> sendMessageStyled(commandSourceStack, entity, playerTeam, list, playerChatMessageStyled, styledContent),
@@ -77,7 +78,8 @@ public class TeamMsgCommand {
                 new MinecraftChatStyleProvider.ChatMessageComponents(
                         commandSourceStack.getDisplayName(),
                         playerChatMessage.decoratedContent(),
-                        playerTeam.getFormattedDisplayName().withStyle(SUGGEST_STYLE)
+                        playerTeam.getFormattedDisplayName().withStyle(SUGGEST_STYLE),
+                        entity
                 )
         );
 

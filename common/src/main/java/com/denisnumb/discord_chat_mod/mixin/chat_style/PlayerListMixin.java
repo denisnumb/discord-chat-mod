@@ -75,7 +75,7 @@ public class PlayerListMixin {
 
         Optional<Component> styledContentOpt = MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.CHAT,
-                new MinecraftChatStyleProvider.ChatMessageComponents(playerComponent, withMarkdown, null)
+                new MinecraftChatStyleProvider.ChatMessageComponents(playerComponent, withMarkdown, null, player)
         );
 
         if (styledContentOpt.isPresent()){
