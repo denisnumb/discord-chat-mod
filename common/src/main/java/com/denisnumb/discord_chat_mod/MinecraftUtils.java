@@ -8,6 +8,7 @@ import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
+import com.denisnumb.discord_chat_mod.markdown.MinecraftFormattingConverter;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
@@ -59,6 +60,7 @@ public class MinecraftUtils {
             }};
 
             forDiscord = MarkdownParser.removeColorTags(replaceEmojiCodesToDiscordMentions(message));
+            forDiscord = MinecraftFormattingConverter.toDiscordMarkdown(forDiscord);
         }
 
         Component forMinecraft = new MarkdownToComponentConverter(MarkdownParser.parseMarkdown(message), mentions)
