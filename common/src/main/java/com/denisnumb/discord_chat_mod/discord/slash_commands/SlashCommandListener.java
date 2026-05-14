@@ -44,7 +44,7 @@ public class SlashCommandListener extends ListenerAdapter {
         }
 
         String names = players.stream()
-                .map(p -> p.getGameProfile().name())
+                .map(p -> p.getGameProfile().getName())
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.joining("\n- ", "- ", ""));
 
