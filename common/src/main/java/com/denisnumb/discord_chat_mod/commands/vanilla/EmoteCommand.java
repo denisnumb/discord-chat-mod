@@ -50,7 +50,7 @@ public class EmoteCommand {
 
                 MinecraftEvents.handleChatMessage(
                         CustomChatTypeRegistry.EMOTE_COMMAND,
-                        new MinecraftChatStyleProvider.ChatMessageComponents(senderComponent, messageContent, null)
+                        new MinecraftChatStyleProvider.ChatMessageComponents(senderComponent, messageContent, null, source.getEntity())
                 ).ifPresentOrElse(
                         styledContent -> {
                             ChatType.Bound styledBound = buildBound(CustomChatTypeRegistry.EMOTE_COMMAND, source.registryAccess(), senderComponent, messageContent);
