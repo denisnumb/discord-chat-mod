@@ -107,7 +107,7 @@ public class DiscordMessageUtils {
 
                 return sendWebhookWithImage(
                         optionalWebhook.get().getUrl(),
-                        payload.setUsername(player.getName().getString())
+                        payload.setUsername(player.getDisplayName().getString())
                                 .setAvatarUrl(getPlayerAvatarUrl(player)),
                         new WebhookAttachment(imageData.data(), imageData.fileName())
                 ).get();
@@ -224,7 +224,7 @@ public class DiscordMessageUtils {
                 : new WebhookPayload(components.getEmbed());
 
         payload.setUsername(player != null
-                ? player.getName().getString()
+                ? player.getDisplayName().getString()
                 : getWebhookServerName()
         );
 
