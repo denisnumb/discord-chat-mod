@@ -46,7 +46,7 @@ public class SayCommand {
 
                                         MinecraftEvents.handleChatMessage(
                                                 CustomChatTypeRegistry.SAY_COMMAND,
-                                                new MinecraftChatStyleProvider.ChatMessageComponents(senderComponent, messageContent, null)
+                                                new MinecraftChatStyleProvider.ChatMessageComponents(senderComponent, messageContent, null, source.getEntity())
                                         ).ifPresentOrElse(
                                                 styledContent -> {
                                                     ChatType.Bound styledBound = buildBound(CustomChatTypeRegistry.SAY_COMMAND, source.registryAccess(), senderComponent, messageContent);

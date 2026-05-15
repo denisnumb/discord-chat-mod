@@ -61,7 +61,7 @@ public class MsgCommand {
 
         MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.MSG_COMMAND_INCOMING,
-                new MinecraftChatStyleProvider.ChatMessageComponents(commandSourceStack.getDisplayName(), playerChatMessageStyled.decoratedContent(), null)
+                new MinecraftChatStyleProvider.ChatMessageComponents(commandSourceStack.getDisplayName(), playerChatMessageStyled.decoratedContent(), null, commandSourceStack.getEntity())
         ).ifPresentOrElse(
                 styledContent -> sendMessageStyled(commandSourceStack, collection, playerChatMessageStyled, styledContent),
                 () -> sendMessageDefault(commandSourceStack, collection, playerChatMessageStyled)
@@ -81,7 +81,7 @@ public class MsgCommand {
         for (ServerPlayer serverPlayer : collection) {
             Optional<Component> styledOutgoingContentOptional = MinecraftEvents.handleChatMessage(
                     CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
-                    new MinecraftChatStyleProvider.ChatMessageComponents(serverPlayer.getDisplayName(), playerChatMessage.decoratedContent(), null)
+                    new MinecraftChatStyleProvider.ChatMessageComponents(serverPlayer.getDisplayName(), playerChatMessage.decoratedContent(), null, commandSourceStack.getEntity())
             );
 
             if (styledOutgoingContentOptional.isPresent()){
