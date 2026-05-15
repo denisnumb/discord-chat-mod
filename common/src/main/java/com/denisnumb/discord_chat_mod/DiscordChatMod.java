@@ -67,6 +67,8 @@ public final class DiscordChatMod {
 
     public static void onServerStarted() {
         ServerLogsRetranslator.start();
+        if (server == null || !server.isDedicatedServer())
+            return;
         serverStartPending.set(true);
         trySendServerStartMessage();
     }
