@@ -4,11 +4,14 @@ import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
@@ -25,6 +28,10 @@ import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COMMANDS_MESSAGE_DISPLAY_INCOMING;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COMMANDS_MESSAGE_DISPLAY_OUTGOING;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.X;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Y;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Z;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.DIMENSION;
 
 public class ChatStyleUtils {
     public static Map<String, Style> parseTemplateParameterStyles(MutableComponent template, String... parameters) {
@@ -148,6 +155,43 @@ public class ChatStyleUtils {
         ZoneOffset offset = ZoneOffset.ofHours(ConfigProvider.getConfig().utcOffsetHours());
 
         return nowUtc.atOffset(offset);
+    }
+
+    public static Map<String, String> buildPositionParameters(@Nullable Entity entity){
+        HashMap<String, String> result = new HashMap<>();
+
+        if (entity == null){
+            result.put(X, "");
+            result.put(Y, "");
+            result.put(Z, "");
+            result.put(DIMENSION, "");
+            return result;
+        }
+
+        BlockPos pos = entity.blockPosition();
+        result.put(X, String.valueOf(pos.getX()));
+        result.put(Y, String.valueOf(pos.getY()));
+        result.put(Z, String.valueOf(pos.getZ()));
+        result.put(DIMENSION, getDimensionName(entity.level().dimension()));
+
+        return result;
+    }
+
+    private static String getDimensionName(ResourceKey<Level> dimension){
+        if (dimension == Level.OVERWORLD)
+            return "Overworld";
+        if (dimension == Level.NETHER)
+            return "Nether";
+        if (dimension == Level.END)
+            return "End";
+        return prettifyDimensionPath(dimension.location().getPath());
+    }
+
+    private static String prettifyDimensionPath(String path){
+        return Arrays.stream(path.split("_"))
+                .filter(word -> !word.isEmpty())
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                .collect(Collectors.joining(" "));
     }
 
     @SafeVarargs

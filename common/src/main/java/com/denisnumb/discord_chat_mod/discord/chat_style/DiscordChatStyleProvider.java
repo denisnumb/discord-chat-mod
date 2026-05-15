@@ -122,7 +122,7 @@ public class DiscordChatStyleProvider {
         else
             result.put(PLAYER_AVATAR_URL, ConfigProvider.getConfig().webhookServerAvatarUrl());
 
-        return result;
+        return mergeMaps(result, buildPositionParameters(entity));
     }
 
     public static Optional<DiscordMessageComponents> getDiscordMessageComponents(MessageType messageType, Map<String, String> parameterMap){

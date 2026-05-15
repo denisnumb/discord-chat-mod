@@ -7,6 +7,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +23,11 @@ import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.g
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 
 public class MinecraftChatStyleProvider {
+    private static Map<String, Component> buildPositionComponentParameters(@Nullable Entity entity){
+        return buildPositionParameters(entity).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> Component.literal(e.getValue())));
+    }
+
     private static Component applyStyleToAdvancement(String translatedTitle, String translatedDescription, Style advancementStyle) {
         Component title = Component.literal(translatedTitle);
         Component description = ComponentUtils.mergeStyles(title.copy(), Style.EMPTY.withColor(advancementStyle.getColor())).append("\n")
@@ -50,9 +56,10 @@ public class MinecraftChatStyleProvider {
         MutableComponent template = parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(messageStringTemplate, translationKey));
         Style advancementStyle = parseTemplateParameterStyles(template, ADVANCEMENT).get(ADVANCEMENT);
 
-        return Optional.of(applyParametersToTemplate(template,
-                Map.of(PLAYER, player.getDisplayName(), ADVANCEMENT, applyStyleToAdvancement(title, description, advancementStyle))
-        ));
+        return Optional.of(applyParametersToTemplate(template, mergeMaps(
+                Map.of(PLAYER, player.getDisplayName(), ADVANCEMENT, applyStyleToAdvancement(title, description, advancementStyle)),
+                buildPositionComponentParameters(player)
+        )));
     }
 
     public static Optional<Component> getStyledJoinedLeftMessage(Player player, boolean isJoin) {
@@ -68,11 +75,11 @@ public class MinecraftChatStyleProvider {
 
         return Optional.of(applyParametersToTemplate(
                 parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(messageStringTemplate, translationKey)),
-                Map.of(PLAYER, player.getDisplayName())
+                mergeMaps(Map.of(PLAYER, player.getDisplayName()), buildPositionComponentParameters(player))
         ));
     }
 
-    public record ChatMessageComponents(Component player, Component content, @Nullable Component team) {}
+    public record ChatMessageComponents(Component player, Component content, @Nullable Component team, @Nullable Entity sender) {}
 
     public static Optional<Component> getStyledChatMessage(ResourceKey<ChatType> chatType, ChatMessageComponents components){
         String configTemplate = getConfigTemplateByChatType(chatType);
@@ -89,10 +96,13 @@ public class MinecraftChatStyleProvider {
                 .boxed()
                 .collect(Collectors.toMap(i -> params[i], i -> values[i]));
 
-        return Optional.of(applyParametersToTemplate(parseConfigTemplateMarkdown(configTemplate), parameterToComponent));
+        return Optional.of(applyParametersToTemplate(
+                parseConfigTemplateMarkdown(configTemplate),
+                mergeMaps(parameterToComponent, buildPositionComponentParameters(components.sender()))
+        ));
     }
 
-    public static Optional<Component> getStyledDeathMessage(DeathMessageComponents components) {
+    public static Optional<Component> getStyledDeathMessage(DeathMessageComponents components, Entity entity) {
         IConfigProvider config = ConfigProvider.getConfig();
 
         String causeStyle = config.minecraftPlayerDeathCauseStyle().replace(DEATH_CAUSE, DEATH_CAUSE_REPLACEMENT_TAG);
@@ -116,6 +126,7 @@ public class MinecraftChatStyleProvider {
         parameterToDeathMessageComponent.put(DIED_ENTITY_REPLACEMENT_TAG, playerTemplate);
         parameterToDeathMessageComponent.put(KILLER_ENTITY_REPLACEMENT_TAG, components.killerEntity() != null ? entityTemplate : null);
         parameterToDeathMessageComponent.put(ITEM_REPLACEMENT_TAG, components.item() != null ? itemTemplate : null);
+        parameterToDeathMessageComponent.putAll(buildPositionComponentParameters(entity));
 
         return Optional.of(applyParametersToTemplate(causeTemplate.copy(), parameterToDeathMessageComponent));
     }
