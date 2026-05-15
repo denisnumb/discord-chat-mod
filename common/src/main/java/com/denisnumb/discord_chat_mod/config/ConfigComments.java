@@ -151,13 +151,15 @@ public class ConfigComments {
     public static final String WEBHOOK_PLAYER_AVATAR_URL_COMMENT
             = String.format("""
              Url to get the player's display avatar\
-            
-             You can specify a link with dynamic parameters <uuid> and <name>, which will be automatically substituted when requesting an image\
-            
-             <uuid> — player's UUID\
-            
-             <name> — player's nickname\
-            
+
+             You can specify a link with dynamic parameters <uuid>, <name> and <texture>, which will be automatically substituted when requesting an image\
+
+             <uuid> - player's UUID\
+
+             <name> - player's nickname\
+
+             <texture> - texture hash from the player's GameProfile (works with skin mods like Fabric Tailor or SkinRestorer that write into the server-side profile). Example: https://mc-heads.net/avatar/<texture>\
+
              Default: %s\
             """, WEBHOOK_PLAYER_AVATAR_URL_DEFAULT);
 
