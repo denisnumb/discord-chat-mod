@@ -8,6 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
+import com.mojang.authlib.properties.Property;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +21,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -228,12 +231,45 @@ public class WebhookUtils {
                 avatarUrlTemplate = avatarUrlTemplate.replace("<uuid>", optionalUUID.get());
         }
 
+        if (avatarUrlTemplate.contains("<texture>")){
+            Optional<String> optionalTexture = getPlayerTextureHash(player);
+            if (optionalTexture.isPresent())
+                avatarUrlTemplate = avatarUrlTemplate.replace("<texture>", optionalTexture.get());
+        }
+
         if (isImageUrl(getMimeType(avatarUrlTemplate)))
             return avatarUrlTemplate;
 
         return isImageUrl(getMimeType(defaultAvatarUrl))
                 ? defaultAvatarUrl
                 : "https://mc-heads.net/avatar/steve_head_png";
+    }
+
+    public static Optional<String> getPlayerTextureHash(Player player) {
+        try {
+            Collection<Property> textures = player.getGameProfile().properties().get("textures");
+            if (textures.isEmpty())
+                return Optional.empty();
+
+            String encoded = textures.iterator().next().value();
+            String decoded = new String(Base64.getDecoder().decode(encoded), StandardCharsets.UTF_8);
+            JsonObject json = JsonParser.parseString(decoded).getAsJsonObject();
+            if (!json.has("textures"))
+                return Optional.empty();
+
+            JsonObject texturesObject = json.getAsJsonObject("textures");
+            if (!texturesObject.has("SKIN"))
+                return Optional.empty();
+
+            String skinUrl = texturesObject.getAsJsonObject("SKIN").get("url").getAsString();
+            int slashIndex = skinUrl.lastIndexOf('/');
+            if (slashIndex < 0 || slashIndex == skinUrl.length() - 1)
+                return Optional.empty();
+
+            return Optional.of(skinUrl.substring(slashIndex + 1));
+        } catch (Exception ignored) {}
+
+        return Optional.empty();
     }
 
     public static Optional<String> getUUIDFromMojangAPI(String username) {
