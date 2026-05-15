@@ -11,6 +11,10 @@ public class Parameters {
     public static final String MEMBER = "{member}";
     public static final String USER = "{user}";
     public static final String PLAYER_AVATAR_URL = "{player_avatar_url}";
+    public static final String X = "{x}";
+    public static final String Y = "{y}";
+    public static final String Z = "{z}";
+    public static final String DIMENSION = "{dimension}";
     public static final String PLAYER_JOINED = "multiplayer.player.joined";
     public static final String PLAYER_LEFT = "multiplayer.player.left";
     public static final String DEATH_CAUSE = "{death_cause}";
