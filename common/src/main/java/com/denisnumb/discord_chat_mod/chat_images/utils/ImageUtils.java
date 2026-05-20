@@ -2,7 +2,6 @@ package com.denisnumb.discord_chat_mod.chat_images.utils;
 
 import com.denisnumb.discord_chat_mod.chat_images.model.ImageSize;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.twelvemonkeys.imageio.spi.ImageReaderSpiBase;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -24,8 +23,8 @@ public class ImageUtils {
     public static final String SPOILER_PREFIX = "/SPOILER_";
     public static final String LOCAL_RESOURCE_PREFIX = "https://localResource/";
 
-    public static boolean isTenorGifUrl(String url) {
-        return url.startsWith("https://tenor.com/");
+    public static boolean isGiphyGifUrl(String url) {
+        return url.startsWith("https://giphy.com/");
     }
 
     public static boolean isImageUrl(String mimeType) {

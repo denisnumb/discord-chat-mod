@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod;
 
+import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
+import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -10,23 +12,18 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.isChannelCategoryDisabled;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.serverLogsChannel;
 
 public class ServerLogsRetranslator {
     private static boolean DO_LOGGING = false;
-    private static boolean commandsOnly = false;
-    private static final Pattern COMMAND_PATTERN = Pattern.compile(".+ issued server command: .+|.+ executed .+");
 
-    public static void init(String loggingLevel, String logPattern, boolean commandsOnlyFilter) {
-        commandsOnly = commandsOnlyFilter;
+    public static void init(String loggingLevel, String logPattern) {
         DiscordLogBuffer.init();
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         Configuration config = ctx.getConfiguration();
@@ -38,11 +35,8 @@ public class ServerLogsRetranslator {
         Appender appender = new AbstractAppender("DiscordAppender", null, layout, false, null) {
             @Override
             public void append(LogEvent event) {
-                if (DO_LOGGING) {
-                    if (commandsOnly && !COMMAND_PATTERN.matcher(event.getMessage().getFormattedMessage()).matches())
-                        return;
+                if (DO_LOGGING)
                     DiscordLogBuffer.add(new String(getLayout().toByteArray(event)));
-                }
             }
         };
 
@@ -64,10 +58,16 @@ public class ServerLogsRetranslator {
         if (logs.length() > 2000)
             logs = logs.substring(0, 1990) + ". . .";
 
-        if (!isChannelCategoryDisabled(serverLogsChannel) && isDiscordConnected()){
-            try{
-                serverLogsChannel.sendMessage(String.format("```cmd\n%s\n```", logs)).queue();
-            } catch (Exception ignored){}
+        if (isDiscordConnected()){
+            String finalLogs = logs;
+            DiscordChannelRegistry.getAllContexts().stream()
+                    .map(DiscordGuildContext::getServerLogsChannel)
+                    .filter(Objects::nonNull)
+                    .forEach(logsChannel -> {
+                        try {
+                            logsChannel.sendMessage(String.format("```cmd\n%s\n```", finalLogs)).queue();
+                        } catch (Exception ignored) {}
+                    });
         }
     }
 

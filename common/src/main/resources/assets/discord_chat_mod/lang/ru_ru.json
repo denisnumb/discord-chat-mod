@@ -33,5 +33,15 @@
   "discord_chat_mod.command.reload_config.success": "Конфигурация перезагружена",
   "discord_chat_mod.reply": "(Ответ для %s)",
   "discord_chat_mod.forwarded_guild_message": "> Сообщение от %s с сервера %s",
-  "discord_chat_mod.warn.no_guilds_configured": "В конфигурации мода не подключен ни один Discord сервер"
+  "discord_chat_mod.warn.no_guilds_configured": "В конфигурации мода не подключен ни один Discord сервер",
+  "discord_chat_mod.slash_commands.list.description": "Отображает список игроков, которые в данный момент играют на сервере",
+  "discord_chat_mod.slash_commands.uptime.description": "Отображает как долго работает Minecraft сервер",
+  "discord_chat_mod.slash_commands.tps.description": "Показывает текущий TPS сервера (количество тиков в секунду)",
+  "discord_chat_mod.slash_commands.cmd.description": "Выполняет команду на Minecraft сервере",
+  "discord_chat_mod.slash_commands.cmd.args.command.description": "Команда для выполнения на сервере (без / в начале)",
+  "discord_chat_mod.slash_commands.commands_are_disabled": "Обработка команд для этого сервера отключена администратором",
+  "discord_chat_mod.slash_commands.uptime.success": "⏱️ **Время работы сервера:** %s",
+  "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ У вас нет права на использование этой команды",
+  "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Ошибка при выполнении команды:** %s",
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **Команда выполнена:** `%s`"
 }

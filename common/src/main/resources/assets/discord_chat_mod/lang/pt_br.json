@@ -33,5 +33,15 @@
   "discord_chat_mod.command.reload_config.success": "Configuração recarregada",
   "discord_chat_mod.reply": "(Resposta a %s)",
   "discord_chat_mod.forwarded_guild_message": "> Mensagem de %s na guilda %s",
-  "discord_chat_mod.warn.no_guilds_configured": "Não há guildas do Discord configuradas nas configurações do mod"
+  "discord_chat_mod.warn.no_guilds_configured": "Não há guildas do Discord configuradas nas configurações do mod",
+  "discord_chat_mod.slash_commands.list.description": "Mostrar jogadores atualmente online no servidor Minecraft",
+  "discord_chat_mod.slash_commands.uptime.description": "Mostre há quanto tempo o servidor Minecraft está em execução",
+  "discord_chat_mod.slash_commands.tps.description": "Mostrar o TPS atual do servidor (ticks por segundo)",
+  "discord_chat_mod.slash_commands.cmd.description": "Execute um comando no servidor Minecraft",
+  "discord_chat_mod.slash_commands.cmd.args.command.description": "O comando do servidor a ser executado (sem iniciar /)",
+  "discord_chat_mod.slash_commands.commands_are_disabled": "O processamento de comandos para esta guilda foi desativado pelo administrador",
+  "discord_chat_mod.slash_commands.uptime.success": "⏱️ **Tempo de atividade do servidor:**%s",
+  "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ Você não tem permissão para usar este comando",
+  "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Erro ao executar comando:**%s",
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **Comando executado:** `%s`"
 }

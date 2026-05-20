@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord;
 
+import com.denisnumb.discord_chat_mod.EmojiUtils;
+import com.denisnumb.discord_chat_mod.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
@@ -11,8 +13,6 @@ import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -21,7 +21,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.net.URI;
@@ -34,7 +33,6 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getServerPlayerCount;
-import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayers;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.FORWARDED_GUILD_MESSAGE;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.REPLY;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.STICKER;
@@ -51,30 +49,26 @@ public class DiscordEvents extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isWebhookMessage() || event.getAuthor().getId().equals(jda.getSelfUser().getId()))
             return;
-
-        if (!DiscordChannelRegistry.getAllContexts()
-                .stream()
-                .map(ctx -> ctx.getDefaultChannel().getId())
-                .toList()
-                .contains(event.getMessage().getChannelId())
-        )
+        if (!isTrackedChannel(event.getMessage().getChannelId()))
             return;
 
-        if (ConfigProvider.getConfig().isDiscordMessagesLoggingEnabled())
-            System.out.printf("[Discord] <%s> %s%n", event.getAuthor().getEffectiveName(), event.getMessage().getContentDisplay());
+        if (ConfigProvider.getConfig().isDiscordMessagesLoggingEnabled()){
+            System.out.printf("[Discord] <%s> %s%n",
+                    event.getAuthor().getEffectiveName(),
+                    event.getMessage().getContentDisplay());
+        }
 
-        if (getServerPlayerCount(server) > 0)
-            prepareComponents(event.getMessage()).thenAccept(components -> {
-                for (Component component : components)
-                    sendMessageToAllPlayers(component);
-            });
+        if (getServerPlayerCount(server) > 0){
+            prepareComponents(event.getMessage())
+                    .thenAccept(components -> components.forEach(MinecraftUtils::sendMessageToAllPlayers));
+        }
 
-        for (DiscordGuildContext guildContext : DiscordChannelRegistry.getAllContexts())
-            if (!guildContext.defaultChannel.getId().equals(event.getMessage().getChannelId()))
-                retranslateGuildMessage(guildContext, event);
+        DiscordChannelRegistry.getAllContexts().stream()
+                .filter(ctx -> !ctx.defaultChannel.getId().equals(event.getMessage().getChannelId()))
+                .forEach(ctx -> retranslateGuildMessage(ctx, event));
     }
 
-    public static void retranslateGuildMessage(DiscordGuildContext guildContext, MessageReceivedEvent event) {
+    private static void retranslateGuildMessage(DiscordGuildContext guildContext, MessageReceivedEvent event) {
         List<MessageEmbed> embeds = event.getMessage().getEmbeds();
         MessageEmbed embed = embeds.isEmpty() ? null : event.getMessage().getEmbeds().getFirst();
 
@@ -120,8 +114,8 @@ public class DiscordEvents extends ListenerAdapter {
                             new DiscordChatStyleProvider.DiscordMessageComponents(
                                     Optional.of(message),
                                     embed == null
-                                        ? Optional.empty()
-                                        : Optional.of(embed)
+                                            ? Optional.empty()
+                                            : Optional.of(embed)
                             )
                     ).ifPresent(mca -> {
                         for (WebhookUtils.WebhookAttachment attachment : attachments)
@@ -132,126 +126,174 @@ public class DiscordEvents extends ListenerAdapter {
         );
     }
 
-    private static @NotNull CompletableFuture<List<Component>> prepareComponents(Message message) {
-        List<Component> components = new ArrayList<>();
-
+    private static CompletableFuture<List<Component>> prepareComponents(Message message) {
         Member member = Objects.requireNonNull(message.getMember());
-        String userName = member.getEffectiveName();
-        Color roleColor = member.getColor() == null ? Color.WHITE : member.getColor();
-        String configTemplate = ConfigProvider.getConfig().minecraftDiscordMessagesStyle();
+        MessageContext ctx = buildMessageContext(member, message);
 
-        Component guildComponent = Component.literal(message.getGuild().getName());
+        CompletableFuture<Optional<Component>> textFuture = buildTextComponent(message, ctx);
+        Optional<Component> attachmentComponent = buildAttachmentsComponent(message, ctx);
+        Optional<Component> stickerComponent = buildStickerComponent(message, ctx);
 
-        Component userNameComponent = Component.empty()
-                .append(Component.literal(userName)
-                .withColor(roleColor.getRGB())
-                .withStyle(style ->
-                        style.withInsertion("@" + ChannelMembersProvider.getMemberDisplayName(member))
-                                .withClickEvent(new ClickEvent.SuggestCommand("/mention " + ChannelMembersProvider.getMemberDisplayName(member)))
-                                .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.getUser().getName())))
-                )
-        );
-
-        MutableComponent replyPrefix = Component.empty();
-        Message referencedMessage = message.getReferencedMessage();
-        if (referencedMessage != null) {
-            String replyAuthor = referencedMessage.getMember() != null
-                    ? referencedMessage.getMember().getEffectiveName()
-                    : referencedMessage.getAuthor().getEffectiveName();
-            String replyText = String.format(getTranslate(REPLY), replyAuthor);
-            String rawPreview = referencedMessage.getContentDisplay();
-            String previewText = rawPreview.length() > 50 ? rawPreview.substring(0, 50) + "..." : rawPreview;
-
-            replyPrefix = Component.literal(replyText + " ")
-                    .withColor(0x7A7A7A)
-                    .withStyle(style -> style
-                            .withItalic(true)
-                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(replyAuthor + ": " + previewText)))
-                    );
-        }
-        final Component replyComponent = replyPrefix;
-
-        CompletableFuture<List<Component>> componentsFuture;
-
-        if (!message.getContentRaw().isEmpty()) {
-            Map<String, DiscordMentionData> mentions = new HashMap<>();
-
-            for (Member user : message.getMentions().getMembers())
-                mentions.put(user.getAsMention(), new DiscordMentionData(user));
-            for (Role role : message.getMentions().getRoles())
-                mentions.put(role.getAsMention(), new DiscordMentionData(role));
-            for (GuildChannel channel : message.getMentions().getChannels())
-                mentions.put(channel.getAsMention(), new DiscordMentionData(channel));
-
-            componentsFuture = retrieveMessageEmbedUrls(message).thenApply(embedUrls ->
-                new MarkdownToComponentConverter(
-                    MarkdownParser.parseMarkdown(
-                        replaceDiscordEmojiMentionsToEmojiNames(message.getContentRaw()),
-                        embedUrls
-                    ), mentions
-                ).convertMarkdownTokensToComponent()
-            ).exceptionally(ignored -> {
-                String content = message.getContentRaw();
-                for (var entry : mentions.entrySet())
-                    content = content.replace(entry.getKey(), entry.getValue().prettyMention);
-                return Component.literal(content);
-            }).thenApply(textPart -> {
-                Component messagePart = replyComponent.getString().isEmpty()
-                        ? textPart
-                        : Component.empty().append(replyComponent).append(textPart);
-                addComponentsPart(components, configTemplate, guildComponent, userNameComponent, messagePart);
-                return components;
-            });
-        } else if (!replyComponent.getString().isEmpty()) {
-            addComponentsPart(components, configTemplate, guildComponent, userNameComponent, replyComponent);
-            componentsFuture = CompletableFuture.completedFuture(components);
-        } else {
-            componentsFuture = CompletableFuture.completedFuture(components);
-        }
-
-        return componentsFuture.thenApply(messageComponents -> {
-            if (!message.getAttachments().isEmpty()) {
-                MutableComponent attachmentPart = Component.empty();
-                int index = 0;
-                List<Message.Attachment> attachments = message.getAttachments();
-                for (var file : attachments) {
-                    attachmentPart.append(Component.literal(file.getFileName() + (++index < attachments.size() ? "\n" : ""))
-                        .withColor(CHAT_LINK_COLOR).withStyle(style -> style.withItalic(true)
-                            .withClickEvent(new ClickEvent.OpenUrl(URI.create(file.getUrl())))
-                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(file.getUrl())))
-                        )
-                    );
-                }
-
-                addComponentsPart(messageComponents, configTemplate, guildComponent, userNameComponent, attachmentPart);
-            }
-
-            if (!message.getStickers().isEmpty()) {
-                MutableComponent stickerPart = Component.empty();
-                StickerItem sticker = message.getStickers().getFirst();
-                stickerPart.append(Component.literal(String.format(getTranslate(STICKER), sticker.getName()))
-                    .withStyle(style -> style
-                        .withItalic(true)
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(sticker.getIconUrl())))
-                    )
-                );
-
-                addComponentsPart(messageComponents, configTemplate, guildComponent, userNameComponent, stickerPart);
-            }
-
-            return messageComponents;
+        return textFuture.thenApply(textOpt -> {
+            List<Component> result = new ArrayList<>();
+            textOpt.ifPresent(result::add);
+            attachmentComponent.ifPresent(result::add);
+            stickerComponent.ifPresent(result::add);
+            return result;
         });
     }
 
-    private static void addComponentsPart(
-        List<Component> components,
-            String configTemplate,
-            Component guildComponent,
-            Component userNameComponent,
-            Component messageComponent) {
-        components.add(applyParametersToTemplate(
-                parseConfigTemplateMarkdown(configTemplate),
-                Map.of(GUILD, guildComponent, MEMBER, userNameComponent, MESSAGE, messageComponent)
-        ));
+    private record MessageContext(
+            Component guild,
+            Component userName,
+            Component replyPrefix,
+            String configTemplate
+    ) {}
+
+    private static MessageContext buildMessageContext(Member member, Message message) {
+        Color roleColor = member.getColor() == null ? Color.WHITE : member.getColor();
+        Component guild = Component.literal(message.getGuild().getName());
+
+        Component userName = Component.empty().append(
+                Component.literal(member.getEffectiveName())
+                        .withColor(roleColor.getRGB())
+                        .withStyle(style -> style
+                                .withInsertion("@" + ChannelMembersProvider.getMemberDisplayName(member))
+                                .withClickEvent(new ClickEvent.SuggestCommand("/mention " + ChannelMembersProvider.getMemberDisplayName(member)))
+                                .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.getUser().getName())))
+                        )
+        );
+
+        Component replyPrefix = buildReplyPrefix(message.getReferencedMessage());
+
+        return new MessageContext(
+                guild,
+                userName,
+                replyPrefix,
+                ConfigProvider.getConfig().minecraftDiscordMessagesStyle()
+        );
+    }
+
+    private static Component buildReplyPrefix(Message referencedMessage) {
+        if (referencedMessage == null)
+            return Component.empty();
+
+        String replyAuthor = referencedMessage.getMember() != null
+                ? ChannelMembersProvider.getMemberDisplayName(referencedMessage.getMember())
+                : referencedMessage.getAuthor().getEffectiveName();
+
+        String rawPreview = referencedMessage.getContentDisplay();
+        String preview = rawPreview.length() > 50
+                ? rawPreview.substring(0, 50) + "..."
+                : rawPreview;
+
+        return Component.literal(String.format(getTranslate(REPLY), replyAuthor) + " ")
+                .withColor(0x7A7A7A)
+                .withStyle(style -> style
+                        .withItalic(true)
+                        .withHoverEvent(new HoverEvent.ShowText(
+                                Component.literal(replyAuthor + ": " + preview)))
+                );
+    }
+
+    private static CompletableFuture<Optional<Component>> buildTextComponent(Message message, MessageContext ctx) {
+        if (message.getContentRaw().isEmpty() && ctx.replyPrefix().getString().isEmpty())
+            return CompletableFuture.completedFuture(Optional.empty());
+
+        if (message.getContentRaw().isEmpty())
+            return CompletableFuture.completedFuture(Optional.of(wrap(ctx.replyPrefix(), ctx)));
+
+        Map<String, DiscordMentionData> mentions = collectMentions(message);
+        String rawContent = EmojiUtils.replaceDiscordEmojiMentionsToEmojiNames(message.getContentRaw());
+
+        return retrieveMessageEmbedUrls(message)
+                .thenApply(embedUrls ->
+                        new MarkdownToComponentConverter(
+                                MarkdownParser.parseMarkdown(rawContent, embedUrls),
+                                mentions
+                        ).convertMarkdownTokensToComponent()
+                )
+                .exceptionally(ignored -> fallbackTextComponent(message, mentions))
+                .thenApply(textPart -> {
+                    Component combined = ctx.replyPrefix().getString().isEmpty()
+                            ? textPart
+                            : Component.empty().append(ctx.replyPrefix()).append(textPart);
+                    return Optional.of(wrap(combined, ctx));
+                });
+    }
+
+    private static MutableComponent fallbackTextComponent(Message message, Map<String, DiscordMentionData> mentions) {
+        String content = message.getContentRaw();
+        for (var entry : mentions.entrySet())
+            content = content.replace(entry.getKey(), entry.getValue().prettyMention);
+
+        return Component.literal(content);
+    }
+
+    private static Optional<Component> buildAttachmentsComponent(Message message, MessageContext ctx) {
+        if (message.getAttachments().isEmpty())
+            return Optional.empty();
+
+        MutableComponent part = Component.empty();
+        List<Message.Attachment> attachments = message.getAttachments();
+        for (int i = 0; i < attachments.size(); i++) {
+            var file = attachments.get(i);
+            boolean isLast = i == attachments.size() - 1;
+            part.append(
+                    Component.literal(file.getFileName() + (isLast ? "" : "\n"))
+                            .withColor(CHAT_LINK_COLOR)
+                            .withStyle(style -> style
+                                    .withItalic(true)
+                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(file.getUrl())))
+                                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(file.getUrl())))
+                            )
+            );
+        }
+        return Optional.of(wrap(part, ctx));
+    }
+
+    private static Optional<Component> buildStickerComponent(Message message, MessageContext ctx) {
+        if (message.getStickers().isEmpty())
+            return Optional.empty();
+
+        StickerItem sticker = message.getStickers().getFirst();
+        Component part = Component.literal(String.format(getTranslate(STICKER), sticker.getName()))
+                .withStyle(style -> style
+                        .withItalic(true)
+                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(sticker.getIconUrl())))
+                );
+
+        return Optional.of(wrap(part, ctx));
+    }
+
+    private static Component wrap(Component messageComponent, MessageContext ctx) {
+        return applyParametersToTemplate(
+                parseConfigTemplateMarkdown(ctx.configTemplate()),
+                Map.of(GUILD, ctx.guild(), MEMBER, ctx.userName(), MESSAGE, messageComponent)
+        );
+    }
+
+    private static Map<String, DiscordMentionData> collectMentions(Message message) {
+        Map<String, DiscordMentionData> mentions = new HashMap<>();
+
+        message.getMentions()
+                .getMembers()
+                .forEach(u -> mentions.put(u.getAsMention(), new DiscordMentionData(u)));
+
+        message.getMentions()
+                .getRoles()
+                .forEach(r -> mentions.put(r.getAsMention(), new DiscordMentionData(r)));
+
+        message.getMentions()
+                .getChannels()
+                .forEach(c -> mentions.put(c.getAsMention(), new DiscordMentionData(c)));
+
+        return mentions;
+    }
+
+    private static boolean isTrackedChannel(String channelId) {
+        return DiscordChannelRegistry.getAllContexts().stream()
+                .map(ctx -> ctx.getDefaultChannel().getId())
+                .anyMatch(id -> id.equals(channelId));
     }
 }
