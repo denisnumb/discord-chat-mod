@@ -1,6 +1,5 @@
 package com.denisnumb.discord_chat_mod.discord.utils;
 
-import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
@@ -20,8 +19,6 @@ import org.slf4j.Logger;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
@@ -70,8 +67,9 @@ public class DiscordMessageUtils {
             if (isChannelCategoryDisabled(channel))
                 continue;
 
+            Optional<String> optionalNewUrl = sendScreenshotFromPlayerToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData);
             if (optionalScreenshotUrl.isEmpty())
-                optionalScreenshotUrl = sendScreenshotFromPlayerToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData);
+                optionalScreenshotUrl = optionalNewUrl;
 
             duplicateMessageToDefaultChannel(guildContext, channelCategory,
                     () -> sendScreenshotFromPlayerToChannel(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData)
@@ -306,42 +304,5 @@ public class DiscordMessageUtils {
     public static String getStickerFileName(String stickerUrl){
         String[] parts = stickerUrl.split("\\.");
         return "sticker" + "." + parts[parts.length - 1];
-    }
-
-    public static String replaceEmojiCodesToDiscordMentions(String text) {
-        Pattern emojiPattern = Pattern.compile("(?<!\\\\):([a-zA-Z0-9_]{2,}(~[1-9][0-9]*)?):");
-        Matcher matcher = emojiPattern.matcher(text);
-        Map<String, CustomEmojiProvider.EmojiData> emojiMap = CustomEmojiProvider.getNameToEmojiDataMap();
-
-        StringBuilder result = new StringBuilder();
-        while (matcher.find()) {
-            String indexedName = matcher.group(1);
-            if (emojiMap.containsKey(indexedName))
-                matcher.appendReplacement(result, Matcher.quoteReplacement(emojiMap.get(indexedName).mentionString()));
-        }
-
-
-        matcher.appendTail(result);
-        return result.toString();
-    }
-
-    public static String replaceDiscordEmojiMentionsToEmojiNames(String text) {
-        Pattern emojiMentionPattern = Pattern.compile("(?<!\\\\)<a?:[a-zA-Z0-9_]+:\\d+>");
-        Matcher matcher = emojiMentionPattern.matcher(text);
-        Map<String, CustomEmojiProvider.EmojiData> emojiMap = CustomEmojiProvider.getNameToEmojiDataMap();
-
-        StringBuilder result = new StringBuilder();
-        while (matcher.find()) {
-            String mentionString = matcher.group();
-            emojiMap.entrySet().stream()
-                    .filter(entry -> entry.getValue().mentionString().equals(mentionString))
-                    .findFirst()
-                    .map(Map.Entry::getKey)
-                    .ifPresent(indexedName -> matcher.appendReplacement(result,
-                            Matcher.quoteReplacement(String.format(":%s:", indexedName))));
-        }
-
-        matcher.appendTail(result);
-        return result.toString();
     }
 }

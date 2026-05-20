@@ -20,18 +20,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.replaceEmojiCodesToDiscordMentions;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -56,7 +55,7 @@ public class MinecraftUtils {
                     put(member.mentionString, new DiscordMentionData(member));
             }};
 
-            forDiscord = MarkdownParser.removeColorTags(replaceEmojiCodesToDiscordMentions(message));
+            forDiscord = MarkdownParser.removeColorTags(EmojiUtils.replaceEmojiCodesToDiscordMentions(message));
             forDiscord = MinecraftFormattingConverter.toDiscordMarkdown(forDiscord);
         }
 
@@ -64,6 +63,24 @@ public class MinecraftUtils {
                 .convertMarkdownTokensToComponent();
 
         return new ProcessChatMessageResult(forMinecraft, forDiscord);
+    }
+
+    public static FormattedCharSequence subFormattedCharSequence(FormattedCharSequence text, int start, int end) {
+        if (start >= end || start < 0) {
+            return FormattedCharSequence.EMPTY;
+        }
+
+        List<FormattedCharSequence> parts = new ArrayList<>();
+        AtomicInteger index = new AtomicInteger();
+
+        text.accept((i, style, codePoint) -> {
+            if (index.get() >= start && index.get() < end)
+                parts.add(FormattedCharSequence.codepoint(codePoint, style));
+            index.getAndIncrement();
+            return true;
+        });
+
+        return FormattedCharSequence.composite(parts);
     }
 
     public static List<ServerPlayer> getPlayerListBySelector(String selector){

@@ -2,6 +2,7 @@ package com.denisnumb.discord_chat_mod.config;
 
 import com.denisnumb.discord_chat_mod.config.configs.*;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig.DiscordGuildConfig;
+import net.fabricmc.loader.impl.util.log.Log;
 
 import java.util.List;
 import java.util.Set;
@@ -18,41 +19,6 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
-    public String serverLogsChannelId() {
-        return CommonConfig.serverLogsChannelId;
-    }
-
-    @Override
-    public String serverLogsToDiscordLoggingLevel() {
-        return CommonConfig.serverLogsToDiscordLoggingLevel;
-    }
-
-    @Override
-    public String serverLogsPattern() {
-        return CommonConfig.serverLogsPattern;
-    }
-
-    @Override
-    public boolean isServerLogsCommandsOnly() {
-        return CommonConfig.serverLogsCommandsOnly;
-    }
-
-    @Override
-    public boolean isDiscordMessagesLoggingEnabled() {
-        return CommonConfig.logDiscordMessages;
-    }
-
-    @Override
-    public boolean isLoggingDiscordErrorsToServerChatEnabled() {
-        return CommonConfig.logDiscordErrorsToServerChat;
-    }
-
-    @Override
-    public String discordErrorsChatPlayerSelector() {
-        return CommonConfig.discordErrorsChatPlayerSelector;
-    }
-
-    @Override
     public String modLocale() {
         return CommonConfig.modLocale;
     }
@@ -60,16 +26,6 @@ public class ConfigProviderImpl implements IConfigProvider {
     @Override
     public int utcOffsetHours() {
         return CommonConfig.utcOffsetHours;
-    }
-
-    @Override
-    public boolean isSlashCommandsEnabled() {
-        return CommonConfig.enableSlashCommands;
-    }
-
-    @Override
-    public java.util.List<String> slashCommandAllowedRoles() {
-        return CommonConfig.slashCommandAllowedRoles;
     }
 
     @Override
@@ -83,18 +39,48 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public boolean isDiscordMessagesLoggingEnabled() {
+        return LogsConfig.logDiscordMessages;
+    }
+
+    @Override
+    public boolean isLoggingDiscordErrorsToServerChatEnabled() {
+        return LogsConfig.logDiscordErrorsToServerChat;
+    }
+
+    @Override
+    public String discordErrorsChatPlayerSelector() {
+        return LogsConfig.discordErrorsChatPlayerSelector;
+    }
+
+    @Override
+    public boolean isServerLogsToDiscordEnabled() {
+        return LogsConfig.serverLogsToDiscordEnabled;
+    }
+
+    @Override
+    public String serverLogsToDiscordLoggingLevel() {
+        return LogsConfig.serverLogsToDiscordLoggingLevel;
+    }
+
+    @Override
+    public String serverLogsPattern() {
+        return LogsConfig.serverLogsPattern;
+    }
+
+    @Override
     public boolean isCommandLogEnabled() {
-        return CommonConfig.commandLogEnabled;
+        return LogsConfig.commandLogEnabled;
     }
 
     @Override
     public int commandLogMinPermissionLevel() {
-        return CommonConfig.commandLogMinPermissionLevel;
+        return LogsConfig.commandLogMinPermissionLevel;
     }
 
     @Override
     public Set<String> commandLogIgnoredCommands() {
-        return CommonConfig.commandLogIgnoredCommands;
+        return LogsConfig.commandLogIgnoredCommands;
     }
 
     @Override
