@@ -12,7 +12,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.net.URI;
 import java.util.Map;
@@ -28,7 +28,6 @@ import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.s
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
 
 public class SendStickerCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -44,14 +43,14 @@ public class SendStickerCommand {
                                     if (stickerData == null)
                                         throw new SimpleCommandExceptionType(Component.literal(String.format(getTranslate(UNKNOWN_STICKER), stickerName))).create();
 
-                                    if (context.getSource().getEntity() instanceof Player player) {
+                                    if (context.getSource().getEntity() instanceof ServerPlayer player) {
                                         String stickerMessageContent = String.format(getTranslate(STICKER), stickerData.originalName());
 
                                         Component messageWithStickerComponent = Component.literal(stickerMessageContent)
                                                 .withStyle(style -> style.withItalic(true)
                                                         .withClickEvent(new ClickEvent.OpenUrl(URI.create(stickerData.imageUrl()))));
 
-                                        sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, player.getDisplayName(), MESSAGE, messageWithStickerComponent));
+                                        sendMessageToAllPlayersFromPlayer(player, messageWithStickerComponent);
 
                                         handleDiscord(() -> {
                                             Optional<DiscordChatStyleProvider.DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(
