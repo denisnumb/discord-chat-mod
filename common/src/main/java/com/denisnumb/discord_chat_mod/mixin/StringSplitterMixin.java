@@ -7,39 +7,18 @@ import net.minecraft.client.StringSplitter;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static com.denisnumb.discord_chat_mod.EmojiUtils.EMOJI_PATTERN;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.subFormattedCharSequence;
 
 @Mixin(StringSplitter.class)
 public abstract class StringSplitterMixin {
-    @Unique private static final Pattern EMOJI_PATTERN = Pattern.compile(":([a-zA-Z0-9_]{2,}(~([1-9][0-9]*))?):");
-
-    @Unique
-    private static FormattedCharSequence discord_minecraft_chat$substringFormatted(FormattedCharSequence text, int start, int end) {
-        if (start >= end || start < 0) {
-            return FormattedCharSequence.EMPTY;
-        }
-
-        List<FormattedCharSequence> parts = new ArrayList<>();
-        AtomicInteger index = new AtomicInteger();
-
-        text.accept((i, style, codePoint) -> {
-            if (index.get() >= start && index.get() < end)
-                parts.add(FormattedCharSequence.codepoint(codePoint, style));
-            index.getAndIncrement();
-            return true;
-        });
-
-        return FormattedCharSequence.composite(parts);
-    }
-
     @ModifyVariable(
             method = "stringWidth(Ljava/lang/String;)F",
             at = @At("HEAD"),
@@ -113,7 +92,7 @@ public abstract class StringSplitterMixin {
 
         do {
             if (matcher.start() > lastEnd)
-                result.add(discord_minecraft_chat$substringFormatted(text, lastEnd, matcher.start()));
+                result.add(subFormattedCharSequence(text, lastEnd, matcher.start()));
 
             AbstractImage abstractImage = CustomEmojiProvider.CLIENT_EMOJI_CACHE.get(matcher.group(1));
 
@@ -121,14 +100,14 @@ public abstract class StringSplitterMixin {
                 result.add(FormattedCharSequence.codepoint(' ', Style.EMPTY)); // space for emoji; width = 4
                 result.add(FormattedCharSequence.codepoint(' ', Style.EMPTY.withBold(true))); // space for emoji; width = 5
             } else
-                result.add(discord_minecraft_chat$substringFormatted(text, matcher.start(), matcher.end()));
+                result.add(subFormattedCharSequence(text, matcher.start(), matcher.end()));
 
             lastEnd = matcher.end();
 
         } while (matcher.find());
 
         if (lastEnd < rawText.length())
-            result.add(discord_minecraft_chat$substringFormatted(text, lastEnd, rawText.length()));
+            result.add(subFormattedCharSequence(text, lastEnd, rawText.length()));
 
         return FormattedCharSequence.composite(result);
     }

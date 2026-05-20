@@ -55,9 +55,9 @@ public class ServerStatusController {
 
         Map<DiscordGuildContext, Optional<Message>> existingStatusMessages = findPinnedStatusMessages();
         serverStatusMessages = existingStatusMessages.entrySet().stream().map(entry ->
-            entry.getValue().orElseGet(() ->
-                    sendPinnedStatusMessage(entry.getKey(), createServerStatusMessageComponents()).orElse(null)
-            )
+                entry.getValue().orElseGet(() ->
+                        sendPinnedStatusMessage(entry.getKey(), createServerStatusMessageComponents()).orElse(null)
+                )
         ).toList();
 
         for (Message statusMessage : serverStatusMessages){
@@ -88,7 +88,7 @@ public class ServerStatusController {
         }
     }
 
-    private static DiscordMessageComponents createServerStatusMessageComponents() {
+    public static DiscordMessageComponents createServerStatusMessageComponents() {
         return getServerPlayerCount(server) == 0
                 ? getDiscordMessageComponents(MessageType.PINNED_STATUS_AVAILABLE, Map.of()).orElseThrow()
                 : getDiscordMessageComponents(
@@ -109,17 +109,41 @@ public class ServerStatusController {
         String[] players = getServerPlayerNames(server);
         String delimiter = config.discordPinnedStatusMessagePlayerListDelimiter();
         String nicknameStyle = config.discordPinnedStatusMessagePlayerListNicknameStyle();
+        boolean escapeUnderscore = shouldEscape(nicknameStyle);
 
         String result = IntStream.range(0, Math.min(maxNicknames, players.length))
-                .mapToObj(i -> nicknameStyle
-                        .replace(PLAYER, players[i].replace("_", "\\_"))
-                        .replace(COUNTER, String.valueOf(i + 1)))
+                .mapToObj(i -> {
+                    String player = players[i];
+                    if (escapeUnderscore) {
+                        player = player.replace("_", "\\_");
+                    }
+
+                    return nicknameStyle
+                            .replace(PLAYER, player)
+                            .replace(COUNTER, String.valueOf(i + 1));
+                })
                 .collect(Collectors.joining(delimiter));
 
         if (players.length > maxNicknames || players.length == 0)
             result += delimiter + ". . .";
 
         return result;
+    }
+
+    private static boolean shouldEscape(String style) {
+        int playerIndex = style.indexOf(PLAYER);
+        if (playerIndex == -1)
+            return true;
+
+        int lastBacktickBefore = style.lastIndexOf('`', playerIndex);
+        int firstBacktickAfter = style.indexOf('`', playerIndex);
+
+        boolean insideBackticks = lastBacktickBefore != -1
+                && firstBacktickAfter != -1
+                && lastBacktickBefore < playerIndex
+                && firstBacktickAfter > playerIndex;
+
+        return !insideBackticks;
     }
 
     private static void updateServerStatus() {

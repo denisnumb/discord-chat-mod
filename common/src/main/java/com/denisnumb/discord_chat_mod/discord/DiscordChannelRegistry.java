@@ -26,7 +26,6 @@ import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInp
 
 public class DiscordChannelRegistry {
     private static final Map<String, DiscordGuildContext> GUILD_CONTEXTS = new HashMap<>();
-    public static @Nullable GuildMessageChannel serverLogsChannel;
     private static Icon webhookAvatar;
 
     private static final List<Permission> requiredPermissions = List.of(
@@ -60,11 +59,11 @@ public class DiscordChannelRegistry {
                 ? config.webhookServerAvatarUrl()
                 : jda.getSelfUser().getAvatarUrl();
 
-        webhookAvatar = webhookAvatarUrl == null
-                ? null
-                : Icon.from(getInputStreamFromUrl(webhookAvatarUrl));
-
-        serverLogsChannel = getDiscordChannel(null, config.serverLogsChannelId());
+        try {
+            webhookAvatar = webhookAvatarUrl == null
+                    ? null
+                    : Icon.from(getInputStreamFromUrl(webhookAvatarUrl));
+        } catch (Exception ignored) {}
 
         for (DiscordGuildsConfig.DiscordGuildConfig guildConfig : guildConfigs){
             if (guildConfig.guildId().isEmpty())
@@ -76,13 +75,21 @@ public class DiscordChannelRegistry {
                 continue;
             }
 
-            DiscordGuildContext context = new DiscordGuildContext(guild, guildConfig.duplicateMessages(), guildConfig.enablePinnedStatusMessage());
+            DiscordGuildContext context = new DiscordGuildContext(
+                    guild,
+                    guildConfig.duplicateMessages(),
+                    guildConfig.enablePinnedStatusMessage(),
+                    guildConfig.enableSlashCommands(),
+                    guildConfig.slashCommandAllowedRoles()
+            );
             try{
                 context.setDefaultChannel(getDiscordChannel(context, guildConfig.defaultChannelId()));
             } catch (IllegalStateException e){
                 logErrorToServer(String.format(getTranslate(INVALID_DEFAULT_CHANNEL_ERROR), guild.getName()));
                 continue;
             }
+
+            context.setServerLogsChannel(getDiscordChannel(context, guildConfig.serverLogsChannelId()));
 
             for (var entry : guildConfig.channelOverrides().entrySet()) {
                 ChannelCategory category = ChannelCategory.fromConfigName(entry.getKey());

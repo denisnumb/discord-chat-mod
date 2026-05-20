@@ -1,9 +1,5 @@
 package com.denisnumb.discord_chat_mod.chat_images.utils;
 
-import org.jetbrains.annotations.Nullable;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -13,34 +9,26 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.io.IOException;
 
 public class GifUtils {
-    public static String getTenorGifSourceUrl(String tenorUrl) throws IOException {
-        Document doc = Jsoup.connect(tenorUrl)
-                .userAgent("Mozilla/5.0")
-                .get();
-
-        Element gifMeta = doc.selectFirst("meta[property=og:image]");
-        if (gifMeta != null) {
-            String intermediateGifUrl = gifMeta.attr("content");
-            String id = extractGifId(intermediateGifUrl);
-            if (id != null)
-                return "https://c.tenor.com/" + id + "/tenor.gif";
+    public static String getGiphyGifSourceUrl(String giphyUrl) throws IllegalArgumentException {
+        String url = giphyUrl.stripTrailing();
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
         }
 
-        throw new IOException("No tenor gif source url found");
-    }
+        String lastSegment = url.substring(url.lastIndexOf('/') + 1);
 
-    @Nullable
-    public static String extractGifId(String url) {
-        int start = url.indexOf("/m/") + 3;
-        int end = url.indexOf('/', start);
-        if (start > 2 && end > start) {
-            return url.substring(start, end);
+        int lastDash = lastSegment.lastIndexOf('-');
+        String gifId = lastDash >= 0
+                ? lastSegment.substring(lastDash + 1)
+                : lastSegment;
+
+        if (gifId.isBlank()) {
+            throw new IllegalArgumentException("Failed to extract gif ID from URL: " + giphyUrl);
         }
 
-        return null;
+        return "https://i.giphy.com/" + gifId + ".gif";
     }
 
     public static String getDisposalMethod(IIOMetadata metadata) {

@@ -1,29 +1,27 @@
 package com.denisnumb.discord_chat_mod.config;
 
+import java.util.List;
+
 public class ConfigDefaults {
     public static final String DISCORD_BOT_TOKEN_DEFAULT = "";
-    public static final String SERVER_LOGS_CHANNEL_ID_DEFAULT = "";
-    public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_DEFAULT = "INFO";
-    public static final String SERVER_LOGS_PATTERN_DEFAULT = "[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n";
-    public static final boolean SERVER_LOGS_COMMANDS_ONLY_DEFAULT = false;
-    public static final boolean LOG_DISCORD_MESSAGES_DEFAULT = true;
-    public static final boolean LOG_DISCORD_ERRORS_TO_SERVER_CHAT_DEFAULT = true;
-    public static final String DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_DEFAULT = "@a";
     public static final String MOD_LOCALE_DEFAULT = "en_us";
     public static final int UTC_OFFSET_HOURS_DEFAULT = 0;
     public static final boolean ENABLE_BOT_PRESENCE_STATUS_DEFAULT = true;
     public static final boolean MENTION_BOTS_DEFAULT = true;
 
+    // =================================================================================================================
+    //                                              LOGS CONFIG DEFAULTS
+    // =================================================================================================================
+
+    public static final boolean LOG_DISCORD_MESSAGES_DEFAULT = true;
+    public static final boolean LOG_DISCORD_ERRORS_TO_SERVER_CHAT_DEFAULT = true;
+    public static final String DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_DEFAULT = "@a";
+    public static final boolean SERVER_LOGS_TO_DISCORD_ENABLED_DEFAULT = false;
+    public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_DEFAULT = "INFO";
+    public static final String SERVER_LOGS_PATTERN_DEFAULT = "[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n";
     public static final boolean COMMAND_LOG_ENABLED_DEFAULT = false;
     public static final int COMMAND_LOG_MIN_PERMISSION_LEVEL_DEFAULT = 2;
-    public static final String COMMAND_LOG_IGNORED_COMMANDS_DEFAULT = "";
-
-    // =================================================================================================================
-    //                                          DISCORD SLASH COMMANDS DEFAULTS
-    // =================================================================================================================
-
-    public static final boolean ENABLE_SLASH_COMMANDS_DEFAULT = true;
-    public static final java.util.List<String> SLASH_COMMAND_ALLOWED_ROLES_DEFAULT = java.util.List.of();
+    public static final List<String> COMMAND_LOG_IGNORED_COMMANDS_DEFAULT = List.of();
 
     // =================================================================================================================
     //                                              WEBHOOK MODE DEFAULTS
@@ -51,9 +49,12 @@ public class ConfigDefaults {
 
     public static final String GUILD_ID_DEFAULT = "";
     public static final String DEFAULT_CHANNEL_ID_DEFAULT = "";
+    public static final String SERVER_LOGS_CHANNEL_ID_DEFAULT = "";
     public static final boolean DUPLICATE_MESSAGES_DEFAULT = false;
     public static final String OVERRIDE_CHANNEL_ID_DEFAULT = "";
     public static final boolean ENABLE_PINNED_STATUS_MESSAGE_DEFAULT = true;
+    public static final boolean ENABLE_SLASH_COMMANDS_DEFAULT = true;
+    public static final List<String> SLASH_COMMAND_ALLOWED_ROLES_DEFAULT = List.of();
 
     // =================================================================================================================
     //                                      MINECRAFT CHAT CUSTOMIZATION DEFAULTS
@@ -83,20 +84,20 @@ public class ConfigDefaults {
     //                                      DISCORD CHAT CUSTOMIZATION DEFAULTS
     // =================================================================================================================
 
-    public static final String DISCORD_PLAYER_MESSAGE_STYLE_DEFAULT = 
+    public static final String DISCORD_PLAYER_MESSAGE_STYLE_DEFAULT =
             """
             {
                 "content": "`<{player}>` {message}"
             }
             """;
-    
-    public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_DEFAULT = 
+
+    public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_DEFAULT =
             """
             {
                 "content": "{message}"
             }
             """;
-    
+
     public static final String DISCORD_PLAYER_JOINED_STYLE_DEFAULT =
             """
             {
@@ -109,7 +110,7 @@ public class ConfigDefaults {
                 }
             }
             """;
-    
+
     public static final String DISCORD_PLAYER_LEFT_STYLE_DEFAULT =
             """
             {
