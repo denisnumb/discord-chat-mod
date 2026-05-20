@@ -140,6 +140,11 @@ public class ChatStyleUtils {
         return result;
     }
 
+    public static Map<String, Component> buildPositionComponentParameters(@Nullable Entity entity){
+        return buildPositionParameters(entity).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> Component.literal(e.getValue())));
+    }
+
     public static Map<String, Component> buildTimestampParameters(){
         HashMap<String, Component> result = new HashMap<>();
         OffsetDateTime now = getDateTimeWithUtcOffset();
