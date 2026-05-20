@@ -33,5 +33,15 @@
   "discord_chat_mod.command.reload_config.success": "設定が再読み込みされました",
   "discord_chat_mod.reply": "(%sへの返信)",
   "discord_chat_mod.forwarded_guild_message": "> ギルド %s の %s からのメッセージ",
-  "discord_chat_mod.warn.no_guilds_configured": "mod設定にDiscordギルドが設定されていません"
+  "discord_chat_mod.warn.no_guilds_configured": "mod設定にDiscordギルドが設定されていません",
+  "discord_chat_mod.slash_commands.list.description": "Minecraft サーバー上で現在オンラインのプレイヤーを表示します",
+  "discord_chat_mod.slash_commands.uptime.description": "Minecraft サーバーの稼働時間を表示します",
+  "discord_chat_mod.slash_commands.tps.description": "サーバーの現在の TPS (1 秒あたりのティック数) を表示します。",
+  "discord_chat_mod.slash_commands.cmd.description": "Minecraft サーバー上でコマンドを実行する",
+  "discord_chat_mod.slash_commands.cmd.args.command.description": "実行するサーバー コマンド (先頭の / なし)",
+  "discord_chat_mod.slash_commands.commands_are_disabled": "このギルドのコマンド処理は管理者によって無効にされています",
+  "discord_chat_mod.slash_commands.uptime.success": "⏱️ **サーバー稼働時間:**%s",
+  "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ このコマンドを使用する権限がありません",
+  "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **コマンド実行エラー:**%s",
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **コマンドが実行されました:** `%s`"
 }

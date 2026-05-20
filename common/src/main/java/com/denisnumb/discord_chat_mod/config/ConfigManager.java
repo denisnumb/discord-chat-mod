@@ -14,6 +14,7 @@ import static com.denisnumb.discord_chat_mod.config.configs.CommonConfig.loadCom
 import static com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig.loadDiscordChatStyleConfig;
 import static com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig.loadDiscordGuildsConfig;
 import static com.denisnumb.discord_chat_mod.config.configs.DiscordProxyConfig.loadDiscordProxyConfig;
+import static com.denisnumb.discord_chat_mod.config.configs.LogsConfig.loadLogsConfig;
 import static com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig.loadMinecraftChatStyleConfig;
 import static com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig.loadWebhookModeConfig;
 
@@ -47,6 +48,18 @@ public class ConfigManager {
         config.remove("discordChannelId");
         config.remove("channelOverrides");
         config.remove("enablePinnedStatusMessage");
+        config.remove("serverLogsChannelId");
+        config.remove("logDiscordMessages");
+        config.remove("logDiscordErrorsToServerChat");
+        config.remove("discordErrorsChatPlayerSelector");
+        config.remove("serverLogsToDiscordLoggingLevel");
+        config.remove("serverLogsPattern");
+        config.remove("commandLogEnabled");
+        config.remove("commandLogMinPermissionLevel");
+        config.remove("commandLogIgnoredCommands");
+        config.remove("serverLogsCommandsOnly");
+        config.remove("slashCommandAllowedRoles");
+        config.remove("enableSlashCommands");
     }
 
     private static void loadCommon() {
@@ -58,13 +71,14 @@ public class ConfigManager {
 
         commonConfig.load();
 
-        removeDeprecatedParameters(commonConfig);
         loadCommonConfig(commonConfig);
         commonConfig.set("guilds", loadDiscordGuildsConfig(commonConfig));
+        commonConfig.set("logsConfig", loadLogsConfig(commonConfig));
         commonConfig.set("webhookModeConfig", loadWebhookModeConfig(commonConfig));
         commonConfig.set("discordProxyConfig", loadDiscordProxyConfig(commonConfig));
         commonConfig.set("minecraftChatStyle", loadMinecraftChatStyleConfig(commonConfig));
         commonConfig.set("discordChatStyle", loadDiscordChatStyleConfig(commonConfig));
+        removeDeprecatedParameters(commonConfig);
 
         commonConfig.save();
     }

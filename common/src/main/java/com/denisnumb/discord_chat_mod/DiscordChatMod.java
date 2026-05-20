@@ -36,8 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.isChannelCategoryDisabled;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.serverLogsChannel;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.initServerStatusController;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusMessageToUnavailable;
@@ -54,6 +52,18 @@ public final class DiscordChatMod {
     private static final DiscordEvents discordEvents = new DiscordEvents();
     private static final AtomicBoolean serverStartPending = new AtomicBoolean(false);
 
+    private static void trySendServerStartMessage() {
+        if (!isDiscordConnected())
+            return;
+        if (DiscordChannelRegistry.getAllContexts().isEmpty())
+            return;
+        if (!serverStartPending.compareAndSet(true, false))
+            return;
+
+        getDiscordMessageComponents(MessageType.SERVER_START, Map.of())
+                .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
+    }
+
     public static void onServerStarting(MinecraftServer minecraftServer) {
         server = minecraftServer;
         if (server.isPublished()) {
@@ -66,23 +76,14 @@ public final class DiscordChatMod {
     }
 
     public static void onServerStarted() {
-        ServerLogsRetranslator.start();
+        if (ConfigProvider.getConfig().isServerLogsToDiscordEnabled())
+            ServerLogsRetranslator.start();
+
         if (server == null || !server.isDedicatedServer())
             return;
+
         serverStartPending.set(true);
         trySendServerStartMessage();
-    }
-
-    private static void trySendServerStartMessage() {
-        if (!isDiscordConnected())
-            return;
-        if (DiscordChannelRegistry.getAllContexts().isEmpty())
-            return;
-        if (!serverStartPending.compareAndSet(true, false))
-            return;
-
-        getDiscordMessageComponents(MessageType.SERVER_START, Map.of())
-                .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
     }
 
     public static void onServerStopped() {
@@ -163,11 +164,11 @@ public final class DiscordChatMod {
             initDiscordSendExecutor();
             DiscordChannelRegistry.initDiscordChannels(config.discordGuildConfigs());
             initServerStatusController();
-            DiscordSlashCommands.register(jda);
+            DiscordSlashCommands.register(jda, DiscordChannelRegistry.getAllContexts());
             AvatarUrlStorage.load(server);
 
-            if (!isChannelCategoryDisabled(serverLogsChannel))
-                ServerLogsRetranslator.init(config.serverLogsToDiscordLoggingLevel(), config.serverLogsPattern(), config.isServerLogsCommandsOnly());
+            if (config.isServerLogsToDiscordEnabled())
+                ServerLogsRetranslator.init(config.serverLogsToDiscordLoggingLevel(), config.serverLogsPattern());
 
             LOGGER.info("Discord connected");
             trySendServerStartMessage();

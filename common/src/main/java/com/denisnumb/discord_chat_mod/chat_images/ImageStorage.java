@@ -87,7 +87,7 @@ public class ImageStorage {
 
         String mimeType = getMimeType(url);
 
-        if (isImageUrl(mimeType) || isTenorGifUrl(url)) {
+        if (isImageUrl(mimeType) || isGiphyGifUrl(url)) {
             try {
                 loadImageFromUrl(url, mimeType);
                 return parseImageInternal(url, skipHandledUrls);
@@ -133,7 +133,7 @@ public class ImageStorage {
     }
 
     private static void loadImageFromUrl(String imageUrl, String mimeType) throws Exception {
-        if (isTenorGifUrl(imageUrl) || isGifUrl(mimeType)){
+        if (isGiphyGifUrl(imageUrl) || isGifUrl(mimeType)){
             loadGifFromUrl(imageUrl);
         } else if (isAnimatedWebpUrl(imageUrl, mimeType)){
             loadWebpAnimatedWebpFromUrl(imageUrl);
@@ -237,8 +237,8 @@ public class ImageStorage {
 
     private static void loadGifFromUrl(String gifUrl) throws Exception {
         String cacheKey = gifUrl;
-        if (isTenorGifUrl(gifUrl))
-            gifUrl = getTenorGifSourceUrl(gifUrl);
+        if (isGiphyGifUrl(gifUrl))
+            gifUrl = getGiphyGifSourceUrl(gifUrl);
 
         List<ResourceLocation> frames = new ArrayList<>();
         ImageSize frameSize = null;

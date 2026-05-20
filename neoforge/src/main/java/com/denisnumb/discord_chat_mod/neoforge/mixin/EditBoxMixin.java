@@ -15,9 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import static com.denisnumb.discord_chat_mod.MinecraftUtils.subFormattedCharSequence;
 
 @Mixin(EditBox.class)
 public abstract class EditBoxMixin {
@@ -33,25 +31,6 @@ public abstract class EditBoxMixin {
     private boolean discord_chat_mod$markdownValid = false;
     @Unique
     private String discord_chat_mod$lastInput = "";
-
-    @Unique
-    private static FormattedCharSequence discord_minecraft_chat$substringFormatted(FormattedCharSequence text, int start, int end) {
-        if (start >= end || start < 0) {
-            return FormattedCharSequence.EMPTY;
-        }
-
-        List<FormattedCharSequence> parts = new ArrayList<>();
-        AtomicInteger index = new AtomicInteger();
-
-        text.accept((i, style, codePoint) -> {
-            if (index.get() >= start && index.get() < end)
-                parts.add(FormattedCharSequence.codepoint(codePoint, style));
-            index.getAndIncrement();
-            return true;
-        });
-
-        return FormattedCharSequence.composite(parts);
-    }
 
     @Inject(
             method = "renderWidget",
@@ -83,19 +62,19 @@ public abstract class EditBoxMixin {
             method = "renderWidget",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/components/EditBox;applyFormat(Ljava/lang/String;I)Lnet/minecraft/util/FormattedCharSequence;",
+                    target = "Ljava/util/function/BiFunction;apply(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
                     ordinal = 0
             ),
             require = 0
     )
-    public FormattedCharSequence modifyBeforeCursorDrawString(FormattedCharSequence formattedCharSequence){
+    public Object modifyBeforeCursorDrawString(Object formattedCharSequence){
         String currentInput = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
         int stringLenBeforeCursor = this.cursorPos - this.displayPos;
         boolean cursorInBounds = stringLenBeforeCursor >= 0 && stringLenBeforeCursor <= currentInput.length();
 
         return discord_chat_mod$markdownValid
                 ? cursorInBounds
-                ? discord_minecraft_chat$substringFormatted(discord_chat_mod$cachedMarkdown, 0, stringLenBeforeCursor)
+                ? subFormattedCharSequence(discord_chat_mod$cachedMarkdown, 0, stringLenBeforeCursor)
                 : discord_chat_mod$cachedMarkdown
                 : formattedCharSequence;
     }
@@ -114,7 +93,7 @@ public abstract class EditBoxMixin {
         int stringLenBeforeCursor = this.cursorPos - this.displayPos;
 
         return discord_chat_mod$markdownValid
-                ? discord_minecraft_chat$substringFormatted(discord_chat_mod$cachedMarkdown, stringLenBeforeCursor, currentInput.length())
+                ? subFormattedCharSequence(discord_chat_mod$cachedMarkdown, stringLenBeforeCursor, currentInput.length())
                 : formattedCharSequence;
     }
 }

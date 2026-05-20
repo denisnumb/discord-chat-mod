@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands.vanilla;
 
+import com.denisnumb.discord_chat_mod.EmojiUtils;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.brigadier.CommandDispatcher;
@@ -47,7 +48,7 @@ public class TellrawCommand {
 
                                                     getDiscordMessageComponents(
                                                             MessageType.TELLRAW_COMMAND,
-                                                            Map.of(MESSAGE, replaceEmojiCodesToDiscordMentions(messageTextBuilder.toString())))
+                                                            Map.of(MESSAGE, EmojiUtils.replaceEmojiCodesToDiscordMentions(messageTextBuilder.toString())))
                                                             .ifPresent(components
                                                                     -> sendMessageFromServer(ChannelCategory.TELLRAW_COMMAND, getAllContexts(), components)
                                                     );

@@ -20,26 +20,35 @@ public class DiscordGuildsConfig {
     public record DiscordGuildConfig(
             String guildId,
             String defaultChannelId,
+            String serverLogsChannelId,
             boolean duplicateMessages,
             boolean enablePinnedStatusMessage,
+            boolean enableSlashCommands,
+            List<String> slashCommandAllowedRoles,
             Map<String, String> channelOverrides
     ) { }
 
     public static List<CommentedConfig> loadDiscordGuildsConfig(CommentedConfig commonConfig){
-        List<CommentedConfig> guildList = commonConfig.getOrElse("guilds", setDefaultGuildConfig(commonConfig));
+        List<CommentedConfig> guildList = commonConfig.getOrElse("guilds", getDefaultGuildConfig(commonConfig));
         discordGuildConfigs = new ArrayList<>();
 
-        for (CommentedConfig guild : guildList) {
-            String guildId = guild.getOrElse("guildId", GUILD_ID_DEFAULT);
+        for (CommentedConfig guildConfig : guildList) {
+            String guildId = guildConfig.getOrElse("guildId", GUILD_ID_DEFAULT);
             if (discordGuildConfigs.stream().map(DiscordGuildConfig::guildId).toList().contains(guildId))
                 continue;
 
-            String mainChannelId = guild.getOrElse("defaultChannelId", DEFAULT_CHANNEL_ID_DEFAULT);
-            boolean enablePinnedStatusMessage = guild.getOrElse("enablePinnedStatusMessage", ENABLE_PINNED_STATUS_MESSAGE_DEFAULT);
+            migrateGuildConfig(guildConfig, guildId);
 
-            CommentedConfig overrides = guild.get("channelOverrides");
-            boolean duplicateMessages = overrides.getOrElse("duplicateMessages", DUPLICATE_MESSAGES_DEFAULT);
+            String mainChannelId = guildConfig.get("defaultChannelId");
+            String serverLogsChannelId = guildConfig.get("serverLogsChannelId");
+            boolean enablePinnedStatusMessage = guildConfig.get("enablePinnedStatusMessage");
 
+            CommentedConfig slashCommands = guildConfig.get("slashCommands");
+            boolean enableSlashCommands = slashCommands.get("enableSlashCommands");
+            List<String> slashCommandAllowedRoles = slashCommands.get("slashCommandAllowedRoles");
+
+            CommentedConfig overrides = guildConfig.get("channelOverrides");
+            boolean duplicateMessages = overrides.get("duplicateMessages");
             Map<String, String> channelOverrides = new HashMap<>();
 
             for (CommentedConfig.Entry entry : overrides.entrySet()) {
@@ -62,20 +71,72 @@ public class DiscordGuildsConfig {
                     LOGGER.error("Unknown channel key \"{}\" in channel overrides for guildId: {}", key, guildId);
             }
 
-            discordGuildConfigs.add(new DiscordGuildConfig(guildId, mainChannelId, duplicateMessages, enablePinnedStatusMessage, channelOverrides));
+            discordGuildConfigs.add(
+                    new DiscordGuildConfig(
+                            guildId,
+                            mainChannelId,
+                            serverLogsChannelId,
+                            duplicateMessages,
+                            enablePinnedStatusMessage,
+                            enableSlashCommands,
+                            slashCommandAllowedRoles,
+                            channelOverrides
+                    )
+            );
         }
 
         return guildList;
     }
 
-    private static List<CommentedConfig> setDefaultGuildConfig(CommentedConfig commonConfig){
+    private static void migrateGuildConfig(CommentedConfig guildConfig, String guildId) {
+        migrateField(guildConfig, guildId, "defaultChannelId", DEFAULT_CHANNEL_ID_DEFAULT, DEFAULT_CHANNEL_ID_COMMENT);
+        migrateField(guildConfig, guildId, "serverLogsChannelId", SERVER_LOGS_CHANNEL_ID_DEFAULT, SERVER_LOGS_CHANNEL_ID_COMMENT);
+        migrateField(guildConfig, guildId, "enablePinnedStatusMessage", ENABLE_PINNED_STATUS_MESSAGE_DEFAULT, ENABLE_PINNED_STATUS_MESSAGE_COMMENT);
+
+        if (!guildConfig.contains("slashCommands")) {
+            LOGGER.info("[guildId: {}] Adding missing section \"slashCommands\"", guildId);
+            guildConfig.set("slashCommands", guildConfig.createSubConfig());
+        }
+
+        CommentedConfig slashCommands = guildConfig.get("slashCommands");
+        migrateField(slashCommands, guildId, "enableSlashCommands", ENABLE_SLASH_COMMANDS_DEFAULT, ENABLE_SLASH_COMMANDS_COMMENT);
+        migrateField(slashCommands, guildId, "slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_DEFAULT, SLASH_COMMAND_ALLOWED_ROLES_COMMENT);
+
+        if (!guildConfig.contains("channelOverrides")) {
+            LOGGER.info("[guildId: {}] Adding missing section \"channelOverrides\"", guildId);
+            guildConfig.set("channelOverrides", guildConfig.createSubConfig());
+        }
+
+        CommentedConfig overrides = guildConfig.get("channelOverrides");
+        migrateField(overrides, guildId, "duplicateMessages", DUPLICATE_MESSAGES_DEFAULT, DUPLICATE_MESSAGES_COMMENT);
+        for (ChannelCategory category : ChannelCategory.values())
+            migrateField(overrides, guildId, category.getConfigName(), OVERRIDE_CHANNEL_ID_DEFAULT, category.getConfigComment());
+    }
+
+    private static <T> void migrateField(CommentedConfig config, String guildId, String key, T defaultValue, String comment) {
+        if (!config.contains(key)) {
+            LOGGER.info("[guildId: {}] Adding missing field \"{}\"", guildId, key);
+            config.set(key, defaultValue);
+            config.setComment(key, comment);
+        }
+    }
+
+    private static List<CommentedConfig> getDefaultGuildConfig(CommentedConfig commonConfig){
         CommentedConfig exampleServer = commonConfig.createSubConfig();
         exampleServer.set("guildId", GUILD_ID_DEFAULT);
         exampleServer.setComment("guildId", GUILD_ID_COMMENT);
         exampleServer.set("defaultChannelId", DEFAULT_CHANNEL_ID_DEFAULT);
         exampleServer.setComment("defaultChannelId", DEFAULT_CHANNEL_ID_COMMENT);
+        exampleServer.set("serverLogsChannelId", SERVER_LOGS_CHANNEL_ID_DEFAULT);
+        exampleServer.setComment("serverLogsChannelId", SERVER_LOGS_CHANNEL_ID_COMMENT);
         exampleServer.set("enablePinnedStatusMessage", ENABLE_PINNED_STATUS_MESSAGE_DEFAULT);
         exampleServer.setComment("enablePinnedStatusMessage", ENABLE_PINNED_STATUS_MESSAGE_COMMENT);
+
+        CommentedConfig slashCommands = exampleServer.createSubConfig();
+        slashCommands.set("enableSlashCommands", ENABLE_SLASH_COMMANDS_DEFAULT);
+        slashCommands.setComment("enableSlashCommands", ENABLE_SLASH_COMMANDS_COMMENT);
+        slashCommands.set("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_DEFAULT);
+        slashCommands.setComment("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_COMMENT);
 
         CommentedConfig overrides = exampleServer.createSubConfig();
         overrides.set("duplicateMessages", DUPLICATE_MESSAGES_DEFAULT);
@@ -86,6 +147,7 @@ public class DiscordGuildsConfig {
             overrides.setComment(category.getConfigName(), category.getConfigComment());
         }
 
+        exampleServer.set("slashCommands", slashCommands);
         exampleServer.set("channelOverrides", overrides);
         List<CommentedConfig> guildList = List.of(exampleServer);
 
