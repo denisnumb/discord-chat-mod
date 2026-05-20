@@ -23,11 +23,6 @@ import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.g
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 
 public class MinecraftChatStyleProvider {
-    private static Map<String, Component> buildPositionComponentParameters(@Nullable Entity entity){
-        return buildPositionParameters(entity).entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Component.literal(e.getValue())));
-    }
-
     private static Component applyStyleToAdvancement(String translatedTitle, String translatedDescription, Style advancementStyle) {
         Component title = Component.literal(translatedTitle);
         Component description = ComponentUtils.mergeStyles(title.copy(), Style.EMPTY.withColor(advancementStyle.getColor())).append("\n")

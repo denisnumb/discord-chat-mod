@@ -17,7 +17,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,6 @@ import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
 
 public class MentionCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -61,7 +60,7 @@ public class MentionCommand {
                                         ))).create();
                                     }
 
-                                    if (context.getSource().getEntity() instanceof Player player) {
+                                    if (context.getSource().getEntity() instanceof ServerPlayer player) {
                                         DiscordUserData member = optionalMemberData.get();
 
                                         Component mentionComponent = Component.literal(String.format("@%s", name))
@@ -70,7 +69,7 @@ public class MentionCommand {
                                                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.discordName)))
                                                 );
 
-                                        sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, player.getDisplayName(), MESSAGE, mentionComponent));
+                                        sendMessageToAllPlayersFromPlayer(player, mentionComponent);
 
                                         Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, member.mentionString), buildPlayerParameters(player));
                                         Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
