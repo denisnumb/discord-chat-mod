@@ -36,4 +36,14 @@ public class ModLanguageKey {
     public static final String REPLY = "discord_chat_mod.reply";
     public static final String FORWARDED_GUILD_MESSAGE = "discord_chat_mod.forwarded_guild_message";
     public static final String NO_CONFIG_GUILDS_CONFIGURED = "discord_chat_mod.warn.no_guilds_configured";
+    public static final String SLASH_COMMANDS_LIST_DESCRIPTION = "discord_chat_mod.slash_commands.list.description";
+    public static final String SLASH_COMMANDS_UPTIME_DESCRIPTION = "discord_chat_mod.slash_commands.uptime.description";
+    public static final String SLASH_COMMANDS_TPS_DESCRIPTION = "discord_chat_mod.slash_commands.tps.description";
+    public static final String SLASH_COMMANDS_CMD_DESCRIPTION = "discord_chat_mod.slash_commands.cmd.description";
+    public static final String SLASH_COMMANDS_CMD_ARG_COMMAND_DESCRIPTION = "discord_chat_mod.slash_commands.cmd.args.command.description";
+    public static final String SLASH_COMMANDS_ARE_DISABLED = "discord_chat_mod.slash_commands.commands_are_disabled";
+    public static final String SLASH_COMMANDS_UPTIME_SUCCESS = "discord_chat_mod.slash_commands.uptime.success";
+    public static final String SLASH_COMMANDS_CMD_MISSING_PERMISSION = "discord_chat_mod.slash_commands.cmd.error.missing_permission";
+    public static final String SLASH_COMMANDS_CMD_EXECUTE_ERROR = "discord_chat_mod.slash_commands.cmd.error.execute_error";
+    public static final String SLASH_COMMANDS_CMD_SUCCESS = "discord_chat_mod.slash_commands.cmd.success";
 }

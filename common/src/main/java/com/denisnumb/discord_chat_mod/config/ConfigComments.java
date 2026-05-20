@@ -29,30 +29,6 @@ public class ConfigComments {
                      [!] - MESSAGE_HISTORY\
                     """;
 
-    public static final String SERVER_LOGS_CHANNEL_ID_COMMENT
-            = " Discord channel ID for logs from Minecraft Server console\n Leave blank if you don't want to send server logs to Discord.";
-
-    public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT
-            = " The minimum level of logs that will be sent to Discord.\n Possible values: ERROR, WARN, INFO";
-
-    public static final String SERVER_LOGS_PATTERN_COMMENT
-            = " Log4j pattern for formatting server logs sent to Discord."
-            + "\n Common placeholders: %d{HH:mm:ss} (time), %t (thread), %level (level), %logger{1} (class), %msg (message), %n (newline)"
-            + "\n Example (clean): \"[%d{HH:mm:ss}] %msg%n\""
-            + "\n Example (verbose): \"[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n\"";
-
-    public static final String SERVER_LOGS_COMMANDS_ONLY_COMMENT
-            = " If true, only player command executions will be sent to the server logs Discord channel."
-            + "\n This filters out all other log messages and only shows lines like: \"Player executed command\"";
-
-    public static final String LOG_DISCORD_MESSAGES_COMMENT = " Do logging to the server console messages from discord";
-
-    public static final String LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT = " Notify about internal Discord interaction errors in the server's in-game chat";
-
-    public static final String DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_COMMENT
-            = " If logDiscordErrorsToServerChat=true, then the errors in the chat will be seen by players with the specified selector" +
-            "\n By default, \"@a\" — all players. You can specify a specific nickname or attribute, for example, \"@a[tag=admin]\"";
-
     public static final String MOD_LOCALE_COMMENT = " Mod locale";
 
     public static final String UTC_OFFSET_HOURS_COMMENT
@@ -76,35 +52,59 @@ public class ConfigComments {
              Set to false to hide bots from the autocomplete and stop resolving "@botname" in player messages into a Discord mention.\
             """;
 
+    // =================================================================================================================
+    //                                              LOGS CONFIG COMMENTS
+    // =================================================================================================================
+
+    public static final String LOG_DISCORD_MESSAGES_COMMENT = " Do logging to the server console messages from discord";
+
+    public static final String LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT = " Notify about internal Discord interaction errors in the server's in-game chat";
+
+    public static final String DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_COMMENT
+            = " If logDiscordErrorsToServerChat=true, then the errors in the chat will be seen by players with the specified selector" +
+            "\n By default, \"@a\" — all players. You can specify a specific nickname or attribute, for example, \"@a[tag=admin]\"";
+
+    public static final String SERVER_LOGS_TO_DISCORD_ENABLED_COMMENT
+            = """
+             Enable sending server logs to Discord\
+            
+             [!] When enabling, you must also specify a serverLogsChannelId in the guilds section\
+            """;
+
+    public static final String SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT
+            = " The minimum level of logs that will be sent to Discord.\n Possible values: ERROR, WARN, INFO";
+
+    public static final String SERVER_LOGS_PATTERN_COMMENT
+            = """
+             Log4j pattern for formatting server logs sent to Discord.\
+
+             Common placeholders: %d{HH:mm:ss} (time), %t (thread), %level (level), %logger{1} (class), %msg (message), %n (newline)\
+
+             Example (clean): "[%d{HH:mm:ss}] %msg%n"\
+
+             Example (verbose): "[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg%n"\
+            """;
+
     public static final String COMMAND_LOG_ENABLED_COMMENT
-            = " Enable logging of commands executed by players to a Discord channel." +
-            "\n Only commands from players whose permission level is at least commandLogMinPermissionLevel are logged.";
+            = """
+             Enable logging of commands executed by players to a Discord channel (Guild defaultChannel by default).\
+
+             Command log channel can be overridden for each guild in the guilds.channelOverrides section.\
+
+             Only commands from players whose permission level is at least commandLogMinPermissionLevel are logged.\
+            """;
 
     public static final String COMMAND_LOG_MIN_PERMISSION_LEVEL_COMMENT
             = " Minimum permission level required for a player's commands to be logged (0-4)." +
             "\n 0 = all players, 2 = operators (default), 3 = admins, 4 = owners.";
 
     public static final String COMMAND_LOG_IGNORED_COMMANDS_COMMENT
-            = " Comma-separated list of root command names to skip (without the leading /)." +
-            "\n Matching is case-insensitive. Example: \"msg, tell, w, help, list\"" +
-            "\n Leave blank to log every command that passes the permission level filter.";
-
-    // =================================================================================================================
-    //                                          DISCORD SLASH COMMANDS COMMENTS
-    // =================================================================================================================
-
-    public static final String ENABLE_SLASH_COMMANDS_COMMENT
-            = " Enable Discord slash commands (/list, /uptime, /tps, /cmd)";
-
-    public static final String SLASH_COMMAND_ALLOWED_ROLES_COMMENT
             = """
-             List of Discord role IDs or role names that are allowed to use the /cmd slash command.\
-
-             The /cmd command lets users execute Minecraft server commands from Discord.\
-
-             If empty, /cmd is disabled for everyone. /list, /uptime, and /tps are always available.\
-
-             Example: ["Admin", "Moderator"] or ["123456789012345678"]\
+             Comma-separated list of root command names to skip (without the leading /).\
+            
+             Matching is case-insensitive. Example: ["msg", "tell", "w", "help", "list"]\
+            
+             Leave blank to log every command that passes the permission level filter.\
             """;
 
     // =================================================================================================================
@@ -123,7 +123,24 @@ public class ConfigComments {
     public static final String DEFAULT_CHANNEL_ID_COMMENT
             = " Discord channel ID for messaging with MineCraft\n [!] Make sure the bot has access to the channel and all the permissions listed above.";
 
+    public static final String SERVER_LOGS_CHANNEL_ID_COMMENT
+            = " Discord channel ID for logs from Minecraft Server console\n Leave blank if you don't want to send server logs to this guild.";
+
     public static final String ENABLE_PINNED_STATUS_MESSAGE_COMMENT = " Create a pinned message with the current server status and player list";
+
+    public static final String ENABLE_SLASH_COMMANDS_COMMENT
+            = " If true, slash commands will be enabled for this guild (/list, /uptime, /tps, /cmd)";
+
+    public static final String SLASH_COMMAND_ALLOWED_ROLES_COMMENT
+            = """
+             List of Discord role IDs or role names that are allowed to use the /cmd slash command.\
+
+             The /cmd command lets users execute Minecraft server commands from Discord.\
+
+             If empty, /cmd is disabled for everyone. /list, /uptime, and /tps are always available.\
+
+             Example: ["Admin", "Moderator"] or ["123456789012345678"]\
+            """;
 
     // =================================================================================================================
     //                                              WEBHOOK MODE COMMENTS

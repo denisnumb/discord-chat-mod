@@ -9,24 +9,20 @@ public interface IConfigProvider {
     List<DiscordGuildsConfig.DiscordGuildConfig> discordGuildConfigs();
 
     String discordBotToken();
-    String serverLogsChannelId();
-    String serverLogsToDiscordLoggingLevel();
-    String serverLogsPattern();
-    boolean isServerLogsCommandsOnly();
-    boolean isDiscordMessagesLoggingEnabled();
-    boolean isLoggingDiscordErrorsToServerChatEnabled();
-    String discordErrorsChatPlayerSelector();
     String modLocale();
     int utcOffsetHours();
     boolean isBotPresenceStatusEnabled();
     boolean mentionBots();
 
+    boolean isDiscordMessagesLoggingEnabled();
+    boolean isLoggingDiscordErrorsToServerChatEnabled();
+    String discordErrorsChatPlayerSelector();
+    boolean isServerLogsToDiscordEnabled();
+    String serverLogsToDiscordLoggingLevel();
+    String serverLogsPattern();
     boolean isCommandLogEnabled();
     int commandLogMinPermissionLevel();
     Set<String> commandLogIgnoredCommands();
-
-    boolean isSlashCommandsEnabled();
-    java.util.List<String> slashCommandAllowedRoles();
 
     boolean isWebhookModeEnabled();
     String webhookServerName();

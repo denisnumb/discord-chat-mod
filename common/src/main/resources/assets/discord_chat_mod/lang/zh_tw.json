@@ -31,6 +31,17 @@
   "discord_chat_mod.command.send_sticker.unknown": "沒有名為 %s 的貼圖",
   "discord_chat_mod.colored_text_example": "彩色文字範例",
   "discord_chat_mod.command.reload_config.success": "設定已重新載入",
+  "discord_chat_mod.reply": "(回覆 %s)",
   "discord_chat_mod.forwarded_guild_message": "> 來自伺服器 %s 的 %s 的訊息",
-  "discord_chat_mod.warn.no_guilds_configured": "模組設定中未配置任何 Discord 伺服器"
+  "discord_chat_mod.warn.no_guilds_configured": "模組設定中未配置任何 Discord 伺服器",
+  "discord_chat_mod.slash_commands.list.description": "顯示目前在 Minecraft 伺服器上線上的玩家",
+  "discord_chat_mod.slash_commands.uptime.description": "顯示 Minecraft 伺服器已經運行了多長時間",
+  "discord_chat_mod.slash_commands.tps.description": "顯示伺服器目前的TPS（每秒滴答數）",
+  "discord_chat_mod.slash_commands.cmd.description": "在 Minecraft 伺服器上執行命令",
+  "discord_chat_mod.slash_commands.cmd.args.command.description": "要執行的伺服器命令（不含前導 /）",
+  "discord_chat_mod.slash_commands.commands_are_disabled": "管理人已禁用該公會的命令處理",
+  "discord_chat_mod.slash_commands.uptime.success": "⏱️ **伺服器正常運作時間：**%s",
+  "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌您沒有權限使用此指令",
+  "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **執行指令時發生錯誤：**%s",
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **執行的命令：** `%s`"
 }
