@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod;
 
+import com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry;
+import com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider;
 import com.denisnumb.discord_chat_mod.config.ConfigDefaults;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
@@ -16,10 +18,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -29,8 +33,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
-import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
+import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -109,15 +114,31 @@ public class MinecraftUtils {
         sendMessageToPlayersBySelector(message, "@a");
     }
 
-    public static void sendMessageToAllPlayersFromPlayer(Map<String, Component> parameters) {
-        String template = ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled()
-                ? ConfigProvider.getConfig().minecraftPlayerMessageStyle()
-                : ConfigDefaults.MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT;
+    public static void sendMessageToAllPlayersFromPlayer(ServerPlayer player, Component content){
+        PlayerList playerList = server.getPlayerList();
+        if (playerList == null)
+            return;
 
-        sendMessageToAllPlayers(applyParametersToTemplate(
-                parseConfigTemplateMarkdown(template),
-                parameters
-        ));
+        content = MinecraftEvents.handleChatMessage(
+                CustomChatTypeRegistry.CHAT,
+                new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, null, player)
+        ).orElse(
+                applyParametersToTemplate(
+                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT),
+                        mergeMaps(Map.of(PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                )
+        );
+
+        playerList.broadcastChatMessage(
+                PlayerChatMessage.unsigned(player.getUUID(), content.getString()).withUnsignedContent(content),
+                player,
+                CustomChatTypeRegistry.buildBound(
+                        CustomChatTypeRegistry.CHAT,
+                        server.registryAccess(),
+                        player.getDisplayName(),
+                        content
+                )
+        );
     }
 
     public static void showTitleBarMessage(Component message) {

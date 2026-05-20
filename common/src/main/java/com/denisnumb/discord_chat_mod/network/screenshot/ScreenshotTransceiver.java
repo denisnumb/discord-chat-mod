@@ -134,7 +134,7 @@ public class ScreenshotTransceiver {
                 Component screenshotComponent = Component.literal(getTranslate(SCREENSHOT)).withStyle(style ->
                         style.withColor(CHAT_LINK_COLOR).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, uniqueFilename))
                 );
-                sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, fromPlayer.getDisplayName(), MESSAGE, screenshotComponent));
+                sendMessageToAllPlayersFromPlayer(fromPlayer, screenshotComponent);
             } catch (Exception e) {
                 sendErrorMessageToPlayer(fromPlayer, e.getMessage());
             }
@@ -161,14 +161,14 @@ public class ScreenshotTransceiver {
         }
     }
 
-    private static void handleSuccessfulDiscordSend(String screenshotUrl, Player player) {
+    private static void handleSuccessfulDiscordSend(String screenshotUrl, ServerPlayer player) {
         Component screenshotComponent = Component.literal(getTranslate(SCREENSHOT))
                 .withStyle(style -> style.withColor(CHAT_LINK_COLOR)
                         .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, screenshotUrl))
                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(screenshotUrl)))
                 );
 
-        sendMessageToAllPlayersFromPlayer(Map.of(PLAYER, player.getDisplayName(), MESSAGE, screenshotComponent));
+        sendMessageToAllPlayersFromPlayer(player, screenshotComponent);
     }
 
     private static void sendErrorMessageToPlayer(Player player, String errorMessage) {
