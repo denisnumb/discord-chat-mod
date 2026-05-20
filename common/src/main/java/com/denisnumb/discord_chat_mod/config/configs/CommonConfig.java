@@ -2,77 +2,20 @@ package com.denisnumb.discord_chat_mod.config.configs;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.ENABLE_PINNED_STATUS_MESSAGE_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.LOG_DISCORD_MESSAGES_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.MOD_LOCALE_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_COMMANDS_ONLY_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_PATTERN_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.UTC_OFFSET_HOURS_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
-import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.UTC_OFFSET_HOURS_DEFAULT;
 
 public class CommonConfig {
     public static String discordBotToken;
-    public static String serverLogsChannelId;
-    public static String serverLogsToDiscordLoggingLevel;
-    public static String serverLogsPattern;
-    public static boolean serverLogsCommandsOnly;
-    public static boolean logDiscordMessages;
-    public static boolean logDiscordErrorsToServerChat;
-    public static String discordErrorsChatPlayerSelector;
     public static String modLocale;
     public static int utcOffsetHours;
-    public static boolean enableSlashCommands;
-    public static java.util.List<String> slashCommandAllowedRoles;
     public static boolean enableBotPresenceStatus;
     public static boolean mentionBots;
-    public static boolean commandLogEnabled;
-    public static int commandLogMinPermissionLevel;
-    public static Set<String> commandLogIgnoredCommands = Collections.emptySet();
 
     public static void loadCommonConfig(CommentedConfig commonConfig){
         discordBotToken = commonConfig.getOrElse("discordBotToken", DISCORD_BOT_TOKEN_DEFAULT);
         commonConfig.set("discordBotToken", discordBotToken);
         commonConfig.setComment("discordBotToken", DISCORD_BOT_TOKEN_COMMENT);
-
-        serverLogsChannelId = commonConfig.getOrElse("serverLogsChannelId", SERVER_LOGS_CHANNEL_ID_DEFAULT);
-        commonConfig.set("serverLogsChannelId", serverLogsChannelId);
-        commonConfig.setComment("serverLogsChannelId", SERVER_LOGS_CHANNEL_ID_COMMENT);
-
-        serverLogsToDiscordLoggingLevel = commonConfig.getOrElse("serverLogsToDiscordLoggingLevel", SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_DEFAULT);
-        if (!serverLogsToDiscordLoggingLevel.matches("(?i)^(INFO|WARN|ERROR)$"))
-            serverLogsToDiscordLoggingLevel = SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_DEFAULT;
-        commonConfig.set("serverLogsToDiscordLoggingLevel", serverLogsToDiscordLoggingLevel);
-        commonConfig.setComment("serverLogsToDiscordLoggingLevel", SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL_COMMENT);
-
-        serverLogsPattern = commonConfig.getOrElse("serverLogsPattern", SERVER_LOGS_PATTERN_DEFAULT);
-        commonConfig.set("serverLogsPattern", serverLogsPattern);
-        commonConfig.setComment("serverLogsPattern", SERVER_LOGS_PATTERN_COMMENT);
-
-        serverLogsCommandsOnly = commonConfig.getOrElse("serverLogsCommandsOnly", SERVER_LOGS_COMMANDS_ONLY_DEFAULT);
-        commonConfig.set("serverLogsCommandsOnly", serverLogsCommandsOnly);
-        commonConfig.setComment("serverLogsCommandsOnly", SERVER_LOGS_COMMANDS_ONLY_COMMENT);
-
-        logDiscordMessages = commonConfig.getOrElse("logDiscordMessages", LOG_DISCORD_MESSAGES_DEFAULT);
-        commonConfig.set("logDiscordMessages", logDiscordMessages);
-        commonConfig.setComment("logDiscordMessages", LOG_DISCORD_MESSAGES_COMMENT);
-
-        logDiscordErrorsToServerChat = commonConfig.getOrElse("logDiscordErrorsToServerChat", LOG_DISCORD_ERRORS_TO_SERVER_CHAT_DEFAULT);
-        commonConfig.set("logDiscordErrorsToServerChat", logDiscordErrorsToServerChat);
-        commonConfig.setComment("logDiscordErrorsToServerChat", LOG_DISCORD_ERRORS_TO_SERVER_CHAT_COMMENT);
-
-        discordErrorsChatPlayerSelector = commonConfig.getOrElse("discordErrorsChatPlayerSelector", DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_DEFAULT);
-        commonConfig.set("discordErrorsChatPlayerSelector", discordErrorsChatPlayerSelector);
-        commonConfig.setComment("discordErrorsChatPlayerSelector", DISCORD_ERRORS_CHAT_PLAYER_SELECTOR_COMMENT);
 
         modLocale = commonConfig.getOrElse("modLocale", MOD_LOCALE_DEFAULT);
         commonConfig.set("modLocale", modLocale);
@@ -84,14 +27,6 @@ public class CommonConfig {
         commonConfig.set("utcOffsetHours", utcOffsetHours);
         commonConfig.setComment("utcOffsetHours", UTC_OFFSET_HOURS_COMMENT + String.format("\n Default: %d\n Range: -12 ~ 14", UTC_OFFSET_HOURS_DEFAULT));
 
-        enableSlashCommands = commonConfig.getOrElse("enableSlashCommands", ENABLE_SLASH_COMMANDS_DEFAULT);
-        commonConfig.set("enableSlashCommands", enableSlashCommands);
-        commonConfig.setComment("enableSlashCommands", ENABLE_SLASH_COMMANDS_COMMENT);
-
-        slashCommandAllowedRoles = commonConfig.getOrElse("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_DEFAULT);
-        commonConfig.set("slashCommandAllowedRoles", slashCommandAllowedRoles);
-        commonConfig.setComment("slashCommandAllowedRoles", SLASH_COMMAND_ALLOWED_ROLES_COMMENT);
-
         enableBotPresenceStatus = commonConfig.getOrElse("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_DEFAULT);
         commonConfig.set("enableBotPresenceStatus", enableBotPresenceStatus);
         commonConfig.setComment("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_COMMENT);
@@ -99,24 +34,5 @@ public class CommonConfig {
         mentionBots = commonConfig.getOrElse("mentionBots", MENTION_BOTS_DEFAULT);
         commonConfig.set("mentionBots", mentionBots);
         commonConfig.setComment("mentionBots", MENTION_BOTS_COMMENT);
-
-        commandLogEnabled = commonConfig.getOrElse("commandLogEnabled", COMMAND_LOG_ENABLED_DEFAULT);
-        commonConfig.set("commandLogEnabled", commandLogEnabled);
-        commonConfig.setComment("commandLogEnabled", COMMAND_LOG_ENABLED_COMMENT);
-
-        commandLogMinPermissionLevel = commonConfig.getOrElse("commandLogMinPermissionLevel", COMMAND_LOG_MIN_PERMISSION_LEVEL_DEFAULT);
-        if (commandLogMinPermissionLevel < 0) commandLogMinPermissionLevel = 0;
-        if (commandLogMinPermissionLevel > 4) commandLogMinPermissionLevel = 4;
-        commonConfig.set("commandLogMinPermissionLevel", commandLogMinPermissionLevel);
-        commonConfig.setComment("commandLogMinPermissionLevel", COMMAND_LOG_MIN_PERMISSION_LEVEL_COMMENT);
-
-        String ignoredCommandsRaw = commonConfig.getOrElse("commandLogIgnoredCommands", COMMAND_LOG_IGNORED_COMMANDS_DEFAULT);
-        commandLogIgnoredCommands = Arrays.stream(ignoredCommandsRaw.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(s -> s.toLowerCase(java.util.Locale.ROOT))
-                .collect(Collectors.toUnmodifiableSet());
-        commonConfig.set("commandLogIgnoredCommands", ignoredCommandsRaw);
-        commonConfig.setComment("commandLogIgnoredCommands", COMMAND_LOG_IGNORED_COMMANDS_COMMENT);
     }
 }

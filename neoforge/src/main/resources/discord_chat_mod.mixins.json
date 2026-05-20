@@ -16,11 +16,13 @@
     "ChatComponentMixin",
     "CommandSuggestionsMixin",
     "GuiGraphicsMixin",
+    "RenderingTextCollectorMixin",
     "IntegratedServerMixin",
-    "ScreenMixin",
+    "ChatScreenMixin",
     "SuggestionsListAccessorMixin",
     "ClientPacketListenerMixin",
-    "StringSplitterMixin"
+    "StringSplitterMixin",
+    "PreparedTextBuilderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

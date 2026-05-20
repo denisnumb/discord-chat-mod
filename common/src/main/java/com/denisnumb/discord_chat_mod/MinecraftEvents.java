@@ -50,7 +50,7 @@ public class MinecraftEvents {
         TeamMsgCommand.register(dispatcher);
 
         IConfigProvider config = ConfigProvider.getConfig();
-        if (config.isWebhookModeEnabled() && config.isSetAvatarUrlCommandEnabled())
+        if (config.isSetAvatarUrlCommandEnabled())
             SetAvatarCommand.register(dispatcher);
     }
 

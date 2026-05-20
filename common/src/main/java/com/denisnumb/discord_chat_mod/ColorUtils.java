@@ -8,6 +8,8 @@ import java.util.HashMap;
 public class ColorUtils {
     public static class Color{
         public static final int CHANNEL_MENTION_COLOR = 0x6974c9;
+        public static final int DISCORD_RED_COLOR = 0xE74C3C;
+        public static final int DISCORD_GREEN_COLOR = 0x2ECC71;
         public static int CHAT_LINK_COLOR = 0x00b7ff;
     }
 

@@ -5,13 +5,13 @@ import com.denisnumb.discord_chat_mod.chat_images.model.AnimatedImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,12 +25,12 @@ import java.util.regex.Matcher;
 import static com.denisnumb.discord_chat_mod.EmojiUtils.EMOJI_PATTERN;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.subFormattedCharSequence;
 
-@Mixin(GuiGraphics.class)
-public abstract class GuiGraphicsMixin {
-    @Shadow public abstract void blit(RenderPipeline renderPipeline, Identifier atlasLocation, int x, int y, float uOffset, float vOffset, int width, int height, int textureWidth, int textureHeight);
+@Mixin(targets = "net.minecraft.client.gui.GuiGraphics$RenderingTextCollector")
+public abstract class RenderingTextCollectorMixin {
+    @Shadow @Final GuiGraphics field_63856;
 
     @ModifyArgs(
-            method = "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)V",
+            method = "accept(Lnet/minecraft/client/gui/TextAlignment;IILnet/minecraft/client/gui/ActiveTextCollector$Parameters;Lnet/minecraft/util/FormattedCharSequence;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/render/state/GuiTextRenderState;<init>(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;Lorg/joml/Matrix3x2fc;IIIIZZLnet/minecraft/client/gui/navigation/ScreenRectangle;)V"
@@ -88,7 +88,7 @@ public abstract class GuiGraphicsMixin {
                                 : ((Image) abstractImage).resourceLocation;
 
                 int emojiSize = 9;
-                blit(RenderPipelines.GUI_TEXTURED, emoji, currentX, y - 1, 0, 0, emojiSize, emojiSize, emojiSize, emojiSize);
+                this.field_63856.blit(RenderPipelines.GUI_TEXTURED, emoji, currentX, y - 1, 0, 0, emojiSize, emojiSize, emojiSize, emojiSize);
                 result.add(FormattedCharSequence.codepoint(' ', Style.EMPTY)); // space for emoji; width = 4
                 result.add(FormattedCharSequence.codepoint(' ', Style.EMPTY.withBold(true))); // space for emoji; width = 5
                 currentX += emojiSize;
