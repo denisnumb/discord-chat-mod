@@ -123,7 +123,7 @@ public class MinecraftUtils {
         if (playerList == null)
             return;
 
-        content = MinecraftEvents.handleChatMessage(
+        Component preparedContent = MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.CHAT,
                 new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, null, player)
         ).orElse(
@@ -134,7 +134,7 @@ public class MinecraftUtils {
         );
 
         playerList.broadcastChatMessage(
-                PlayerChatMessage.unsigned(player.getUUID(), content.getString()).withUnsignedContent(content),
+                PlayerChatMessage.unsigned(player.getUUID(), content.getString()).withUnsignedContent(preparedContent),
                 player,
                 CustomChatTypeRegistry.buildBound(
                         CustomChatTypeRegistry.CHAT,
