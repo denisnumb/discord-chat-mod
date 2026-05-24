@@ -1,4 +1,4 @@
-package com.denisnumb.discord_chat_mod.mixin.chat_style;
+package com.denisnumb.discord_chat_mod.forge.mixin.chat_style;
 
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.MinecraftUtils;
@@ -7,6 +7,8 @@ import com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -16,12 +18,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.processChatMessage;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
@@ -48,7 +49,7 @@ public class PlayerListMixin {
         return MinecraftEvents.handleJoinLeave(serverPlayer, true).orElse(value).copy();
     }
 
-    @ModifyArgs(
+    @WrapOperation(
             method = "broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/ChatType$Bound;)V",
             at = @At(
                     value = "INVOKE",
@@ -56,11 +57,13 @@ public class PlayerListMixin {
             ),
             require = 0
     )
-    private void modifyPlayerChatMessage(
-            Args args,
+    private void redirectBroadcastChatMessage(
+            PlayerList instance,
             PlayerChatMessage originalMessage,
+            Predicate<ServerPlayer> predicate,
             ServerPlayer player,
-            ChatType.Bound bound
+            ChatType.Bound bound,
+            Operation<Void> original
     ) {
         Component playerComponent = player.getDisplayName();
         Component originalContent = originalMessage.decoratedContent();
@@ -77,15 +80,24 @@ public class PlayerListMixin {
         });
 
         Component withMarkdown = chatMessage.forMinecraft();
-        args.set(0, originalMessage.withUnsignedContent(withMarkdown));
+        originalMessage = originalMessage.withUnsignedContent(withMarkdown);
 
-        MinecraftEvents.handleChatMessage(
+        Optional<Component> styledContentOpt = MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.CHAT,
                 new MinecraftChatStyleProvider.ChatMessageComponents(playerComponent, withMarkdown, null, player)
-        ).ifPresent(styledContent -> {
-            ChatType.Bound styledBound = buildBound(CustomChatTypeRegistry.CHAT, player.level().registryAccess(), playerComponent, withMarkdown);
-            args.set(0, originalMessage.withUnsignedContent(styledContent));
-            args.set(3, styledBound);
-        });
+        );
+
+        if (styledContentOpt.isPresent()){
+            ChatType.Bound styledBound = buildBound(
+                    CustomChatTypeRegistry.CHAT,
+                    player.level().registryAccess(),
+                    playerComponent,
+                    withMarkdown
+            );
+            originalMessage = originalMessage.withUnsignedContent(styledContentOpt.get());
+            bound = styledBound;
+        }
+
+        original.call(instance, originalMessage, predicate, player, bound);
     }
 }

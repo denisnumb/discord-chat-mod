@@ -58,7 +58,7 @@ public class DiscordEvents extends ListenerAdapter {
 
         if (getServerPlayerCount(server) > 0){
             prepareComponents(event.getMessage())
-                    .thenAccept(components -> components.forEach(MinecraftUtils::sendMessageToAllPlayers));
+                    .thenAccept(components -> components.forEach(MinecraftUtils::sendSystemMessageToAllPlayers));
         }
 
         DiscordChannelRegistry.getAllContexts().stream()

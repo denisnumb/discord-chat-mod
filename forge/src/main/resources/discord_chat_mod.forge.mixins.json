@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "discord_chat_mod-forge-forge-refmap.json",
   "mixins": [
+    "chat_style.PlayerListMixin"
   ],
   "client": [
     "EditBoxMixin",

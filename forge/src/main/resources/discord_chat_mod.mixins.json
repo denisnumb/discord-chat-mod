@@ -9,7 +9,6 @@
     "chat_style.CombatTrackerAccessorMixin",
     "chat_style.TamableAnimalMixin",
     "chat_style.ServerPlayerMixin",
-    "chat_style.PlayerListMixin",
     "chat_style.MappedRegistryMixin",
     "chat_style.PlayerAdvancementsMixin"
   ],
