@@ -22,6 +22,7 @@ import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
@@ -107,7 +108,7 @@ public class MinecraftUtils {
         }
     }
 
-    public static void sendMessageToPlayersBySelector(Component message, String selector) {
+    public static void sendSystemMessageToPlayersBySelector(Component message, String selector) {
         try {
             for (ServerPlayer player : getPlayerListBySelector(selector))
                 player.sendSystemMessage(ComponentUtils.updateForEntity(null, message, player, 0), false);
@@ -116,8 +117,8 @@ public class MinecraftUtils {
         } catch (Exception ignored) {}
     }
 
-    public static void sendMessageToAllPlayers(Component message) {
-        sendMessageToPlayersBySelector(message, "@a");
+    public static void sendSystemMessageToAllPlayers(Component message) {
+        sendSystemMessageToPlayersBySelector(message, "@a");
     }
 
     public static void sendMessageToAllPlayersFromPlayer(ServerPlayer player, Component content){
@@ -135,16 +136,22 @@ public class MinecraftUtils {
                 )
         );
 
-        playerList.broadcastChatMessage(
-                PlayerChatMessage.unsigned(player.getUUID(), content.getString()).withUnsignedContent(preparedContent),
-                player,
-                CustomChatTypeRegistry.buildBound(
-                        CustomChatTypeRegistry.CHAT,
-                        server.registryAccess(),
-                        player.getDisplayName(),
-                        content
-                )
+        OutgoingChatMessage message = OutgoingChatMessage.create(
+                PlayerChatMessage.unsigned(player.getUUID(), content.getString())
+                        .withUnsignedContent(preparedContent)
         );
+
+        ChatType.Bound bound = CustomChatTypeRegistry.buildBound(
+                CustomChatTypeRegistry.CHAT,
+                server.registryAccess(),
+                player.getDisplayName(),
+                content
+        );
+
+        try {
+            for (ServerPlayer serverPlayer : getPlayerListBySelector("@a"))
+                serverPlayer.sendChatMessage(message, false, bound);
+        } catch (Exception ignored) {}
     }
 
     public static void showTitleBarMessage(Component message) {
@@ -154,13 +161,13 @@ public class MinecraftUtils {
     public static void logErrorToServer(String message) {
         LOGGER.error(message);
         if (ConfigProvider.getConfig().isLoggingDiscordErrorsToServerChatEnabled())
-            sendMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.RED.getColor()), ConfigProvider.getConfig().discordErrorsChatPlayerSelector());
+            sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.RED.getColor()), ConfigProvider.getConfig().discordErrorsChatPlayerSelector());
     }
 
     public static void logWarnToServer(String message) {
         LOGGER.warn(message);
         if (ConfigProvider.getConfig().isLoggingDiscordErrorsToServerChatEnabled())
-            sendMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.YELLOW.getColor()), ConfigProvider.getConfig().discordErrorsChatPlayerSelector());
+            sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.YELLOW.getColor()), ConfigProvider.getConfig().discordErrorsChatPlayerSelector());
     }
 
     public static int getServerPlayerCount(@Nullable MinecraftServer server) {
