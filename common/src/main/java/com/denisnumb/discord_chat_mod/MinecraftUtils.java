@@ -127,21 +127,9 @@ public class MinecraftUtils {
                 )
         );
 
-        OutgoingChatMessage message = OutgoingChatMessage.create(
-                PlayerChatMessage.unsigned(player.getUUID(), content.getString())
-                        .withUnsignedContent(preparedContent)
-        );
-
-        ChatType.Bound bound = CustomChatTypeRegistry.buildBound(
-                CustomChatTypeRegistry.CHAT,
-                server.registryAccess(),
-                player.getDisplayName(),
-                content
-        );
-
         try {
-            for (ServerPlayer serverPlayer : getPlayerListBySelector("@a"))
-                serverPlayer.sendChatMessage(message, false, bound);
+            for (ServerPlayer serverPlayer : playerList.getPlayers())
+                serverPlayer.sendSystemMessage(preparedContent);
         } catch (Exception ignored) {}
     }
 
