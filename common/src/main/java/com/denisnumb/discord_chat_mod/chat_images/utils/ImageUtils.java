@@ -23,8 +23,16 @@ public class ImageUtils {
     public static final String SPOILER_PREFIX = "/SPOILER_";
     public static final String LOCAL_RESOURCE_PREFIX = "localResource://";
 
+    public static boolean isGifPlatformUrl(String url) {
+        return isTenorGifUrl(url) || isGiphyGifUrl(url);
+    }
+
     public static boolean isGiphyGifUrl(String url) {
         return url.startsWith("https://giphy.com/");
+    }
+
+    public static boolean isTenorGifUrl(String url) {
+        return url.startsWith("https://tenor.com/");
     }
 
     public static boolean isImageUrl(String mimeType) {
