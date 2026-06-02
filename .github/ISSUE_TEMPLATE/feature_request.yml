@@ -9,13 +9,6 @@ body:
         For example: 1.20.1
     validations:
       required: true
-  - type: input
-    attributes:
-      label: Modloader
-      description: >
-        Forge/NeoForge/Fabric/Quilt
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: Description of functionality
