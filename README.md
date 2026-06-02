@@ -20,21 +20,21 @@ Configure the necessary parameters and run server. For additional features, inst
 > [!TIP]
 > **Read more about configuration and see examples on the [Wiki](https://github.com/denisnumb/discord-chat-mod/wiki)**
 
-**Important:**
-- Make sure all **Privileged Gateway Intents** are enabled in the Bot tab of your app
-- Make sure your bot has all the necessary permissions on the server:
-
-  <details><summary>Required Permissions</summary>
-  
-    - View Channels
-    - Send Messages
-    - Send Messages in Threads
-    - Embed Links
-    - Attach Files
-    - Pin Messages
-    - Read Message History
-    - Manage Webhooks
-  </details>
+> [!IMPORTANT]
+> - Make sure all **Privileged Gateway Intents** are enabled in the Bot tab of your app
+> - Make sure your bot has all the necessary permissions on the server:
+>
+>    <details><summary>Required Permissions</summary>
+>  
+>      - View Channels
+>      - Send Messages
+>      - Send Messages in Threads
+>      - Embed Links
+>      - Attach Files
+>      - Pin Messages
+>      - Read Message History
+>      - Manage Webhooks
+>    </details>
 
 ---
 
