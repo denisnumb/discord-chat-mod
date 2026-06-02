@@ -1,4 +1,4 @@
-# Discord Chat Mod
+# Discord & Chat Images
 
 MineCraft mod for combining the game chat with discord, chat customizing and chat image displaying.
 
