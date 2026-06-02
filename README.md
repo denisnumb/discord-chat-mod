@@ -17,7 +17,8 @@ If you don't have a Discord bot, read the [**Quick start guilde**](https://githu
 Install the mod on the server and run it to generate the `discord_chat_mod-common.toml`-config file. 
 Configure the necessary parameters and run server. For additional features, install the mod on the client side.
 
-ℹ️ **Read more about configuration and see examples on the [Wiki](https://github.com/denisnumb/discord-chat-mod/wiki)**
+> [!TIP]
+> **Read more about configuration and see examples on the [Wiki](https://github.com/denisnumb/discord-chat-mod/wiki)**
 
 **Important:**
 - Make sure all **Privileged Gateway Intents** are enabled in the Bot tab of your app
