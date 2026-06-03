@@ -1,4 +1,4 @@
-name: Mod Incompatibility Report
+name: 💢 Mod Incompatibility Report
 description: Report if everything works separately, but something doesn't work when running Discord & Chat Images with other mods.
 labels: mod_incompatibility
 body:
