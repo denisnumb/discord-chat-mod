@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord.model;
 
+import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
@@ -15,7 +16,7 @@ public class DiscordGuildContext {
     public GuildMessageChannel serverLogsChannel;
     public final boolean enablePinnedStatusMessage;
     public boolean enableSlashCommands;
-    public List<String> slashCommandAllowedRoles;
+    public final DiscordGuildsConfig.SlashCommandPermissionsConfig cmdPermissions;
     public final boolean duplicateMessages;
 
     private final Map<ChannelCategory, @Nullable GuildMessageChannel> channels = new EnumMap<>(ChannelCategory.class);
@@ -27,13 +28,13 @@ public class DiscordGuildContext {
             boolean duplicateMessages,
             boolean enablePinnedStatusMessage,
             boolean enableSlashCommands,
-            List<String> slashCommandAllowedRoles
+            DiscordGuildsConfig.SlashCommandPermissionsConfig cmdPermissions
     ) {
         this.guild = guild;
         this.duplicateMessages = duplicateMessages;
         this.enablePinnedStatusMessage = enablePinnedStatusMessage;
         this.enableSlashCommands = enableSlashCommands;
-        this.slashCommandAllowedRoles = slashCommandAllowedRoles;
+        this.cmdPermissions = cmdPermissions;
     }
 
     public void setChannel(ChannelCategory category, @Nullable GuildMessageChannel channel) {

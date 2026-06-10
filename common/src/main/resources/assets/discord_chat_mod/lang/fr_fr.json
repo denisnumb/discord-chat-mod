@@ -37,11 +37,16 @@
   "discord_chat_mod.slash_commands.list.description": "Afficher les joueurs actuellement en ligne sur le serveur Minecraft",
   "discord_chat_mod.slash_commands.uptime.description": "Afficher depuis combien de temps le serveur Minecraft est en cours d'exécution",
   "discord_chat_mod.slash_commands.tps.description": "Afficher le TPS actuel du serveur (ticks par seconde)",
+  "discord_chat_mod.slash_commands.allowed_commands.description": "Afficher la liste des commandes disponibles pour l'exécution à l'aide de /cmd",
   "discord_chat_mod.slash_commands.cmd.description": "Exécuter une commande sur le serveur Minecraft",
   "discord_chat_mod.slash_commands.cmd.args.command.description": "La commande serveur à exécuter (sans commencer /)",
   "discord_chat_mod.slash_commands.commands_are_disabled": "Le traitement des commandes pour cette guilde a été désactivé par l'administrateur",
-  "discord_chat_mod.slash_commands.uptime.success": "⏱️ **Disponibilité du serveur :**%s",
+  "discord_chat_mod.slash_commands.uptime.success": "⏱️ **Disponibilité du serveur:**%s",
+  "discord_chat_mod.slash_commands.allowed_commands.all_allowed": "Toutes les commandes sont autorisées",
+  "discord_chat_mod.slash_commands.allowed_commands.except": " sauf ",
+  "discord_chat_mod.slash_commands.allowed_commands.allowed_list": "Commandes autorisées: ",
+  "discord_chat_mod.slash_commands.allowed_commands.all_denied": "Toutes les commandes sont refusées",
   "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ Vous n'êtes pas autorisé à utiliser cette commande",
-  "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Erreur lors de l'exécution de la commande :**%s",
-  "discord_chat_mod.slash_commands.cmd.success": "✅ **Commande exécutée :** `%s`"
+  "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Erreur lors de l'exécution de la commande:**%s",
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **Commande exécutée:** `%s`"
 }

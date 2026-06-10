@@ -24,8 +24,9 @@ public class DiscordSlashCommands {
                 Commands.slash("list", getTranslate(SLASH_COMMANDS_LIST_DESCRIPTION)),
                 Commands.slash("uptime", getTranslate(SLASH_COMMANDS_UPTIME_DESCRIPTION)),
                 Commands.slash("tps", getTranslate(SLASH_COMMANDS_TPS_DESCRIPTION)),
+                Commands.slash("allowed_commands", getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_DESCRIPTION)),
                 Commands.slash("cmd", getTranslate(SLASH_COMMANDS_CMD_DESCRIPTION))
-                        .addOption(OptionType.STRING, "command", getTranslate(SLASH_COMMANDS_CMD_ARG_COMMAND_DESCRIPTION), true)
+                        .addOption(OptionType.STRING, "command", getTranslate(SLASH_COMMANDS_CMD_ARG_COMMAND_DESCRIPTION), true, true)
         );
 
         for (DiscordGuildContext ctx : guildContexts) {
