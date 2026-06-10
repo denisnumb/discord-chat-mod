@@ -54,7 +54,16 @@ public class ConfigDefaults {
     public static final String OVERRIDE_CHANNEL_ID_DEFAULT = "";
     public static final boolean ENABLE_PINNED_STATUS_MESSAGE_DEFAULT = true;
     public static final boolean ENABLE_SLASH_COMMANDS_DEFAULT = true;
-    public static final List<String> SLASH_COMMAND_ALLOWED_ROLES_DEFAULT = List.of();
+
+    // =================================================================================================================
+    //                                        SLASH COMMAND PERMISSIONS DEFAULTS
+    // =================================================================================================================
+
+    public static final String SLASH_COMMAND_PERMISSIONS_MODE_DEFAULT = "merge";
+    public static final List<String> SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_DEFAULT = List.of();
+    public static final List<String> SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_DEFAULT = List.of();
+    public static final List<String> SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_DEFAULT = List.of();
+    public static final List<String> SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_DENY_DEFAULT = List.of();
 
     // =================================================================================================================
     //                                      MINECRAFT CHAT CUSTOMIZATION DEFAULTS

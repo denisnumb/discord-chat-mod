@@ -5,16 +5,25 @@ import com.denisnumb.discord_chat_mod.discord.ServerStatusController;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
+import com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissions;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.suggestion.Suggestions;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.management.ManagementFactory;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.DISCORD_GREEN_COLOR;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.DISCORD_RED_COLOR;
@@ -24,8 +33,43 @@ import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.ModLanguageKey.SLASH_COMMANDS_CMD_EXECUTE_ERROR;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
+import static com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissionUtils.getMemberPermissions;
+import static com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissionUtils.hasCommandPermission;
 
 public class SlashCommandListener extends ListenerAdapter {
+    @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        if (!event.getName().equals("cmd"))
+            return;
+        if (!event.getFocusedOption().getName().equals("command"))
+            return;
+
+        Guild guild = event.getGuild();
+        if (guild == null)
+            return;
+
+        DiscordGuildContext ctx = DiscordChannelRegistry.getContext(guild.getId());
+        String input = event.getFocusedOption().getValue();
+        String commandName = input.strip()
+                .split(" ")[0]
+                .replace("/", "");
+
+        if (ctx == null
+                || !ctx.enableSlashCommands
+                || !hasCommandPermission(event.getMember(), commandName)
+        ) {
+            event.replyChoices(List.of()).queue();
+            return;
+        }
+
+        List<String> suggestions = getMinecraftSuggestions(input);
+
+        List<Command.Choice> choices = suggestions.stream()
+                .map(s -> new Command.Choice(s, s))
+                .collect(Collectors.toList());
+
+        event.replyChoices(choices).queue();
+    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
@@ -47,6 +91,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 case "list" -> handleList(event);
                 case "uptime" -> handleUptime(event);
                 case "tps" -> handleTps(event);
+                case "allowed_commands" -> handleAllowedCommands(event);
                 case "cmd" -> handleCmd(event);
             }
         }
@@ -109,6 +154,42 @@ public class SlashCommandListener extends ListenerAdapter {
                 .setEphemeral(true).queue();
     }
 
+    private void handleAllowedCommands(SlashCommandInteractionEvent event) {
+        MinecraftServer srv = server;
+        if (srv == null) {
+            replyServerIsUnavailable(event);
+            return;
+        }
+
+        SlashCommandPermissions perms = getMemberPermissions(event.getMember());
+        boolean allowAll = perms.allow().contains("*");
+        boolean denyAll = perms.deny().contains("*");
+
+        String result;
+        int color = DISCORD_GREEN_COLOR;
+        if (allowAll && !denyAll) {
+            String denied = perms.deny().isEmpty()
+                    ? ""
+                    : getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_EXCEPT) + formatCommands(perms.deny());
+            result = getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_ALL_ALLOWED) + denied;
+        } else if (!perms.allow().isEmpty()) {
+            result = getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_ALLOWED_LIST) + formatCommands(perms.allow());
+        } else {
+            result = getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_ALL_DENIED);
+            color = DISCORD_RED_COLOR;
+        }
+
+        event.replyEmbeds(new EmbedBuilder().setColor(color).setDescription(result).build())
+                .setEphemeral(true)
+                .queue();
+    }
+
+    private static String formatCommands(List<String> commands) {
+        return commands.stream()
+                .map(cmd -> "`/" + cmd + "`")
+                .collect(Collectors.joining(", "));
+    }
+
     private void handleCmd(SlashCommandInteractionEvent event) {
         MinecraftServer srv = server;
         if (srv == null) {
@@ -116,7 +197,10 @@ public class SlashCommandListener extends ListenerAdapter {
             return;
         }
 
-        if (!hasCommandPermission(event.getMember())) {
+        String command = event.getOption("command").getAsString();
+        String commandName = command.split(" ")[0].replace("/", "");
+
+        if (!hasCommandPermission(event.getMember(), commandName)) {
             event.replyEmbeds(new EmbedBuilder()
                             .setColor(DISCORD_RED_COLOR)
                             .setDescription(getTranslate(SLASH_COMMANDS_CMD_MISSING_PERMISSION))
@@ -127,7 +211,6 @@ public class SlashCommandListener extends ListenerAdapter {
             return;
         }
 
-        String command = event.getOption("command").getAsString();
         event.deferReply(true).queue();
 
         srv.execute(() -> {
@@ -160,19 +243,6 @@ public class SlashCommandListener extends ListenerAdapter {
         });
     }
 
-    private boolean hasCommandPermission(Member member) {
-        if (member == null)
-            return false;
-
-        DiscordGuildContext ctx = DiscordChannelRegistry.getContext(member.getGuild().getId());
-        if (ctx == null || ctx.slashCommandAllowedRoles.isEmpty())
-            return false;
-
-        return member.getRoles().stream()
-                .anyMatch(r -> ctx.slashCommandAllowedRoles.contains(r.getId())
-                        || ctx.slashCommandAllowedRoles.contains(r.getName()));
-    }
-
     private static String formatDuration(long ms) {
         long seconds = ms / 1000;
         long days = seconds / 86400;
@@ -186,5 +256,44 @@ public class SlashCommandListener extends ListenerAdapter {
         if (minutes > 0) sb.append(minutes).append("m ");
         sb.append(secs).append("s");
         return sb.toString();
+    }
+
+    private List<String> getMinecraftSuggestions(String input) {
+        MinecraftServer srv = server;
+        if (srv == null)
+            return List.of();
+
+        CompletableFuture<List<String>> future = new CompletableFuture<>();
+
+        srv.execute(() -> {
+            try {
+                CommandDispatcher<CommandSourceStack> dispatcher = srv.getCommands().getDispatcher();
+                String rawInput = input.startsWith("/") ? input.substring(1) : input;
+
+                ParseResults<CommandSourceStack> parsed = dispatcher.parse(rawInput, srv.createCommandSourceStack());
+
+                Suggestions suggestions = dispatcher.getCompletionSuggestions(parsed)
+                        .get(100, TimeUnit.MILLISECONDS);
+
+                List<String> result = suggestions.getList().stream()
+                        .map(s -> {
+                            int start = s.getRange().getStart();
+                            String prefix = rawInput.substring(0, start);
+                            return prefix + s.getText();
+                        })
+                        .limit(25)
+                        .collect(Collectors.toList());
+
+                future.complete(result);
+            } catch (Exception e) {
+                future.complete(List.of());
+            }
+        });
+
+        try {
+            return future.get(500, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return List.of();
+        }
     }
 }
