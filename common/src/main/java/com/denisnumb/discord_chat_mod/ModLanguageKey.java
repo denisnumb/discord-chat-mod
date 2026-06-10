@@ -39,10 +39,15 @@ public class ModLanguageKey {
     public static final String SLASH_COMMANDS_LIST_DESCRIPTION = "discord_chat_mod.slash_commands.list.description";
     public static final String SLASH_COMMANDS_UPTIME_DESCRIPTION = "discord_chat_mod.slash_commands.uptime.description";
     public static final String SLASH_COMMANDS_TPS_DESCRIPTION = "discord_chat_mod.slash_commands.tps.description";
+    public static final String SLASH_COMMANDS_ALLOWED_COMMANDS_DESCRIPTION = "discord_chat_mod.slash_commands.allowed_commands.description";
     public static final String SLASH_COMMANDS_CMD_DESCRIPTION = "discord_chat_mod.slash_commands.cmd.description";
     public static final String SLASH_COMMANDS_CMD_ARG_COMMAND_DESCRIPTION = "discord_chat_mod.slash_commands.cmd.args.command.description";
     public static final String SLASH_COMMANDS_ARE_DISABLED = "discord_chat_mod.slash_commands.commands_are_disabled";
     public static final String SLASH_COMMANDS_UPTIME_SUCCESS = "discord_chat_mod.slash_commands.uptime.success";
+    public static final String SLASH_COMMANDS_ALLOWED_COMMANDS_ALL_ALLOWED = "discord_chat_mod.slash_commands.allowed_commands.all_allowed";
+    public static final String SLASH_COMMANDS_ALLOWED_COMMANDS_EXCEPT = "discord_chat_mod.slash_commands.allowed_commands.except";
+    public static final String SLASH_COMMANDS_ALLOWED_COMMANDS_ALLOWED_LIST = "discord_chat_mod.slash_commands.allowed_commands.allowed_list";
+    public static final String SLASH_COMMANDS_ALLOWED_COMMANDS_ALL_DENIED = "discord_chat_mod.slash_commands.allowed_commands.all_denied";
     public static final String SLASH_COMMANDS_CMD_MISSING_PERMISSION = "discord_chat_mod.slash_commands.cmd.error.missing_permission";
     public static final String SLASH_COMMANDS_CMD_EXECUTE_ERROR = "discord_chat_mod.slash_commands.cmd.error.execute_error";
     public static final String SLASH_COMMANDS_CMD_SUCCESS = "discord_chat_mod.slash_commands.cmd.success";
