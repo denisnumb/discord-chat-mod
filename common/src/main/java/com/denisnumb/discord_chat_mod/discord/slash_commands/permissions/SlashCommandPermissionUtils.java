@@ -1,6 +1,5 @@
 package com.denisnumb.discord_chat_mod.discord.slash_commands.permissions;
 
-import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
 import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.entities.Member;
@@ -82,11 +81,11 @@ public final class SlashCommandPermissionUtils {
             rolePermissionsList.add(everyonePermissions);
 
         return switch (ctx.cmdPermissions.mode()) {
-            case DiscordGuildsConfig.SlashCommandPermissionsConfig.Mode.TOP_ROLE
+            case TOP_ROLE
                     -> rolePermissionsList.isEmpty()
                     ? List.of(ctx.cmdPermissions.defaultPermissions())
-                    : List.of(rolePermissionsList.getFirst());
-            case DiscordGuildsConfig.SlashCommandPermissionsConfig.Mode.MERGE
+                    : List.of(rolePermissionsList.get(0));
+            case MERGE
                     -> rolePermissionsList.isEmpty()
                     ? List.of(ctx.cmdPermissions.defaultPermissions())
                     : rolePermissionsList;
