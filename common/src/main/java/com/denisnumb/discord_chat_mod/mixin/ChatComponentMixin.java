@@ -297,7 +297,7 @@ public abstract class ChatComponentMixin {
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void render(GuiGraphics graphics, net.minecraft.client.gui.Font font, int tickCount, int mouseX, int mouseY, boolean focused, boolean focusedB, CallbackInfo ci){
+    private void render(GuiGraphics graphics, int tickCount, int mouseX, int mouseY, boolean focused, CallbackInfo ci){
         if (IMAGE_CACHE.isEmpty())
             return;
 
