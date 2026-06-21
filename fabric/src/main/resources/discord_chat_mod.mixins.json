@@ -16,7 +16,6 @@
   ],
   "client": [
     "ChatComponentMixin",
-    "ARGBMixin",
     "CommandSuggestionsMixin",
     "GuiGraphicsMixin",
     "IntegratedServerMixin",

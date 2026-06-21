@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.ColorUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AnimatedImage;
@@ -19,6 +20,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.regex.Matcher;
@@ -33,6 +35,15 @@ public abstract class GuiGraphicsMixin {
     @Shadow @Final private MultiBufferSource.BufferSource bufferSource;
     @Shadow private void flushIfUnmanaged(){}
 
+    @Inject(
+            method = "fill(IIIII)V",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void discord_minecraft_chat$skipTransparentSentinelFill(int i, int j, int k, int l, int color, CallbackInfo ci) {
+        if ((color & 0xFFFFFF) == (ColorUtils.Color.TRANSPARENT_IMAGE_TAG_COLOR & 0xFFFFFF))
+            ci.cancel();
+    }
 
     @Unique
     private int discord_chat_mod$drawInBatch(Font font, FormattedCharSequence text, int x, int y, int color, boolean dropShadow) {

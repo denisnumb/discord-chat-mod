@@ -106,9 +106,11 @@ public abstract class ChatComponentMixin {
     private @Nullable String discord_minecraft_chat$getImageUrlFromPlaceholder(FormattedCharSequence line) {
         String[] result = {null};
         line.accept((index, style, codePoint) -> {
-            if (style.getClickEvent() instanceof ClickEvent.RunCommand(String command)
-                    && command.startsWith(OPEN_IMAGE_COMMAND))
-                result[0] = command.substring(OPEN_IMAGE_COMMAND.length());
+            ClickEvent clickEvent = style.getClickEvent();
+            if (clickEvent != null
+                    && clickEvent.getAction() == ClickEvent.Action.RUN_COMMAND
+                    && clickEvent.getValue().startsWith(OPEN_IMAGE_COMMAND))
+                result[0] = clickEvent.getValue().substring(OPEN_IMAGE_COMMAND.length());
             return result[0] == null;
         });
 
@@ -119,8 +121,9 @@ public abstract class ChatComponentMixin {
     private Set<String> discord_minecraft_chat$findImageUrlsInLine(FormattedCharSequence line) {
         Set<String> urls = new LinkedHashSet<>();
         line.accept((index, style, codePoint) -> {
-            if (style.getClickEvent() instanceof ClickEvent(java.net.URI uri))
-                urls.add(uri.toString());
+            ClickEvent clickEvent = style.getClickEvent();
+            if (clickEvent != null && clickEvent.getAction() == ClickEvent.Action.OPEN_URL)
+                urls.add(clickEvent.getValue());
 
             return true;
         });
