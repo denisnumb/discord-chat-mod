@@ -157,7 +157,7 @@ public abstract class ChatComponentMixin {
         }
 
         MutableComponent base = isEmbed
-                ? Component.literal(EmbedToComponentConverter.BORDER_SIDE).withColor(embedColor.get())
+                ? Component.literal(EmbedToComponentConverter.BORDER_SIDE).withStyle(s -> s.withColor(embedColor.get()))
                 : Component.empty();
 
         MutableComponent content = Component.literal(" ".repeat(image.imageSize.width() / minecraft.font.width(" ")));
@@ -195,6 +195,62 @@ public abstract class ChatComponentMixin {
                 : IMAGE_TAG_LABEL;
 
         return new GuiMessageTag(color, null, component, metadata);
+    }
+
+    @Inject(
+            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V",
+            at = @At(value = "TAIL")
+    )
+    private void addMessageWithImage(Component message, MessageSignature signature, int addedTime, GuiMessageTag tag, boolean onlyTrimmed, CallbackInfo ci){
+        List<String> componentUrls = discord_minecraft_chat$getComponentUrls(message);
+        if (componentUrls.isEmpty())
+            return;
+
+        GuiMessage guimessage = allMessages.get(0);
+        GuiMessage.Line bottomLine = trimmedMessages.get(0);
+        Map<String, GuiMessage.Line> urlToLineObject = discord_minecraft_chat$buildUrlToLineMap(guimessage);
+
+        loadImagesParallel(componentUrls).thenAccept(loadedImages -> {
+            int allMessagesInsertIndex = allMessages.indexOf(guimessage);
+            if (allMessagesInsertIndex == -1)
+                return;
+
+            List<Map.Entry<AbstractImage, GuiMessage.Line>> imageLines = new ArrayList<>();
+            for (AbstractImage image : loadedImages) {
+                if (image == null)
+                    continue;
+                GuiMessage.Line targetLine = urlToLineObject.getOrDefault(image.url, bottomLine);
+                imageLines.add(Map.entry(image, targetLine));
+            }
+
+            Map<GuiMessage.Line, Integer> actualLineIndexMap = new HashMap<>();
+            for (var entry : imageLines)
+                actualLineIndexMap.computeIfAbsent(entry.getValue(), trimmedMessages::indexOf);
+
+            imageLines.sort((a, b) ->
+                    Integer.compare(actualLineIndexMap.get(b.getValue()), actualLineIndexMap.get(a.getValue())));
+
+            for (var entry : imageLines) {
+                AbstractImage image = entry.getKey();
+                GuiMessage.Line targetLine = entry.getValue();
+                int insertIndex = actualLineIndexMap.get(targetLine);
+                if (insertIndex == -1)
+                    continue;
+
+                int linesCount = discord_minecraft_chat$getImageLinesCount(image.imageSize.height());
+                boolean isEmbed = discord_minecraft_chat$isEmbedMessage(targetLine);
+                Component imageComponent = discord_minecraft_chat$createImagePlaceholderComponent(image, targetLine, isEmbed);
+                FormattedCharSequence imageSequence = imageComponent.getVisualOrderText();
+                GuiMessageTag imageTag = discord_minecraft_chat$buildImageTag(tag, isEmbed);
+
+                for (int i = 0; i < linesCount; i++)
+                    trimmedMessages.add(insertIndex, new GuiMessage.Line(guimessage.addedTime(), imageSequence, i == 0 ? imageTag : tag, true));
+
+                for (int i = 0; i < linesCount; i++)
+                    allMessages.add(allMessagesInsertIndex, new GuiMessage(guimessage.addedTime(), imageComponent, signature, i == 0 ? imageTag : tag));
+                allMessagesInsertIndex += linesCount;
+            }
+        });
     }
 
     @ModifyConstant(
@@ -243,62 +299,6 @@ public abstract class ChatComponentMixin {
         }
     }
 
-    @Inject(
-            method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V",
-            at = @At(value = "TAIL")
-    )
-    private void addMessageWithImage(Component message, MessageSignature signature, int addedTime, GuiMessageTag tag, boolean onlyTrimmed, CallbackInfo ci){
-        List<String> componentUrls = discord_minecraft_chat$getComponentUrls(message);
-        if (componentUrls.isEmpty())
-            return;
-
-        GuiMessage.Line bottomLine = trimmedMessages.get(0);
-        Map<String, GuiMessage.Line> urlToLineObject = discord_minecraft_chat$buildUrlToLineMap(guimessage);
-
-        loadImagesParallel(componentUrls).thenAccept(loadedImages -> {
-            int allMessagesInsertIndex = allMessages.indexOf(guimessage);
-            if (allMessagesInsertIndex == -1)
-                return;
-
-            List<Map.Entry<AbstractImage, GuiMessage.Line>> imageLines = new ArrayList<>();
-            for (AbstractImage image : loadedImages) {
-                if (image == null)
-                    continue;
-                GuiMessage.Line targetLine = urlToLineObject.getOrDefault(image.url, bottomLine);
-                imageLines.add(Map.entry(image, targetLine));
-            }
-
-            Map<GuiMessage.Line, Integer> actualLineIndexMap = new HashMap<>();
-            for (var entry : imageLines)
-                actualLineIndexMap.computeIfAbsent(entry.getValue(), trimmedMessages::indexOf);
-
-            imageLines.sort((a, b) ->
-                    Integer.compare(actualLineIndexMap.get(b.getValue()), actualLineIndexMap.get(a.getValue())));
-
-            for (var entry : imageLines) {
-                AbstractImage image = entry.getKey();
-                GuiMessage.Line targetLine = entry.getValue();
-                int insertIndex = actualLineIndexMap.get(targetLine);
-                if (insertIndex == -1)
-                    continue;
-
-                int linesCount = discord_minecraft_chat$getImageLinesCount(image.imageSize.height());
-                boolean isEmbed = discord_minecraft_chat$isEmbedMessage(targetLine);
-                Component imageComponent = discord_minecraft_chat$createImagePlaceholderComponent(image, targetLine, isEmbed);
-                FormattedCharSequence imageSequence = imageComponent.getVisualOrderText();
-                GuiMessageTag imageTag = discord_minecraft_chat$buildImageTag(tag, isEmbed);
-
-                for (int i = 0; i < linesCount; i++)
-                    trimmedMessages.add(insertIndex, new GuiMessage.Line(guimessage.addedTime(), imageSequence, i == 0 ? imageTag : tag, true));
-
-                for (int i = 0; i < linesCount; i++)
-                    allMessages.add(allMessagesInsertIndex, new GuiMessage(guimessage.addedTime(), imageComponent, headerSignature, i == 0 ? imageTag : tag));
-                allMessagesInsertIndex += linesCount;
-            }
-        });
-    }
-
-
     @Inject(method = "render", at = @At("TAIL"))
     private void render(GuiGraphics graphics, int currentTime, int mouseX, int mouseY, CallbackInfo ci){
         if (IMAGE_CACHE.isEmpty())
@@ -321,7 +321,7 @@ public abstract class ChatComponentMixin {
                 break;
 
             GuiMessage.Line line = trimmedMessages.get(i + chatScrollbarPos);
-            if (tickCount - line.addedTime() >= 200 && !isChatFocused)
+            if (currentTime - line.addedTime() >= 200 && !isChatFocused)
                 continue;
             if (!discord_minecraft_chat$isImageTag(line.tag()))
                 continue;

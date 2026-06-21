@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.network.chat.contents.LiteralContents;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.OffsetDateTime;
@@ -56,14 +56,14 @@ public final class EmbedToComponentConverter {
         if (embed.getTitle() != null) {
             appendTitleLines(result, isFirstLine, sideColor, embed.getTitle(), embed.getUrl(), mentions, EMBED_LINE_MAX_LENGTH);
         } else {
-            appendRawLine(result, isFirstLine, () -> Component.literal(BORDER_TOP_PLAIN).withColor(sideColor));
+            appendRawLine(result, isFirstLine, () -> Component.literal(BORDER_TOP_PLAIN).withStyle(s -> s.withColor(sideColor)));
         }
 
         // Author
         if (embed.getAuthor() != null) {
             MessageEmbed.AuthorInfo author = embed.getAuthor();
             MutableComponent authorComponent = Component.literal("\uD83D\uDC64 " + author.getName())
-                    .withColor(ChatFormatting.GRAY.getColor());
+                    .withStyle(s -> s.withColor(ChatFormatting.GRAY.getColor()));
 
             if (author.getUrl() != null) {
                 authorComponent = authorComponent.withStyle(style -> style
@@ -131,7 +131,7 @@ public final class EmbedToComponentConverter {
 
     private static void appendEmbedLine(MutableComponent result, int sideColor, @Nullable Supplier<Component> lineSupplier) {
         result.append(Component.literal("\n"));
-        result.append(Component.literal(BORDER_SIDE_WITH_SPACE).withColor(sideColor));
+        result.append(Component.literal(BORDER_SIDE_WITH_SPACE).withStyle(s -> s.withColor(sideColor)));
         if (lineSupplier != null)
             result.append(lineSupplier.get());
     }
@@ -167,7 +167,7 @@ public final class EmbedToComponentConverter {
     private static void flattenInto(Component component, Style inheritedStyle, List<TextRun> out) {
         Style effectiveStyle = inheritedStyle.applyTo(component.getStyle());
 
-        if (component.getContents() instanceof PlainTextContents plain) {
+        if (component.getContents() instanceof LiteralContents plain) {
             String text = plain.text();
             if (!text.isEmpty())
                 out.add(new TextRun(text, effectiveStyle));
@@ -310,7 +310,7 @@ public final class EmbedToComponentConverter {
             MutableComponent line = lines.get(idx);
             if (idx == 0) {
                 appendRawLine(result, firstLine, () ->
-                        Component.literal(BORDER_TOP_PREFIX).withColor(sideColor).append(line));
+                        Component.literal(BORDER_TOP_PREFIX).withStyle(s -> s.withColor(sideColor)).append(line));
             } else {
                 appendEmbedLine(result, sideColor, () -> line);
             }
@@ -358,7 +358,7 @@ public final class EmbedToComponentConverter {
                 return styled.isBold() ? styled : styled.withBold(true);
             });
             result.append(styledName);
-            result.append(Component.literal(":  ").withColor(ChatFormatting.WHITE.getColor()));
+            result.append(Component.literal(":  ").withStyle(s -> s.withColor(ChatFormatting.WHITE.getColor())));
         }
 
         result.append(convertMarkdown(value, mentions));
@@ -388,7 +388,7 @@ public final class EmbedToComponentConverter {
             MutableComponent line = Component.empty();
             for (int i = 0; i < fieldComponents.size(); i++) {
                 if (i > 0)
-                    line.append(Component.literal(INLINE_FIELD_SEPARATOR).withColor(ChatFormatting.DARK_GRAY.getColor()));
+                    line.append(Component.literal(INLINE_FIELD_SEPARATOR).withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY.getColor())));
                 line.append(fieldComponents.get(i));
             }
             appendComponentLines(result, sideColor, line, maxLineLength);
@@ -420,7 +420,7 @@ public final class EmbedToComponentConverter {
                     .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
 
         if (footerText == null && timestampText == null) {
-            appendRawLine(result, firstLine, () -> Component.literal(BORDER_BOTTOM).withColor(sideColor));
+            appendRawLine(result, firstLine, () -> Component.literal(BORDER_BOTTOM).withStyle(s -> s.withColor(sideColor)));
             return;
         }
 
@@ -456,7 +456,7 @@ public final class EmbedToComponentConverter {
         }
 
         MutableComponent footerComponent = combined != null
-                ? Component.literal(combined).withColor(ChatFormatting.DARK_GRAY.getColor())
+                ? Component.literal(combined).withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY.getColor()))
                 : Component.empty();
 
         if (truncated) {
@@ -467,15 +467,15 @@ public final class EmbedToComponentConverter {
 
         MutableComponent finalFooterComponent = footerComponent;
         appendRawLine(result, firstLine, () ->
-                Component.literal(BORDER_BOTTOM + "  ").withColor(sideColor).append(finalFooterComponent));
+                Component.literal(BORDER_BOTTOM + "  ").withStyle(s -> s.withColor(sideColor)).append(finalFooterComponent));
     }
 
     private static Component buildImageLine(String label, String url) {
-        MutableComponent line = Component.literal(label).withColor(ChatFormatting.GRAY.getColor());
+        MutableComponent line = Component.literal(label).withStyle(s -> s.withColor(ChatFormatting.GRAY.getColor()));
         line.append(
                 Component.literal(String.format("[%s]", getTranslate(OPEN)))
-                        .withColor(ChatFormatting.AQUA.getColor())
                         .withStyle(style -> style
+                                .withColor(ChatFormatting.AQUA.getColor())
                                 .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(url)))
                         )
