@@ -48,5 +48,8 @@
   "discord_chat_mod.slash_commands.allowed_commands.all_denied": "Wszystkie polecenia są odrzucane",
   "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ Nie masz uprawnień do używania tego polecenia",
   "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Błąd podczas wykonywania polecenia:**%s",
-  "discord_chat_mod.slash_commands.cmd.success": "✅ **Polecenie wykonane:** `%s`"
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **Polecenie wykonane:** `%s`",
+  "discord_chat_mod.thumbnail": "Zwięzły",
+  "discord_chat_mod.image": "Obraz",
+  "discord_chat_mod.open": "Otwarte"
 }

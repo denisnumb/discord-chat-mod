@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ImageScreen extends Screen {
     private final AbstractImage image;
+    private final Screen prevScreen;
     private final int imageWidth;
     private final int imageHeight;
     private int centerX = 0;
@@ -22,11 +23,12 @@ public class ImageScreen extends Screen {
     private int renderWidth = 0;
     private int renderHeight = 0;
 
-    public ImageScreen(AbstractImage image) {
+    public ImageScreen(AbstractImage image, Screen prevScreen) {
         super(Component.literal("Image Viewer"));
         this.image = image;
-        imageWidth = image.originalSize.width();
-        imageHeight = image.originalSize.height();
+        this.prevScreen = prevScreen;
+        this.imageWidth = image.originalSize.width();
+        this.imageHeight = image.originalSize.height();
     }
 
 
@@ -65,7 +67,7 @@ public class ImageScreen extends Screen {
                     || event.y() < centerY
                     || event.y() > centerY + renderHeight;
             if (outsideImage) {
-                Minecraft.getInstance().setScreen(null);
+                Minecraft.getInstance().setScreen(prevScreen);
                 return true;
             }
         }
@@ -75,7 +77,7 @@ public class ImageScreen extends Screen {
     @Override
     public boolean keyPressed(@NotNull KeyEvent event) {
         if (event.key() == 256) {
-            Minecraft.getInstance().setScreen(null);
+            Minecraft.getInstance().setScreen(prevScreen);
             return true;
         }
         return super.keyPressed(event);

@@ -19,13 +19,20 @@ public abstract class PreparedTextBuilderMixin {
 
     @Inject(method = "bounds", at = @At("RETURN"), cancellable = true)
     private void fixEmptyBounds(CallbackInfoReturnable<ScreenRectangle> cir) {
-        if (cir.getReturnValue() != null) return;
         if (this.emptyAreas == null || this.emptyAreas.isEmpty()) return;
 
         float left = Float.MAX_VALUE;
         float top = Float.MAX_VALUE;
         float right = -Float.MAX_VALUE;
         float bottom = -Float.MAX_VALUE;
+
+        ScreenRectangle existing = cir.getReturnValue();
+        if (existing != null) {
+            left = existing.left();
+            top = existing.top();
+            right = existing.right();
+            bottom = existing.bottom();
+        }
 
         for (EmptyArea area : this.emptyAreas) {
             left = Math.min(left, area.x());

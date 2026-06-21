@@ -16,6 +16,8 @@
   ],
   "client": [
     "ChatComponentMixin",
+    "helper.DrawingFocusedGraphicsAccessMixin",
+    "helper.DrawingBackgroundGraphicsAccessMixin",
     "CommandSuggestionsMixin",
     "GuiGraphicsMixin",
     "RenderingTextCollectorMixin",

@@ -50,7 +50,7 @@ public abstract class ChatScreenMixin extends Screen {
                             if (image.isSpoilerAndNotOpened())
                                 image.openSpoiler();
                             else {
-                                minecraft.setScreen(new ImageScreen(image));
+                                minecraft.setScreen(new ImageScreen(image, minecraft.screen));
                             }
                         }
                         cir.setReturnValue(true);
