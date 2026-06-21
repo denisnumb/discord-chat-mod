@@ -24,7 +24,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Supplier;
 
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.WebpUtils.*;
@@ -37,33 +36,24 @@ public class ImageStorage {
 
     public static final Map<String, AbstractImage> IMAGE_CACHE = new HashMap<>();
     public static final Set<String> HANDLED_URLS = new HashSet<>();
-    private static CompletableFuture<LoadResult> lastTask = CompletableFuture.completedFuture(null);
+    private static CompletableFuture<List<AbstractImage>> lastTask = CompletableFuture.completedFuture(null);
 
-    public static CompletableFuture<LoadResult> loadImagesParallel(
-            List<String> urls,
-            Supplier<Integer> trimmedSize,
-            Supplier<Integer> allSize
-    ) {
+    public static CompletableFuture<List<AbstractImage>> loadImagesParallel(List<String> urls) {
         synchronized (ImageStorage.class) {
-            lastTask = lastTask.thenComposeAsync(ignored -> runLoadImages(urls, trimmedSize.get(), allSize.get()));
+            lastTask = lastTask.thenComposeAsync(ignored -> runLoadImages(urls));
             return lastTask;
         }
     }
 
-    private static CompletableFuture<LoadResult> runLoadImages(List<String> urls, int trimmedSize, int allSize) {
+    private static CompletableFuture<List<AbstractImage>> runLoadImages(List<String> urls) {
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        List<CompletableFuture<AbstractImage>> futures = urls.stream().distinct()
+        List<CompletableFuture<AbstractImage>> futures = urls.stream()
                 .map(url -> CompletableFuture.supplyAsync(() -> parseImage(url), executor))
                 .toList();
 
-        return CompletableFuture
-                .allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> new LoadResult(
-                        trimmedSize,
-                        allSize,
-                        urls.stream().map(ImageStorage::parseImage).toList()
-                ))
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream().map(CompletableFuture::join).toList())
                 .whenComplete((res, ex) -> executor.shutdown());
     }
 

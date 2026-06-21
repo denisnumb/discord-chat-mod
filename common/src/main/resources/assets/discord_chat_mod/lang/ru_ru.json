@@ -48,5 +48,8 @@
   "discord_chat_mod.slash_commands.allowed_commands.all_denied": "Все команды запрещены",
   "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ У вас нет права на использование этой команды",
   "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Ошибка при выполнении команды:** %s",
-  "discord_chat_mod.slash_commands.cmd.success": "✅ **Команда выполнена:** `%s`"
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **Команда выполнена:** `%s`",
+  "discord_chat_mod.thumbnail": "Миниатюра",
+  "discord_chat_mod.image": "Изображение",
+  "discord_chat_mod.open": "открыть"
 }

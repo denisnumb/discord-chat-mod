@@ -7,9 +7,12 @@ import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvide
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
+import com.denisnumb.discord_chat_mod.discord.utils.DiscordMentionsUtils;
+import com.denisnumb.discord_chat_mod.discord.utils.EmbedToComponentConverter;
 import com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
+import net.dv8tion.jda.api.entities.EmbedType;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -32,9 +35,7 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getServerPlayerCount;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.FORWARDED_GUILD_MESSAGE;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.REPLY;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.STICKER;
+import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
@@ -91,7 +92,7 @@ public class DiscordEvents extends ListenerAdapter {
 
         String userName = ConfigProvider.getConfig()
                 .discordGuildForwardedMessageUserNameStyle()
-                .replace(USER, event.getAuthor().getGlobalName())
+                .replace(USER, event.getAuthor().getEffectiveName())
                 .replace(MEMBER, event.getMember().getEffectiveName())
                 .replace(GUILD, event.getGuild().getName());
         String messageContent = event.getMessage().getContentRaw();
@@ -132,12 +133,16 @@ public class DiscordEvents extends ListenerAdapter {
         CompletableFuture<Optional<Component>> textFuture = buildTextComponent(message, ctx);
         Optional<Component> attachmentComponent = buildAttachmentsComponent(message, ctx);
         Optional<Component> stickerComponent = buildStickerComponent(message, ctx);
+        List<Component> embedComponents = buildEmbedComponents(message);
 
         return textFuture.thenApply(textOpt -> {
             List<Component> result = new ArrayList<>();
             textOpt.ifPresent(result::add);
             attachmentComponent.ifPresent(result::add);
             stickerComponent.ifPresent(result::add);
+            if (textOpt.isEmpty() && !embedComponents.isEmpty())
+                result.add(wrap(Component.empty(), ctx));
+            result.addAll(embedComponents);
             return result;
         });
     }
@@ -264,6 +269,23 @@ public class DiscordEvents extends ListenerAdapter {
                 );
 
         return Optional.of(wrap(part, ctx));
+    }
+
+    private static List<Component> buildEmbedComponents(Message message) {
+        List<MessageEmbed> embeds = message.getEmbeds();
+        if (embeds.isEmpty())
+            return Collections.emptyList();
+
+        List<Component> result = new ArrayList<>();
+        for (MessageEmbed embed : embeds) {
+            if (embed.getType() != EmbedType.RICH)
+                continue;
+
+            Map<String, DiscordMentionData> mentions = DiscordMentionsUtils.collectEmbedMentions(embed, message.getGuild());
+            EmbedToComponentConverter.buildEmbedComponent(embed, mentions).ifPresent(result::add);
+        }
+
+        return result;
     }
 
     private static Component wrap(Component messageComponent, MessageContext ctx) {

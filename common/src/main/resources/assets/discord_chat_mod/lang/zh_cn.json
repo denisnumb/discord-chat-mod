@@ -48,5 +48,8 @@
   "discord_chat_mod.slash_commands.allowed_commands.all_denied": "所有命令均被拒绝",
   "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌您没有权限使用此命令",
   "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **执行命令时出错：**%s",
-  "discord_chat_mod.slash_commands.cmd.success": "✅ **执行的命令：** `%s`"
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **执行的命令：** `%s`",
+  "discord_chat_mod.thumbnail": "缩略图",
+  "discord_chat_mod.image": "图像",
+  "discord_chat_mod.open": "打开"
 }
