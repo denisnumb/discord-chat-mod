@@ -15,7 +15,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -68,8 +67,8 @@ public final class EmbedToComponentConverter {
 
             if (author.getUrl() != null) {
                 authorComponent = authorComponent.withStyle(style -> style
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(author.getUrl())))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(author.getUrl())))
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, author.getUrl()))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(author.getUrl())))
                 );
             }
             appendComponentLines(result, sideColor, authorComponent, EMBED_LINE_MAX_LENGTH);
@@ -298,8 +297,8 @@ public final class EmbedToComponentConverter {
                 styled = styled.withBold(true);
             if (url != null && styled.getClickEvent() == null) {
                 styled = styled
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(url)));
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(url)));
             }
             return styled;
         };
@@ -463,7 +462,7 @@ public final class EmbedToComponentConverter {
         if (truncated) {
             String fullFooterText = footerText;
             footerComponent = footerComponent.withStyle(style ->
-                    style.withHoverEvent(new HoverEvent.ShowText(Component.literal(fullFooterText))));
+                    style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(fullFooterText))));
         }
 
         MutableComponent finalFooterComponent = footerComponent;
@@ -477,8 +476,8 @@ public final class EmbedToComponentConverter {
                 Component.literal(String.format("[%s]", getTranslate(OPEN)))
                         .withColor(ChatFormatting.AQUA.getColor())
                         .withStyle(style -> style
-                                .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
-                                .withHoverEvent(new HoverEvent.ShowText(Component.literal(url)))
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(url)))
                         )
         );
         return line;
