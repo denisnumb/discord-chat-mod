@@ -48,5 +48,8 @@
   "discord_chat_mod.slash_commands.allowed_commands.all_denied": "Todos os comandos são negados",
   "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ Você não tem permissão para usar este comando",
   "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Erro ao executar comando:**%s",
-  "discord_chat_mod.slash_commands.cmd.success": "✅ **Comando executado:** `%s`"
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **Comando executado:** `%s`",
+  "discord_chat_mod.thumbnail": "Miniatura",
+  "discord_chat_mod.image": "Imagem",
+  "discord_chat_mod.open": "abrir"
 }
