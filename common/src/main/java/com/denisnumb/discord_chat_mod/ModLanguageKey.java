@@ -51,4 +51,7 @@ public class ModLanguageKey {
     public static final String SLASH_COMMANDS_CMD_MISSING_PERMISSION = "discord_chat_mod.slash_commands.cmd.error.missing_permission";
     public static final String SLASH_COMMANDS_CMD_EXECUTE_ERROR = "discord_chat_mod.slash_commands.cmd.error.execute_error";
     public static final String SLASH_COMMANDS_CMD_SUCCESS = "discord_chat_mod.slash_commands.cmd.success";
+    public static final String THUMBNAIL = "discord_chat_mod.thumbnail";
+    public static final String IMAGE = "discord_chat_mod.image";
+    public static final String OPEN = "discord_chat_mod.open";
 }

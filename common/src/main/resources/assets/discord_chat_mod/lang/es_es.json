@@ -48,5 +48,8 @@
   "discord_chat_mod.slash_commands.allowed_commands.all_denied": "Todos los comandos son denegados",
   "discord_chat_mod.slash_commands.cmd.error.missing_permission": "❌ No tienes permiso para usar este comando",
   "discord_chat_mod.slash_commands.cmd.error.execute_error": "❌ **Error al ejecutar el comando:** %s",
-  "discord_chat_mod.slash_commands.cmd.success": "✅ **Comando ejecutado:** `%s`"
+  "discord_chat_mod.slash_commands.cmd.success": "✅ **Comando ejecutado:** `%s`",
+  "discord_chat_mod.thumbnail": "Uña del pulgar",
+  "discord_chat_mod.image": "Imagen",
+  "discord_chat_mod.open": "abierto"
 }
