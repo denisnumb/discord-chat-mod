@@ -47,7 +47,7 @@ public abstract class ScreenMixin {
                             if (image.isSpoilerAndNotOpened())
                                 image.openSpoiler();
                             else {
-                                minecraft.setScreen(new ImageScreen(image));
+                                minecraft.setScreen(new ImageScreen(image, minecraft.screen));
                             }
                         }
                         cir.setReturnValue(true);
