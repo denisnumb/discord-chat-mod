@@ -18,7 +18,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
-import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -27,6 +26,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.scores.PlayerTeam;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -41,8 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -95,6 +94,19 @@ public class MinecraftUtils {
         return FormattedCharSequence.composite(parts);
     }
 
+    public static boolean hasRunCommandClickEvent(FormattedCharSequence seq, String command) {
+        boolean[] found = {false};
+        seq.accept((index, style, codePoint) -> {
+            if (style.getClickEvent() instanceof ClickEvent.RunCommand(String cmd)
+                    && cmd.equals(command)) {
+                found[0] = true;
+                return false;
+            }
+            return true;
+        });
+        return found[0];
+    }
+
     public static List<ServerPlayer> getPlayerListBySelector(String selector){
         try {
             CommandSourceStack fakeSource = server.createCommandSourceStack()
@@ -140,6 +152,96 @@ public class MinecraftUtils {
             for (ServerPlayer serverPlayer : playerList.getPlayers())
                 serverPlayer.sendSystemMessage(preparedContent);
         } catch (Exception ignored) {}
+    }
+
+    public static void sendTellMessageToTargetPlayersFromPlayer(
+            ServerPlayer player,
+            List<ServerPlayer> targetPlayers,
+            Component content,
+            boolean singleOutgoing
+    ){
+        if (targetPlayers.isEmpty())
+            return;
+
+        Component preparedContent = MinecraftEvents.handleChatMessage(
+                CustomChatTypeRegistry.MSG_COMMAND_INCOMING,
+                new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, null, player)
+        ).orElse(
+                applyParametersToTemplate(
+                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                        mergeMaps(Map.of(SENDER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                )
+        );
+
+        for (ServerPlayer serverPlayer : targetPlayers) {
+            serverPlayer.sendSystemMessage(preparedContent);
+        }
+
+        if (singleOutgoing) {
+            Component receivers = targetPlayers.stream()
+                    .map(ServerPlayer::getDisplayName)
+                    .reduce((a, b) -> Component.literal("").append(a).append(", ").append(b))
+                    .orElse(Component.empty());
+
+            Component outgoingContent = MinecraftEvents.handleChatMessage(
+                    CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
+                    new MinecraftChatStyleProvider.ChatMessageComponents(receivers, content, null, player)
+            ).orElse(
+                    applyParametersToTemplate(
+                            parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                            mergeMaps(Map.of(RECEIVER, receivers, MESSAGE, content), buildPositionComponentParameters(player))
+                    )
+            );
+
+            player.sendSystemMessage(outgoingContent);
+        } else {
+            for (ServerPlayer serverPlayer : targetPlayers) {
+                Component outgoingContent = MinecraftEvents.handleChatMessage(
+                        CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
+                        new MinecraftChatStyleProvider.ChatMessageComponents(serverPlayer.getDisplayName(), content, null, player)
+                ).orElse(
+                        applyParametersToTemplate(
+                                parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                                mergeMaps(Map.of(RECEIVER, serverPlayer.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                        )
+                );
+
+                player.sendSystemMessage(outgoingContent);
+            }
+        }
+    }
+
+    public static void sendTeamMessageFromPlayer(ServerPlayer player, PlayerTeam team, Component content){
+        PlayerList playerList = server.getPlayerList();
+        if (playerList == null)
+            return;
+
+        MinecraftChatStyleProvider.ChatMessageComponents chatMessageComponents
+                = new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, team.getDisplayName(), player);
+
+        Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING, chatMessageComponents).orElse(
+                applyParametersToTemplate(
+                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                        mergeMaps(Map.of(TEAM, team.getDisplayName(), PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                )
+        );
+
+        for (String playerName : team.getPlayers()){
+            ServerPlayer serverPlayer = playerList.getPlayerByName(playerName);
+            if (serverPlayer == null || player.equals(serverPlayer))
+                continue;
+
+            serverPlayer.sendSystemMessage(preparedContent);
+        }
+
+        Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING, chatMessageComponents).orElse(
+                applyParametersToTemplate(
+                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT),
+                        mergeMaps(Map.of(TEAM, team.getDisplayName(), PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                )
+        );
+
+        player.sendSystemMessage(outgoingContent);
     }
 
     public static void showTitleBarMessage(Component message) {

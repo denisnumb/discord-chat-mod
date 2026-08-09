@@ -1,12 +1,17 @@
 package com.denisnumb.discord_chat_mod.chat_images;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.chat_images.model.*;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.mixin.ChatComponentAccessor;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,10 +37,41 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.LOGGER;
 public class ImageStorage {
     public static final float MAX_WIDTH = 128.0f;
     public static final float MAX_HEIGHT = 72.0f;
+    public static final String OPEN_IMAGE_COMMAND = "open_image ";
+    public static final String SEND_SCREENSHOT_COMMAND = "send_screenshot ";
+    public static final int MAX_DRAG_DROP_FILE_SIZE_MB = 25;
+    public static final long MAX_DRAG_DROP_FILE_SIZE = MAX_DRAG_DROP_FILE_SIZE_MB * 1024 * 1024;
+    private static Integer MAX_CACHE_SIZE;
 
-    public static final Map<String, AbstractImage> IMAGE_CACHE = new HashMap<>();
-    public static final Set<String> HANDLED_URLS = new HashSet<>();
     private static CompletableFuture<List<AbstractImage>> lastTask = CompletableFuture.completedFuture(null);
+    private static final Set<String> HANDLED_URLS = new HashSet<>();
+
+    public static final Map<String, AbstractImage> IMAGE_CACHE = Collections.synchronizedMap(
+            new LinkedHashMap<>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, AbstractImage> eldest) {
+                    if (size() > getMaxCacheSize()) {
+                        releaseImageResources(eldest.getValue());
+                        return true;
+                    }
+                    return false;
+                }
+            }
+    );
+
+    private static int getMaxCacheSize(){
+        if (MAX_CACHE_SIZE == null) {
+            MAX_CACHE_SIZE = ConfigProvider.getConfig().maxImageCacheSize();
+        }
+
+        return MAX_CACHE_SIZE;
+    }
+
+    public static void evictImage(String url) {
+        AbstractImage image = IMAGE_CACHE.remove(url);
+        if (image != null)
+            releaseImageResources(image);
+    }
 
     public static CompletableFuture<List<AbstractImage>> loadImagesParallel(List<String> urls) {
         synchronized (ImageStorage.class) {
@@ -79,10 +115,10 @@ public class ImageStorage {
 
         if (isImageUrl(mimeType) || isGifPlatformUrl(url)) {
             try {
-                loadImageFromUrl(url, mimeType);
+                registerImageFromUrl(url, mimeType);
                 return parseImageInternal(url, skipHandledUrls);
             } catch (Exception e) {
-                LOGGER.error("ImageLoadError: {}", e.getMessage());
+                LOGGER.error("ImageLoadError", e);
             }
         } else if (isLocalResourceUrl(url)) {
             return waitForLocalResource(IMAGE_CACHE, url, 15000, 50);
@@ -91,62 +127,59 @@ public class ImageStorage {
         return null;
     }
 
-    public static void registerImage(String imageUrl, byte[] imageBytes) throws IOException, InterruptedException {
-        NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
+    public static AbstractImage registerImageFromBytes(String imageUrl, String mimeType, byte[] imageBytes) throws Exception {
+        return registerByMimeType(imageUrl, mimeType, imageBytes);
+    }
 
+    private static void registerImageFromUrl(String imageUrl, String mimeType) throws Exception {
+        try (InputStream input = getInputStreamFromUrl(imageUrl)) {
+            registerByMimeType(imageUrl, mimeType, input.readAllBytes());
+        }
+    }
+
+    private static AbstractImage registerByMimeType(String imageUrl, String mimeType, byte[] bytes) throws Exception {
+        if (isGifPlatformUrl(imageUrl) || isGif(mimeType)) {
+            return registerGif(imageUrl, bytes);
+        } else if (isAnimatedWebp(bytes, mimeType)) {
+            return registerAnimatedWebp(imageUrl, bytes);
+        }
+
+        return registerImage(imageUrl, bytes);
+    }
+
+    private static AbstractImage registerImage(String imageUrl, byte[] imageBytes) throws Exception {
+        imageBytes = ImageUtils.convertToPngIfNeeded(imageBytes);
+
+        NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
         boolean isSpoiler = ImageUtils.isSpoilerImageUrl(imageUrl);
-        Identifier spoilerTextureLocation = isSpoiler
-                ? registerSpoilerImage(imageUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)))
-                : null;
         Identifier textureLocation = Identifier.parse(
                 DiscordChatMod.MOD_ID + "/chat_image/" + imageUrl.hashCode()
         );
+        Identifier spoilerTextureLocation = isSpoiler
+                ? buildSpoilerTexture(imageUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)))
+                : null;
 
-        CountDownLatch latch = new CountDownLatch(1);
-        Minecraft.getInstance().execute(() -> {
-            try {
-                Minecraft.getInstance().getTextureManager().register(textureLocation, new DynamicTexture(textureLocation::getPath, nativeImage));
-            } finally {
-                latch.countDown();
-            }
-        });
-        latch.await();
+        registerTexture(textureLocation, nativeImage);
 
-        IMAGE_CACHE.put(imageUrl, new Image(
+        Image image = new Image(
                 imageUrl,
                 getImageScaledSize(nativeImage.getWidth(), nativeImage.getHeight()),
                 new ImageSize(nativeImage.getWidth(), nativeImage.getHeight()),
                 textureLocation,
                 isSpoiler,
                 spoilerTextureLocation
-        ));
+        );
+        IMAGE_CACHE.put(imageUrl, image);
+
+        return image;
     }
 
-    private static void loadImageFromUrl(String imageUrl, String mimeType) throws Exception {
-        if (isGifPlatformUrl(imageUrl) || isGifUrl(mimeType)){
-            loadGifFromUrl(imageUrl);
-        } else if (isAnimatedWebpUrl(imageUrl, mimeType)){
-            loadWebpAnimatedWebpFromUrl(imageUrl);
-        } else {
-            try (InputStream inputStream = getInputStreamFromUrl(imageUrl)) {
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                ImageIO.write(ImageIO.read(inputStream), "png", outputStream);
-                registerImage(imageUrl, outputStream.toByteArray());
-            }
-        }
-    }
-
-    private static void loadWebpAnimatedWebpFromUrl(String webpUrl) throws Exception {
+    private static AbstractImage registerAnimatedWebp(String webpUrl, byte[] webpData) throws Exception {
         List<Identifier> frames = new ArrayList<>();
         ImageSize frameSize = null;
         int frameDuration = -1;
         boolean isSpoiler = ImageUtils.isSpoilerImageUrl(webpUrl);
         Identifier spoilerTextureLocation = null;
-
-        byte[] webpData;
-        try (InputStream input = getInputStreamFromUrl(webpUrl)) {
-            webpData = input.readAllBytes();
-        }
 
         List<FrameMetadata> frameMetadata;
         try (ByteArrayInputStream metaStream = new ByteArrayInputStream(webpData)) {
@@ -168,7 +201,6 @@ public class ImageStorage {
                     BufferedImage.TYPE_INT_ARGB
             );
             Graphics2D g = canvas.createGraphics();
-            CountDownLatch latch = new CountDownLatch(frameCount);
 
             for (int i = 0; i < frameCount; i++) {
                 BufferedImage frame = reader.read(i);
@@ -188,31 +220,21 @@ public class ImageStorage {
                     frameDuration = 100;
 
                     if (isSpoiler)
-                        spoilerTextureLocation = registerSpoilerImage(webpUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
+                        spoilerTextureLocation = buildSpoilerTexture(webpUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
                 }
 
                 Identifier frameLocation = Identifier.parse(
                         DiscordChatMod.MOD_ID + "/chat_webp/" + webpUrl.hashCode() + "_" + i
                 );
-
-                NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
-                Minecraft.getInstance().execute(() -> {
-                    try {
-                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(frameLocation::getPath, nativeImage));
-                    } finally {
-                        latch.countDown();
-                    }
-                });
-
+                registerTexture(frameLocation, NativeImage.read(new ByteArrayInputStream(imageBytes)));
                 frames.add(frameLocation);
             }
 
             g.dispose();
             reader.dispose();
-            latch.await();
 
             if (!frames.isEmpty()) {
-                IMAGE_CACHE.put(webpUrl, new AnimatedImage(
+                AnimatedImage image = new AnimatedImage(
                         webpUrl,
                         frames,
                         getImageScaledSize(frameSize.width(), frameSize.height()),
@@ -220,12 +242,16 @@ public class ImageStorage {
                         frameDuration,
                         isSpoiler,
                         spoilerTextureLocation
-                ));
+                );
+                IMAGE_CACHE.put(webpUrl, image);
+                return image;
             }
+
+            throw new IllegalStateException("Failed to retrieve image frames");
         }
     }
 
-    private static void loadGifFromUrl(String gifUrl) throws Exception {
+    private static AbstractImage registerGif(String gifUrl, byte[] gifData) throws Exception {
         String cacheKey = gifUrl;
         if (isGiphyGifUrl(gifUrl))
             gifUrl = getGiphyGifSourceUrl(gifUrl);
@@ -235,19 +261,16 @@ public class ImageStorage {
         List<Identifier> frames = new ArrayList<>();
         ImageSize frameSize = null;
         int frameDuration = -1;
-
         boolean isSpoiler = ImageUtils.isSpoilerImageUrl(gifUrl);
         Identifier spoilerTextureLocation = null;
 
-        try (ImageInputStream input = ImageIO.createImageInputStream(getInputStreamFromUrl(gifUrl))) {
+        try (ImageInputStream input = ImageIO.createImageInputStream(new ByteArrayInputStream(gifData))) {
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("gif");
             if (!readers.hasNext()) throw new IOException("No GIF reader found");
 
             ImageReader reader = readers.next();
             reader.setInput(input);
             int numFrames = reader.getNumImages(true);
-            CountDownLatch latch = new CountDownLatch(numFrames);
-
             int width = reader.getWidth(0);
             int height = reader.getHeight(0);
             BufferedImage canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -291,31 +314,21 @@ public class ImageStorage {
                     frameDuration = getGifFrameDuration(metadata);
 
                     if (isSpoiler)
-                        spoilerTextureLocation = registerSpoilerImage(gifUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
+                        spoilerTextureLocation = buildSpoilerTexture(gifUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
                 }
 
                 Identifier frameLocation = Identifier.parse(
                         DiscordChatMod.MOD_ID + "/chat_gif/" + gifUrl.hashCode() + "_" + i
                 );
-
-                NativeImage nativeImage = NativeImage.read(new ByteArrayInputStream(imageBytes));
-                Minecraft.getInstance().execute(() -> {
-                    try {
-                        Minecraft.getInstance().getTextureManager().register(frameLocation, new DynamicTexture(frameLocation::getPath, nativeImage));
-                    } finally {
-                        latch.countDown();
-                    }
-                });
-
+                registerTexture(frameLocation, NativeImage.read(new ByteArrayInputStream(imageBytes)));
                 frames.add(frameLocation);
             }
 
             g2d.dispose();
             reader.dispose();
-            latch.await();
 
             if (!frames.isEmpty()) {
-                IMAGE_CACHE.put(cacheKey, new AnimatedImage(
+                AnimatedImage image = new AnimatedImage(
                         cacheKey,
                         frames,
                         getImageScaledSize(frameSize.width(), frameSize.height()),
@@ -323,28 +336,80 @@ public class ImageStorage {
                         Math.max(frameDuration, 100),
                         isSpoiler,
                         spoilerTextureLocation
-                ));
+                );
+                IMAGE_CACHE.put(cacheKey, image);
+                return image;
             }
+
+            throw new IllegalStateException("Failed to retrieve image frames");
         }
     }
 
-    private static Identifier registerSpoilerImage(String imageUrl, NativeImage image) throws InterruptedException {
-        ImageUtils.applyPixelation(image, image.getHeight() / 6);
-        ImageUtils.applySpoilerOverlay(image);
-        Identifier spoilerTextureLocation = Identifier.parse(
-                DiscordChatMod.MOD_ID + "/chat_image_spoiler/" + imageUrl.hashCode()
-        );
+    private static void releaseImageResources(AbstractImage image) {
+        HANDLED_URLS.remove(image.url);
 
-        CountDownLatch latch = new CountDownLatch(1);
         Minecraft.getInstance().execute(() -> {
-            try {
-                Minecraft.getInstance().getTextureManager().register(spoilerTextureLocation, new DynamicTexture(spoilerTextureLocation::getPath, image));
-            } finally {
-                latch.countDown();
+            ChatComponentAccessor accessor = (ChatComponentAccessor) Minecraft.getInstance().gui.getChat();
+            String command = OPEN_IMAGE_COMMAND + image.url;
+
+            accessor.getTrimmedMessages().removeIf(line ->
+                    MinecraftUtils.hasRunCommandClickEvent(line.content(), command)
+            );
+            accessor.getAllMessages().removeIf(msg ->
+                    MinecraftUtils.hasRunCommandClickEvent(msg.content().getVisualOrderText(), command)
+            );
+
+            TextureManager tm = Minecraft.getInstance().getTextureManager();
+
+            if (image instanceof AnimatedImage animated) {
+                for (Identifier frame : animated.frames) {
+                    if (tm.getTexture(frame) instanceof DynamicTexture dt)
+                        dt.close();
+                    tm.release(frame);
+                }
+            } else if (image instanceof Image img) {
+                if (tm.getTexture(img.resourceLocation) instanceof DynamicTexture dt)
+                    dt.close();
+                tm.release(img.resourceLocation);
+            }
+
+            if (image.spoilerIdentifier != null) {
+                if (tm.getTexture(image.spoilerIdentifier) instanceof DynamicTexture dt)
+                    dt.close();
+                tm.release(image.spoilerIdentifier);
             }
         });
-        latch.await();
+    }
 
-        return spoilerTextureLocation;
+    private static void registerTexture(Identifier location, NativeImage image) throws InterruptedException {
+        if (RenderSystem.isOnRenderThread()) {
+            Minecraft.getInstance().getTextureManager().register(
+                    location,
+                    new DynamicTexture(location::getPath, image)
+            );
+        } else {
+            CountDownLatch latch = new CountDownLatch(1);
+            Minecraft.getInstance().execute(() -> {
+                try {
+                    Minecraft.getInstance().getTextureManager().register(
+                            location,
+                            new DynamicTexture(location::getPath, image)
+                    );
+                } finally {
+                    latch.countDown();
+                }
+            });
+            latch.await();
+        }
+    }
+
+    private static Identifier buildSpoilerTexture(String imageUrl, NativeImage image) throws InterruptedException {
+        ImageUtils.applyPixelation(image, image.getHeight() / 6);
+        ImageUtils.applySpoilerOverlay(image);
+        Identifier location = Identifier.parse(
+                DiscordChatMod.MOD_ID + "/chat_image_spoiler/" + imageUrl.hashCode()
+        );
+        registerTexture(location, image);
+        return location;
     }
 }

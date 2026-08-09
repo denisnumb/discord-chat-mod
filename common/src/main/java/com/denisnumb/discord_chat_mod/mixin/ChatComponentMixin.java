@@ -46,7 +46,6 @@ public abstract class ChatComponentMixin {
     @Shadow @Final private List<GuiMessage> allMessages;
     @Shadow public abstract int getLinesPerPage();
 
-    @Unique private final String OPEN_IMAGE_COMMAND = "open_image ";
     @Unique private final String IMAGE_TAG_LABEL = "discord_chat_mod$IMAGE";
     @Unique private final String EMBEDDED_IMAGE_TAG_LABEL = IMAGE_TAG_LABEL + "_EMBED";
 

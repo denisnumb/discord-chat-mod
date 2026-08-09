@@ -5,7 +5,7 @@ import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisPartPacket;
 import com.denisnumb.discord_chat_mod.network.emoji.RequestDiscordEmojisPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
-import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
+import com.denisnumb.discord_chat_mod.network.image.ImagePartPacket;
 import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersPartPacket;
 import com.denisnumb.discord_chat_mod.network.sticker.RequestDiscordStickersPacket;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -16,8 +16,8 @@ public class FabricNetworking {
     public static void init() {
         PayloadTypeRegistry.playC2S().register(RequestDiscordMentionsPacket.TYPE, RequestDiscordMentionsPacket.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(DiscordMentionsPartPacket.TYPE, DiscordMentionsPartPacket.STREAM_CODEC);
-        PayloadTypeRegistry.playC2S().register(ScreenshotPartPacket.TYPE, ScreenshotPartPacket.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(ScreenshotPartPacket.TYPE, ScreenshotPartPacket.STREAM_CODEC);
+        PayloadTypeRegistry.playC2S().register(ImagePartPacket.TYPE, ImagePartPacket.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(ImagePartPacket.TYPE, ImagePartPacket.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(DiscordEmojisPartPacket.TYPE, DiscordEmojisPartPacket.STREAM_CODEC);
         PayloadTypeRegistry.playC2S().register(RequestDiscordEmojisPacket.TYPE, RequestDiscordEmojisPacket.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(DiscordStickersPartPacket.TYPE, DiscordStickersPartPacket.STREAM_CODEC);
@@ -35,8 +35,8 @@ public class FabricNetworking {
             context.server().execute(() -> PacketHandler.handleRequestDiscordStickersPacket(context.player()));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(ScreenshotPartPacket.TYPE, (packet, context) -> {
-            context.server().execute(() -> PacketHandler.handleScreenshotPartPacketServerSide(packet, context.player()));
+        ServerPlayNetworking.registerGlobalReceiver(ImagePartPacket.TYPE, (packet, context) -> {
+            context.server().execute(() -> PacketHandler.handleImagePartPacketServerSide(packet, context.player()));
         });
     }
 
@@ -53,8 +53,8 @@ public class FabricNetworking {
             context.client().execute(() -> PacketHandler.handleDiscordStickersPacket(packet));
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(ScreenshotPartPacket.TYPE, (packet, context) -> {
-            context.client().execute(() -> PacketHandler.handleScreenshotPartPacketClientSide(packet));
+        ClientPlayNetworking.registerGlobalReceiver(ImagePartPacket.TYPE, (packet, context) -> {
+            context.client().execute(() -> PacketHandler.handleImagePartPacketClientSide(packet));
         });
     }
 }

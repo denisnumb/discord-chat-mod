@@ -246,14 +246,14 @@ public class ConfigDefaults {
             }
             """;
 
-    public static final String DISCORD_SCREENSHOT_MESSAGE_STYLE_DEFAULT =
+    public static final String DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT =
             """
             {
                 "content": "`<{player}>`"
             }
             """;
 
-    public static final String DISCORD_SCREENSHOT_MESSAGE_WEBHOOK_STYLE_DEFAULT =
+    public static final String DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT =
             """
             {
                 "content": ""
@@ -333,4 +333,8 @@ public class ConfigDefaults {
 
     public static final boolean EMOJIFUL_COMPATIBILITY_DEFAULT = false;
     public static final int MAX_CHAT_HISTORY_DEFAULT = 500;
+    public static final int MAX_IMAGE_CACHE_SIZE_DEFAULT = 500;
+    public static final int IMAGE_LOAD_TIMEOUT_DEFAULT = 15;
+    public static final boolean ENABLE_ATTACH_IMAGE_BUTTON_DEFAULT = true;
+    public static final boolean ENABLE_CLIPBOARD_IMAGE_PASTE_DEFAULT = true;
 }
