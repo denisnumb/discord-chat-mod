@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod;
 
+import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 
@@ -27,7 +28,7 @@ public class MinecraftClientEvents {
 
         Component clickToSendComponent = Component.literal(" " + getTranslateClient(CLICK_TO_SEND_SCREENSHOT)).withStyle(style ->
                 style.withColor(ChatFormatting.GREEN.getColor())
-                        .withClickEvent(new ClickEvent.RunCommand("send_screenshot " + screenshotFile.getAbsolutePath()))
+                        .withClickEvent(new ClickEvent.RunCommand(ImageStorage.SEND_SCREENSHOT_COMMAND + screenshotFile.getAbsolutePath()))
                         .withHoverEvent(new HoverEvent.ShowText(Component.literal(getTranslateClient(CLICK_TO_SEND_SCREENSHOT_HINT))))
         );
 

@@ -1,4 +1,4 @@
-package com.denisnumb.discord_chat_mod.network.screenshot;
+package com.denisnumb.discord_chat_mod.network.image;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
@@ -10,20 +10,20 @@ import org.jetbrains.annotations.NotNull;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.MOD_ID;
 
 
-public record ScreenshotPartPacket(
+public record ImagePartPacket(
         long imageId,
         int partIndex,
         int totalParts,
         byte[] data
 ) implements CustomPacketPayload {
-    public static final Type<ScreenshotPartPacket> TYPE
-            = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "/network/screenshot_part_packet"));
+    public static final Type<ImagePartPacket> TYPE
+            = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "/network/image_part_packet"));
 
 
-    public static final StreamCodec<ByteBuf, ScreenshotPartPacket> STREAM_CODEC = new StreamCodec<>() {
-        public @NotNull ScreenshotPartPacket decode(@NotNull ByteBuf buffer) {
+    public static final StreamCodec<ByteBuf, ImagePartPacket> STREAM_CODEC = new StreamCodec<>() {
+        public @NotNull ImagePartPacket decode(@NotNull ByteBuf buffer) {
             FriendlyByteBuf buf = new FriendlyByteBuf(buffer);
-            return new ScreenshotPartPacket(
+            return new ImagePartPacket(
                     buf.readLong(),
                     buf.readInt(),
                     buf.readInt(),
@@ -31,7 +31,7 @@ public record ScreenshotPartPacket(
             );
         }
 
-        public void encode(@NotNull ByteBuf buffer, ScreenshotPartPacket packet) {
+        public void encode(@NotNull ByteBuf buffer, ImagePartPacket packet) {
             FriendlyByteBuf buf = new FriendlyByteBuf(buffer);
             buf.writeLong(packet.imageId);
             buf.writeInt(packet.partIndex);
