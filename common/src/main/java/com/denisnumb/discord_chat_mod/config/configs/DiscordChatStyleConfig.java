@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
+import com.denisnumb.discord_chat_mod.chat_style.Parameters;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -31,8 +32,8 @@ public class DiscordChatStyleConfig {
     public static String discordMeCommandWebhookStyle;
     public static String discordTellrawCommandStyle;
     public static String discordCommandLogStyle;
-    public static String discordScreenshotMessageStyle;
-    public static String discordScreenshotMessageWebhookStyle;
+    public static String discordImageMessageStyle;
+    public static String discordImageMessageWebhookStyle;
     public static String discordServerStartedMessageStyle;
     public static String discordLocalServerStartedMessageStyle;
     public static String discordServerClosedMessageStyle;
@@ -125,15 +126,15 @@ public class DiscordChatStyleConfig {
         discordChatStyle.setComment("discordCommandLogStyle", DISCORD_COMMAND_LOG_STYLE_COMMENT);
         discordCommandLogStyle = validateJsonValue(discordCommandLogStyle, DISCORD_COMMAND_LOG_STYLE_DEFAULT);
 
-        discordScreenshotMessageStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageStyle", DISCORD_SCREENSHOT_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordScreenshotMessageStyle", discordScreenshotMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordScreenshotMessageStyle", DISCORD_SCREENSHOT_MESSAGE_STYLE_COMMENT);
-        discordScreenshotMessageStyle = validateJsonValue(discordScreenshotMessageStyle, DISCORD_SCREENSHOT_MESSAGE_STYLE_DEFAULT);
+        discordImageMessageStyle = existedDiscordChatStyle.getOrElse("discordImageMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT);
+        discordChatStyle.set("discordImageMessageStyle", discordImageMessageStyle.replace("\r", ""));
+        discordChatStyle.setComment("discordImageMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_COMMENT);
+        discordImageMessageStyle = validateJsonValue(discordImageMessageStyle, DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT);
 
-        discordScreenshotMessageWebhookStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageWebhookStyle", DISCORD_SCREENSHOT_MESSAGE_WEBHOOK_STYLE_DEFAULT);
-        discordChatStyle.set("discordScreenshotMessageWebhookStyle", discordScreenshotMessageWebhookStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordScreenshotMessageWebhookStyle", DISCORD_SCREENSHOT_MESSAGE_WEBHOOK_STYLE_COMMENT);
-        discordScreenshotMessageWebhookStyle = validateJsonValue(discordScreenshotMessageWebhookStyle, DISCORD_SCREENSHOT_MESSAGE_WEBHOOK_STYLE_DEFAULT);
+        discordImageMessageWebhookStyle = existedDiscordChatStyle.getOrElse("discordImageMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
+        discordChatStyle.set("discordImageMessageWebhookStyle", discordImageMessageWebhookStyle.replace("\r", ""));
+        discordChatStyle.setComment("discordImageMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_COMMENT);
+        discordImageMessageWebhookStyle = validateJsonValue(discordImageMessageWebhookStyle, DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
 
         discordServerStartedMessageStyle = existedDiscordChatStyle.getOrElse("discordServerStartedMessageStyle", DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT);
         discordChatStyle.set("discordServerStartedMessageStyle", discordServerStartedMessageStyle.replace("\r", ""));
@@ -177,6 +178,8 @@ public class DiscordChatStyleConfig {
         discordChatStyle.set("discordGuildForwardedMessageUserNameStyle", discordGuildForwardedMessageUserNameStyle);
         discordChatStyle.setComment("discordGuildForwardedMessageUserNameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_COMMENT);
 
+        migrateScreenshotMessageStyle(existedDiscordChatStyle, discordChatStyle);
+
         return discordChatStyle;
     }
 
@@ -196,6 +199,28 @@ public class DiscordChatStyleConfig {
             LOGGER.warn(jsonValue.replace("\r", ""));
             LOGGER.warn("Default style will be used");
             return defaultValue;
+        }
+    }
+
+    /**
+     * Migration method for configs generated with version 2.7.0 or less
+     * @since 2.8.0
+     */
+    private static void migrateScreenshotMessageStyle(CommentedConfig existedDiscordChatStyle, CommentedConfig newDiscordChatStyle){
+        if (existedDiscordChatStyle.contains("discordScreenshotMessageStyle")){
+            String existedOldStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT)
+                    .replace("{screenshot_url}", Parameters.IMAGE_URL);
+            newDiscordChatStyle.set("discordImageMessageStyle", existedOldStyle.replace("\r", ""));
+            discordImageMessageStyle = validateJsonValue(existedOldStyle, DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT);
+            LOGGER.info("[discordChatStyle] Migrating \"discordScreenshotMessageStyle\" → \"discordImageMessageStyle\"");
+        }
+
+        if (existedDiscordChatStyle.contains("discordScreenshotMessageWebhookStyle")){
+            String existedOldStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT)
+                    .replace("{screenshot_url}", Parameters.IMAGE_URL);
+            newDiscordChatStyle.set("discordImageMessageWebhookStyle", existedOldStyle.replace("\r", ""));
+            discordImageMessageWebhookStyle = validateJsonValue(existedOldStyle, DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
+            LOGGER.info("[discordChatStyle] Migrating \"discordScreenshotMessageWebhookStyle\" → \"discordImageMessageWebhookStyle\"");
         }
     }
 }

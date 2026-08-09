@@ -4,8 +4,8 @@ import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisPartPacket;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
-import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
-import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
+import com.denisnumb.discord_chat_mod.network.image.ImagePartPacket;
+import com.denisnumb.discord_chat_mod.network.image.ImageTransceiver;
 import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersPartPacket;
 import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersTransceiver;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,11 +36,11 @@ public class PacketHandler {
         DiscordMentionsTransceiver.sendDiscordMemberDataToPlayer(player);
     }
 
-    public static void handleScreenshotPartPacketServerSide(final ScreenshotPartPacket data, ServerPlayer player){
-        ScreenshotTransceiver.receivePartServerSide(data, player);
+    public static void handleImagePartPacketServerSide(final ImagePartPacket data, ServerPlayer player){
+        ImageTransceiver.receivePartServerSide(data, player);
     }
 
-    public static void handleScreenshotPartPacketClientSide(final ScreenshotPartPacket data){
-        ScreenshotTransceiver.receivePartClientSide(data);
+    public static void handleImagePartPacketClientSide(final ImagePartPacket data){
+        ImageTransceiver.receivePartClientSide(data);
     }
 }

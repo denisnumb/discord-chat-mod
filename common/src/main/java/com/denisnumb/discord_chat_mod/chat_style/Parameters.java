@@ -39,7 +39,7 @@ public class Parameters {
     public static final String PLAYER_LIST = "{player_list}";
     public static final String PLAYER_COUNT = "{player_count}";
     public static final String MAX_PLAYERS = "{max_players}";
-    public static final String SCREENSHOT_URL = "{screenshot_url}";
+    public static final String IMAGE_URL = "{image_url}";
     public static final String TIMESTAMP = "{timestamp}";
     public static final String DATETIME = "{datetime}";
     public static final String GUILD = "{guild}";
