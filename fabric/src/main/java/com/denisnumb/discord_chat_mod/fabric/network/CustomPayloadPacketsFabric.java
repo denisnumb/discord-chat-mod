@@ -78,15 +78,15 @@ public class CustomPayloadPacketsFabric {
         }
     }
 
-    public static class ScreenshotPartPacketServerFabric extends ScreenshotPartPacketServer implements FabricPacket {
-        public static final PacketType<ScreenshotPartPacketServerFabric> TYPE =
-                PacketType.create(new ResourceLocation(DiscordChatMod.MOD_ID, "network/screenshot_part_packet_server"), ScreenshotPartPacketServerFabric::new);
+    public static class ImagePartPacketServerFabric extends ImagePartPacketServer implements FabricPacket {
+        public static final PacketType<ImagePartPacketServerFabric> TYPE =
+                PacketType.create(new ResourceLocation(DiscordChatMod.MOD_ID, "network/screenshot_part_packet_server"), ImagePartPacketServerFabric::new);
 
-        public ScreenshotPartPacketServerFabric(FriendlyByteBuf buf){
+        public ImagePartPacketServerFabric(FriendlyByteBuf buf){
             super(buf);
         }
 
-        public ScreenshotPartPacketServerFabric(long sendTime, int partIndex, int totalParts, byte[] data){
+        public ImagePartPacketServerFabric(long sendTime, int partIndex, int totalParts, byte[] data){
             super(sendTime, partIndex, totalParts, data);
         }
 
@@ -101,15 +101,15 @@ public class CustomPayloadPacketsFabric {
         }
     }
 
-    public static class ScreenshotPartPacketClientFabric extends ScreenshotPartPacketClient implements FabricPacket {
-        public static final PacketType<ScreenshotPartPacketClientFabric> TYPE =
-                PacketType.create(new ResourceLocation(DiscordChatMod.MOD_ID, "network/screenshot_part_packet_client"), ScreenshotPartPacketClientFabric::new);
+    public static class ImagePartPacketClientFabric extends ImagePartPacketClient implements FabricPacket {
+        public static final PacketType<ImagePartPacketClientFabric> TYPE =
+                PacketType.create(new ResourceLocation(DiscordChatMod.MOD_ID, "network/screenshot_part_packet_client"), ImagePartPacketClientFabric::new);
 
-        public ScreenshotPartPacketClientFabric(FriendlyByteBuf buf){
+        public ImagePartPacketClientFabric(FriendlyByteBuf buf){
             super(buf);
         }
 
-        public ScreenshotPartPacketClientFabric(long sendTime, int partIndex, int totalParts, byte[] data){
+        public ImagePartPacketClientFabric(long sendTime, int partIndex, int totalParts, byte[] data){
             super(sendTime, partIndex, totalParts, data);
         }
 

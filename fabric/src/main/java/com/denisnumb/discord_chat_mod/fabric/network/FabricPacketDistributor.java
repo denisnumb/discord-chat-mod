@@ -15,10 +15,10 @@ public class FabricPacketDistributor implements IPlatformPacketDistributor {
             return new RequestDiscordMentionsPacketFabric();
         if (packet instanceof DiscordMentionsPartPacket p)
             return new DiscordMentionsPartPacketFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
-        if (packet instanceof ScreenshotPartPacketClient p)
-            return new ScreenshotPartPacketClientFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
-        if (packet instanceof ScreenshotPartPacketServer p)
-            return new ScreenshotPartPacketServerFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
+        if (packet instanceof ImagePartPacketClient p)
+            return new ImagePartPacketClientFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
+        if (packet instanceof ImagePartPacketServer p)
+            return new ImagePartPacketServerFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
         if (packet instanceof DiscordEmojisPartPacket p)
             return new DiscordEmojisPartPacketFabric(p.sendTime, p.partIndex, p.totalParts, p.data);
         if (packet instanceof RequestDiscordEmojisPacket)

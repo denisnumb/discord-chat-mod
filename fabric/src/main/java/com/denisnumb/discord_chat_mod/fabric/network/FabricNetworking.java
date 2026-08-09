@@ -39,12 +39,12 @@ public class FabricNetworking {
         );
 
         ServerPlayNetworking.registerGlobalReceiver(
-                ScreenshotPartPacketServerFabric.TYPE,
+                ImagePartPacketServerFabric.TYPE,
                 (p, player, sender) -> {
                     MinecraftServer server = player.getServer();
                     if (server != null)
-                        server.execute(() -> PacketHandler.handleScreenshotPartPacketServerSide(
-                                new ScreenshotPartPacketServer(p.sendTime, p.partIndex, p.totalParts, p.data), player)
+                        server.execute(() -> PacketHandler.handleImagePartPacketServerSide(
+                                new ImagePartPacketServer(p.sendTime, p.partIndex, p.totalParts, p.data), player)
                         );
                 }
         );
@@ -53,10 +53,10 @@ public class FabricNetworking {
 
     public static void initClient(){
         ClientPlayNetworking.registerGlobalReceiver(
-                ScreenshotPartPacketClientFabric.TYPE,
+                ImagePartPacketClientFabric.TYPE,
                 (p, player, sender) -> {
-                    Minecraft.getInstance().execute(() -> PacketHandler.handleScreenshotPartPacketClientSide(
-                            new ScreenshotPartPacketClient(p.sendTime, p.partIndex, p.totalParts, p.data))
+                    Minecraft.getInstance().execute(() -> PacketHandler.handleImagePartPacketClientSide(
+                            new ImagePartPacketClient(p.sendTime, p.partIndex, p.totalParts, p.data))
                     );
                 }
         );

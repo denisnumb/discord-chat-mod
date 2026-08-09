@@ -59,7 +59,7 @@ public class DiscordMessageUtils {
             DiscordMessageComponents messageComponents,
             ImageData imageData
     ) {
-        Optional<String> optionalScreenshotUrl = Optional.empty();
+        Optional<String> optionalImageUrl = Optional.empty();
 
         for (DiscordGuildContext guildContext : guildContexts){
             GuildMessageChannel channel = guildContext.getChannel(channelCategory);
@@ -67,19 +67,19 @@ public class DiscordMessageUtils {
             if (isChannelCategoryDisabled(channel))
                 continue;
 
-            Optional<String> optionalNewUrl = sendScreenshotFromPlayerToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData);
-            if (optionalScreenshotUrl.isEmpty())
-                optionalScreenshotUrl = optionalNewUrl;
+            Optional<String> optionalNewUrl = sendImageFromPlayerToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData);
+            if (optionalImageUrl.isEmpty())
+                optionalImageUrl = optionalNewUrl;
 
             duplicateMessageToDefaultChannel(guildContext, channelCategory,
-                    () -> sendScreenshotFromPlayerToChannel(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData)
+                    () -> sendImageFromPlayerToChannel(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData)
             );
         }
 
-        return optionalScreenshotUrl;
+        return optionalImageUrl;
     }
 
-    private static Optional<String> sendScreenshotFromPlayerToChannel(
+    private static Optional<String> sendImageFromPlayerToChannel(
             DiscordGuildContext guildContext,
             GuildMessageChannel channel,
             Player player,

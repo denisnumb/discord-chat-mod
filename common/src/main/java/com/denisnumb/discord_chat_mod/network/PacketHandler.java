@@ -1,8 +1,8 @@
 package com.denisnumb.discord_chat_mod.network;
 
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
+import com.denisnumb.discord_chat_mod.network.image.ImageTransceiver;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
-import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotTransceiver;
 import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersTransceiver;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -33,11 +33,11 @@ public class PacketHandler {
         DiscordMentionsTransceiver.sendDiscordMemberDataToPlayer(player);
     }
 
-    public static void handleScreenshotPartPacketServerSide(final ScreenshotPartPacketServer data, ServerPlayer player){
-        ScreenshotTransceiver.receivePartServerSide(data, player);
+    public static void handleImagePartPacketServerSide(final ImagePartPacketServer data, ServerPlayer player){
+        ImageTransceiver.receivePartServerSide(data, player);
     }
 
-    public static void handleScreenshotPartPacketClientSide(final ScreenshotPartPacketClient data){
-        ScreenshotTransceiver.receivePartClientSide(data);
+    public static void handleImagePartPacketClientSide(final ImagePartPacketClient data){
+        ImageTransceiver.receivePartClientSide(data);
     }
 }

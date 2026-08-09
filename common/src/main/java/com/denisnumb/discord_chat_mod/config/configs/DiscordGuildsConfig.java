@@ -176,6 +176,7 @@ public class DiscordGuildsConfig {
 
         // Migrate from old config versions
         migrateSlashCommandsConfig(guildConfig, guildId);
+        migrateScreenshotChannelId(guildConfig, guildId);
     }
 
     private static <T> void createFieldIfNotExists(CommentedConfig config, String guildId, String key, T defaultValue, String comment) {
@@ -237,6 +238,7 @@ public class DiscordGuildsConfig {
 
     /**
      * Migration method for configs generated with version 2.7.0 or less
+     * @since 2.8.0
      */
     private static void migrateSlashCommandsConfig(CommentedConfig guildConfig, String guildId){
         CommentedConfig slashCommands = guildConfig.getOrElse("slashCommands", CommentedConfig.inMemory());
@@ -263,5 +265,20 @@ public class DiscordGuildsConfig {
         }
 
         guildConfig.remove("slashCommands");
+    }
+
+    /**
+     * Migration method for configs generated with version 2.7.0 or less
+     * @since 2.8.0
+     */
+    private static void migrateScreenshotChannelId(CommentedConfig guildConfig, String guildId){
+        CommentedConfig channelOverrides = guildConfig.getOrElse("channelOverrides", CommentedConfig.inMemory());
+
+        if (channelOverrides.contains("screenshotsChannelId")){
+            String oldValue = channelOverrides.get("screenshotsChannelId");
+            channelOverrides.set(ChannelCategory.IMAGES.getConfigName(), oldValue);
+            channelOverrides.remove("screenshotsChannelId");
+            LOGGER.info("[guildId: {}] Migrating \"channelOverrides.screenshotsChannelId\" → \"channelOverrides.imagesChannelId\"", guildId);
+        }
     }
 }

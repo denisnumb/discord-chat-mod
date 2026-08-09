@@ -23,22 +23,22 @@ public class CustomPayloadPackets {
         }
     }
 
-    public static class ScreenshotPartPacketServer extends BasePartPacket {
-        public ScreenshotPartPacketServer(FriendlyByteBuf buffer) {
+    public static class ImagePartPacketServer extends BasePartPacket {
+        public ImagePartPacketServer(FriendlyByteBuf buffer) {
             super(buffer);
         }
 
-        public ScreenshotPartPacketServer(long sendTime, int partIndex, int totalParts, byte[] data){
+        public ImagePartPacketServer(long sendTime, int partIndex, int totalParts, byte[] data){
             super(sendTime, partIndex, totalParts, data);
         }
     }
 
-    public static class ScreenshotPartPacketClient extends BasePartPacket {
-        public ScreenshotPartPacketClient(FriendlyByteBuf buffer) {
+    public static class ImagePartPacketClient extends BasePartPacket {
+        public ImagePartPacketClient(FriendlyByteBuf buffer) {
             super(buffer);
         }
 
-        public ScreenshotPartPacketClient(long sendTime, int partIndex, int totalParts, byte[] data){
+        public ImagePartPacketClient(long sendTime, int partIndex, int totalParts, byte[] data){
             super(sendTime, partIndex, totalParts, data);
         }
     }

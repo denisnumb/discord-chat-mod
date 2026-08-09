@@ -16,6 +16,9 @@
   ],
   "client": [
     "ChatComponentMixin",
+    "ChatComponentAccessor",
+    "ChatScreenMixin",
+    "MinecraftMixin",
     "CommandSuggestionsMixin",
     "GuiGraphicsMixin",
     "IntegratedServerMixin",

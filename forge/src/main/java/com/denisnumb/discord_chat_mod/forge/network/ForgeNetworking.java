@@ -40,22 +40,22 @@ public class ForgeNetworking {
                             -> PacketHandler.handleDiscordMentionsPacket(data))
                     .add();
 
-            CHANNEL.messageBuilder(ScreenshotPartPacketServer.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                    .encoder(ScreenshotPartPacketServer::encode)
-                    .decoder(ScreenshotPartPacketServer::new)
+            CHANNEL.messageBuilder(ImagePartPacketServer.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                    .encoder(ImagePartPacketServer::encode)
+                    .decoder(ImagePartPacketServer::new)
                     .consumerMainThread((data, context) -> {
                         ServerPlayer player = context.get().getSender();
                         if (player == null)
                             return;
-                        PacketHandler.handleScreenshotPartPacketServerSide(data, player);
+                        PacketHandler.handleImagePartPacketServerSide(data, player);
                     })
                     .add();
 
-            CHANNEL.messageBuilder(ScreenshotPartPacketClient.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                    .encoder(ScreenshotPartPacketClient::encode)
-                    .decoder(ScreenshotPartPacketClient::new)
+            CHANNEL.messageBuilder(ImagePartPacketClient.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                    .encoder(ImagePartPacketClient::encode)
+                    .decoder(ImagePartPacketClient::new)
                     .consumerMainThread((data, context) ->
-                        PacketHandler.handleScreenshotPartPacketClientSide(data))
+                        PacketHandler.handleImagePartPacketClientSide(data))
                     .add();
 
             CHANNEL.messageBuilder(DiscordEmojisPartPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)

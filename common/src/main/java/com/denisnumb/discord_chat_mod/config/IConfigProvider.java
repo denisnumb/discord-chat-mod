@@ -72,8 +72,8 @@ public interface IConfigProvider {
     String discordMeCommandWebhookStyle();
     String discordTellrawCommandStyle();
     String discordCommandLogStyle();
-    String discordScreenshotMessageStyle();
-    String discordScreenshotMessageWebhookStyle();
+    String discordImageMessageStyle();
+    String discordImageMessageWebhookStyle();
     String discordServerStartedMessageStyle();
     String discordLocalServerStartedMessageStyle();
     String discordServerClosedMessageStyle();
@@ -86,4 +86,8 @@ public interface IConfigProvider {
 
     boolean isEmojifulCompatibilityEnabled();
     int maxChatHistory();
+    int maxImageCacheSize();
+    int imageLoadTimeoutMs();
+    boolean isAttachImageButtonEnabled();
+    boolean isClipboardImagePasteEnabled();
 }

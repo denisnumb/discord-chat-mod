@@ -157,8 +157,8 @@ public class DiscordChatStyleProvider {
                 );
                 case CHAT -> parseDiscordConfigTemplate(config.discordPlayerMessageStyle(), parameterMap);
                 case CHAT_WEBHOOK -> parseDiscordConfigTemplate(config.discordPlayerMessageWebhookStyle(), parameterMap);
-                case SCREENSHOT -> parseDiscordConfigTemplate(config.discordScreenshotMessageStyle(), parameterMap);
-                case SCREENSHOT_WEBHOOK -> parseDiscordConfigTemplate(config.discordScreenshotMessageWebhookStyle(), parameterMap);
+                case IMAGE -> parseDiscordConfigTemplate(config.discordImageMessageStyle(), parameterMap);
+                case IMAGE_WEBHOOK -> parseDiscordConfigTemplate(config.discordImageMessageWebhookStyle(), parameterMap);
                 case LEFT -> parseDiscordConfigTemplate(
                         setConfigTemplateTranslatableParameters(config.discordPlayerLeftStyle(), PLAYER_LEFT),
                         parameterMap

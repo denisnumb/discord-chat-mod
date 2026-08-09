@@ -11,7 +11,7 @@ public enum ChannelCategory {
     SERVER_START_STOP("serverStartStopChannelId"),
     PLAYER_JOIN_LEAVE("playerJoinLeaveChannelId"),
     PLAYER_CHAT("playerChatMessagesChannelId"),
-    SCREENSHOTS("screenshotsChannelId"),
+    IMAGES("imagesChannelId"),
     TELLRAW_COMMAND("tellrawChannelId"),
     SAY_COMMAND("sayChannelId"),
     ME_COMMAND("meChannelId"),
@@ -35,7 +35,7 @@ public enum ChannelCategory {
             case SERVER_START_STOP -> SERVER_START_STOP_CHANNEL_ID_COMMENT;
             case PLAYER_JOIN_LEAVE -> PLAYER_JOIN_LEAVE_CHANNEL_ID_COMMENT;
             case PLAYER_CHAT -> PLAYER_CHAT_MESSAGES_CHANNEL_ID_COMMENT;
-            case SCREENSHOTS -> SCREENSHOTS_CHANNEL_ID_COMMENT;
+            case IMAGES -> IMAGES_CHANNEL_ID_COMMENT;
             case TELLRAW_COMMAND -> TELLRAW_CHANNEL_ID_COMMENT;
             case SAY_COMMAND -> SAY_CHANNEL_ID_COMMENT;
             case ME_COMMAND -> ME_CHANNEL_ID_COMMENT;

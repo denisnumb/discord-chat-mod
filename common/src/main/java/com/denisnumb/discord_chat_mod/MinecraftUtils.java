@@ -18,28 +18,30 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.scores.PlayerTeam;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Style TEAMMSG_SUGGEST_STYLE = Style.EMPTY
+            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.type.team.hover")))
+            .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/teammsg "));
 
     public record ProcessChatMessageResult(Component forMinecraft, String forDiscord) {
     }
@@ -89,6 +91,21 @@ public class MinecraftUtils {
         return FormattedCharSequence.composite(parts);
     }
 
+    public static boolean hasRunCommandClickEvent(FormattedCharSequence seq, String command) {
+        boolean[] found = {false};
+        seq.accept((index, style, codePoint) -> {
+            ClickEvent clickEvent = style.getClickEvent();
+            if (clickEvent != null
+                    && clickEvent.getAction() == ClickEvent.Action.RUN_COMMAND
+                    && clickEvent.getValue().equals(command)) {
+                found[0] = true;
+                return false;
+            }
+            return true;
+        });
+        return found[0];
+    }
+
     public static List<ServerPlayer> getPlayerListBySelector(String selector){
         try {
             CommandSourceStack fakeSource = server.createCommandSourceStack()
@@ -111,7 +128,7 @@ public class MinecraftUtils {
         } catch (Exception ignored) {}
     }
 
-    public static void sendSystemMessageToAllPlayers(Component message){
+    public static void sendSystemMessageToAllPlayers(Component message) {
         sendSystemMessageToPlayersBySelector(message, "@a");
     }
 
@@ -136,7 +153,102 @@ public class MinecraftUtils {
         } catch (Exception ignored) {}
     }
 
-    public static void showTitleBarMessage(Component message){
+    public static void sendTellMessageToTargetPlayersFromPlayer(
+            ServerPlayer player,
+            List<ServerPlayer> targetPlayers,
+            Component content,
+            boolean singleOutgoing
+    ){
+        if (targetPlayers.isEmpty())
+            return;
+
+        Component preparedContent = MinecraftEvents.handleChatMessage(
+                CustomChatTypeRegistry.MSG_COMMAND_INCOMING,
+                new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, null, player)
+        ).orElse(
+                applyParametersToTemplate(
+                        parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(
+                                ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT,
+                                COMMANDS_MESSAGE_DISPLAY_INCOMING
+                        )),
+                        mergeMaps(Map.of(SENDER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                )
+        );
+
+        for (ServerPlayer serverPlayer : targetPlayers) {
+            serverPlayer.sendSystemMessage(preparedContent);
+        }
+
+        MutableComponent outgoingDefaultTemplateMarkdown = parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(
+                ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT,
+                COMMANDS_MESSAGE_DISPLAY_OUTGOING
+        ));
+
+        if (singleOutgoing) {
+            Component receivers = targetPlayers.stream()
+                    .map(ServerPlayer::getDisplayName)
+                    .reduce((a, b) -> Component.literal("").append(a).append(", ").append(b))
+                    .orElse(Component.empty());
+
+            Component outgoingContent = MinecraftEvents.handleChatMessage(
+                    CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
+                    new MinecraftChatStyleProvider.ChatMessageComponents(receivers, content, null, player)
+            ).orElse(
+                    applyParametersToTemplate(outgoingDefaultTemplateMarkdown,
+                            mergeMaps(Map.of(RECEIVER, receivers, MESSAGE, content), buildPositionComponentParameters(player)))
+            );
+
+            player.sendSystemMessage(outgoingContent);
+        } else {
+            for (ServerPlayer serverPlayer : targetPlayers) {
+                Component outgoingContent = MinecraftEvents.handleChatMessage(
+                        CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
+                        new MinecraftChatStyleProvider.ChatMessageComponents(serverPlayer.getDisplayName(), content, null, player)
+                ).orElse(
+                        applyParametersToTemplate(outgoingDefaultTemplateMarkdown,
+                                mergeMaps(Map.of(RECEIVER, serverPlayer.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player)))
+                );
+
+                player.sendSystemMessage(outgoingContent);
+            }
+        }
+    }
+
+    public static void sendTeamMessageFromPlayer(ServerPlayer player, PlayerTeam team, Component content){
+        PlayerList playerList = server.getPlayerList();
+        if (playerList == null)
+            return;
+
+        Component teamDisplayName = team.getFormattedDisplayName().withStyle(TEAMMSG_SUGGEST_STYLE);
+        MinecraftChatStyleProvider.ChatMessageComponents chatMessageComponents
+                = new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, teamDisplayName, player);
+
+        Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING, chatMessageComponents).orElse(
+                applyParametersToTemplate(
+                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                        mergeMaps(Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                )
+        );
+
+        for (String playerName : team.getPlayers()){
+            ServerPlayer serverPlayer = playerList.getPlayerByName(playerName);
+            if (serverPlayer == null || player.equals(serverPlayer))
+                continue;
+
+            serverPlayer.sendSystemMessage(preparedContent);
+        }
+
+        Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING, chatMessageComponents).orElse(
+                applyParametersToTemplate(
+                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT),
+                        mergeMaps(Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                )
+        );
+
+        player.sendSystemMessage(outgoingContent);
+    }
+
+    public static void showTitleBarMessage(Component message) {
         Minecraft.getInstance().gui.setOverlayMessage(message, false);
     }
 
@@ -152,13 +264,13 @@ public class MinecraftUtils {
             sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.YELLOW.getColor()), ConfigProvider.getConfig().discordErrorsChatPlayerSelector());
     }
 
-    public static int getServerPlayerCount(@Nullable MinecraftServer server){
+    public static int getServerPlayerCount(@Nullable MinecraftServer server) {
         if (server != null && server.getPlayerList() != null)
             return server.getPlayerCount();
         return 0;
     }
 
-    public static int getServerMaxPlayers(@Nullable MinecraftServer server){
+    public static int getServerMaxPlayers(@Nullable MinecraftServer server) {
         if (server != null && server.getPlayerList() != null)
             return server.getMaxPlayers();
         return 20;
