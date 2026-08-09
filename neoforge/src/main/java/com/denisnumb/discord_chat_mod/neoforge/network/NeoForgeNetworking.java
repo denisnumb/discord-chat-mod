@@ -6,7 +6,7 @@ import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisPartPacket;
 import com.denisnumb.discord_chat_mod.network.emoji.RequestDiscordEmojisPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsPartPacket;
 import com.denisnumb.discord_chat_mod.network.mentions.RequestDiscordMentionsPacket;
-import com.denisnumb.discord_chat_mod.network.screenshot.ScreenshotPartPacket;
+import com.denisnumb.discord_chat_mod.network.image.ImagePartPacket;
 import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersPartPacket;
 import com.denisnumb.discord_chat_mod.network.sticker.RequestDiscordStickersPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,14 +41,14 @@ public class NeoForgeNetworking {
         );
 
         registrar.playBidirectional(
-                ScreenshotPartPacket.TYPE,
-                ScreenshotPartPacket.STREAM_CODEC,
+                ImagePartPacket.TYPE,
+                ImagePartPacket.STREAM_CODEC,
                 new MainThreadPayloadHandler<>((data, context) -> {
                     if (context.player() instanceof ServerPlayer player)
-                        PacketHandler.handleScreenshotPartPacketServerSide(data, player);
+                        PacketHandler.handleImagePartPacketServerSide(data, player);
                 }),
                 new MainThreadPayloadHandler<>((data, context) -> {
-                    PacketHandler.handleScreenshotPartPacketClientSide(data);
+                    PacketHandler.handleImagePartPacketClientSide(data);
                 })
         );
 

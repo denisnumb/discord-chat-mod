@@ -76,8 +76,10 @@ public class MarkdownToComponentConverter{
                 if (token.isUrl()){
                     String hoverValue = token.obfuscated ? String.format("%s (%s)", finalTextPart, token.url) : token.url;
                     style = style.withColor(CHAT_LINK_COLOR)
-                            .withClickEvent(new ClickEvent.OpenUrl(URI.create(token.url)))
                             .withHoverEvent(new HoverEvent.ShowText(Component.literal(hoverValue)));
+                    try{
+                        style = style.withClickEvent(new ClickEvent.OpenUrl(URI.create(token.url)));
+                    } catch (IllegalArgumentException ignored) {}
                 }
 
                 return style;

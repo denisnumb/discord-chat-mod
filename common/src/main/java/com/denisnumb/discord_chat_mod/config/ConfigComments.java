@@ -280,9 +280,9 @@ public class ConfigComments {
             = " Overrides the default channel for messages from players in Minecraft chat. If empty, uses defaultChannelId." +
             "\n Specify \"-1\" to disable sending messages from Minecraft players chat to Discord";
 
-    public static final String SCREENSHOTS_CHANNEL_ID_COMMENT
-            = " Overrides the default channel for screenshots sent from Minecraft. If empty, uses defaultChannelId." +
-            "\n Specify \"-1\" to disable sending screenshots from Minecraft to Discord";
+    public static final String IMAGES_CHANNEL_ID_COMMENT
+            = " Overrides the default channel for images sent from Minecraft. If empty, uses defaultChannelId." +
+            "\n Specify \"-1\" to disable sending images from Minecraft to Discord";
 
     public static final String TELLRAW_CHANNEL_ID_COMMENT
             = " Overrides the default channel for messages sent using /tellraw @a command. If empty, uses defaultChannelId." +
@@ -574,18 +574,18 @@ public class ConfigComments {
              Parameters: {player}, {command}\
             """;
 
-    public static final String DISCORD_SCREENSHOT_MESSAGE_STYLE_COMMENT
+    public static final String DISCORD_IMAGE_MESSAGE_STYLE_COMMENT
             = """
-             Screenshot from player\
+             Image from player\
             
-             Parameters: {player}, {screenshot_url}\
+             Parameters: {player}, {image_url}\
             """;
 
-    public static final String DISCORD_SCREENSHOT_MESSAGE_WEBHOOK_STYLE_COMMENT
+    public static final String DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_COMMENT
             = """
-             Screenshot from player (if webhook mode is enabled)\
+             Image from player (if webhook mode is enabled)\
             
-             Parameters: {player}, {screenshot_url}\
+             Parameters: {player}, {image_url}\
             """;
 
     public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT
@@ -668,4 +668,22 @@ public class ConfigComments {
                     
                      By default, this value is 100 in the vanilla game.\
                     """;
+
+    public static final String MAX_IMAGE_CACHE_SIZE_COMMENT = """
+                     Maximum number of images in the cache.\
+
+                     The image cache stores images sent by players, custom discord emojis and stickers.\
+
+                     If the set limit is exceeded, the least frequently used images will be removed from the cache.\
+                    """;
+
+    public static final String IMAGE_LOAD_TIMEOUT_COMMENT = """
+                     Maximum time in seconds for establishing a connection and reading data when loading an image via a link.\
+                    """;
+
+    public static final String ENABLE_ATTACH_IMAGE_BUTTON_COMMENT
+            = " When set to \"true\" it adds a button to the right corner of the chat for selecting and sending an image from your computer.";
+
+    public static final String ENABLE_CLIPBOARD_IMAGE_PASTE_COMMENT
+            = " When set to \"true\" it allows pasting images from the clipboard into the chat by pressing Ctrl+V.";
 }
