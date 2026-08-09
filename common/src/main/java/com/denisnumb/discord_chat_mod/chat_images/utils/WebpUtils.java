@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.chat_images.utils;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -11,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 
 public class WebpUtils {
     public record FrameMetadata(int xOffset, int yOffset, int width, int height) { }
@@ -51,13 +50,11 @@ public class WebpUtils {
         return frames;
     }
 
-    public static boolean isAnimatedWebpUrl(String url, String mimeType) {
+    public static boolean isAnimatedWebp(byte[] bytes, String mimeType) {
         if (!mimeType.equalsIgnoreCase("image/webp"))
             return false;
 
-        try (InputStream input = getInputStreamFromUrl(url);
-             ImageInputStream imageInputStream = ImageIO.createImageInputStream(input)) {
-
+        try (ImageInputStream imageInputStream = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("webp");
             if (!readers.hasNext())
                 throw new RuntimeException("WebP ImageReader not found!");
@@ -66,7 +63,6 @@ public class WebpUtils {
             reader.setInput(imageInputStream);
 
             boolean animated = reader.getNumImages(true) > 1;
-
             reader.dispose();
             return animated;
         } catch (Exception e){

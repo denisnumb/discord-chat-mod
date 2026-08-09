@@ -2,7 +2,6 @@ package com.denisnumb.discord_chat_mod.config;
 
 import com.denisnumb.discord_chat_mod.config.configs.*;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig.DiscordGuildConfig;
-import net.fabricmc.loader.impl.util.log.Log;
 
 import java.util.List;
 import java.util.Set;
@@ -309,13 +308,13 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
-    public String discordScreenshotMessageStyle() {
-        return DiscordChatStyleConfig.discordScreenshotMessageStyle;
+    public String discordImageMessageStyle() {
+        return DiscordChatStyleConfig.discordImageMessageStyle;
     }
 
     @Override
-    public String discordScreenshotMessageWebhookStyle() {
-        return DiscordChatStyleConfig.discordScreenshotMessageWebhookStyle;
+    public String discordImageMessageWebhookStyle() {
+        return DiscordChatStyleConfig.discordImageMessageWebhookStyle;
     }
 
     @Override
@@ -371,5 +370,25 @@ public class ConfigProviderImpl implements IConfigProvider {
     @Override
     public int maxChatHistory() {
         return ClientConfig.maxChatHistory;
+    }
+
+    @Override
+    public int maxImageCacheSize() {
+        return ClientConfig.maxImageCacheSize;
+    }
+
+    @Override
+    public int imageLoadTimeoutMs() {
+        return ClientConfig.imageLoadTimeoutMs;
+    }
+
+    @Override
+    public boolean isAttachImageButtonEnabled() {
+        return ClientConfig.enableAttachImageButton;
+    }
+
+    @Override
+    public boolean isClipboardImagePasteEnabled() {
+        return ClientConfig.enableClipboardImagePaste;
     }
 }

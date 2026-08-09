@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat_images.utils;
 
 import com.denisnumb.discord_chat_mod.chat_images.model.ImageSize;
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.mojang.blaze3d.platform.NativeImage;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,8 +17,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.MAX_HEIGHT;
-import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.MAX_WIDTH;
+import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.*;
 
 public class ImageUtils {
     public static final String SPOILER_PREFIX = "/SPOILER_";
@@ -39,8 +39,38 @@ public class ImageUtils {
         return mimeType.matches("(?i)^image/(png|jpeg|jpg|gif|bmp|webp)$");
     }
 
-    public static boolean isGifUrl(String mimeType) {
+    public static boolean isGif(String mimeType) {
         return mimeType.equalsIgnoreCase("image/gif");
+    }
+
+    public static String mimeTypeToFileExt(String mimeType){
+        return mimeType.isEmpty()
+                ? ""
+                : "." + mimeType.split("/")[1];
+    }
+
+    public static String getMimeType(byte[] bytes) {
+        if (bytes.length < 4)
+            return "";
+        // PNG: 89 50 4E 47
+        if ((bytes[0] & 0xFF) == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+            return "image/png";
+        // JPEG: FF D8 FF
+        if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8 && (bytes[2] & 0xFF) == 0xFF)
+            return "image/jpeg";
+        // GIF: 47 49 46 38
+        if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x38)
+            return "image/gif";
+        // BMP: 42 4D
+        if (bytes[0] == 0x42 && bytes[1] == 0x4D)
+            return "image/bmp";
+        // WebP: RIFF????WEBP
+        if (bytes.length >= 12
+                && bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46
+                && bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50)
+            return "image/webp";
+
+        return "";
     }
 
     public static String getMimeType(String url) {
@@ -50,6 +80,9 @@ public class ImageUtils {
             HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
             connection.setRequestMethod("HEAD");
+            int loadTimeout = ConfigProvider.getConfig().imageLoadTimeoutMs();
+            connection.setConnectTimeout(loadTimeout);
+            connection.setReadTimeout(loadTimeout);
             connection.connect();
             String contentType = connection.getContentType();
             return contentType == null ? "" : contentType;
@@ -60,6 +93,9 @@ public class ImageUtils {
 
     public static InputStream getInputStreamFromUrl(String url) throws IOException, URISyntaxException {
         HttpURLConnection conn = (HttpURLConnection) new URI(url).toURL().openConnection();
+        int loadTimeout = ConfigProvider.getConfig().imageLoadTimeoutMs();
+        conn.setConnectTimeout(loadTimeout);
+        conn.setReadTimeout(loadTimeout);
         conn.setRequestProperty("User-Agent",
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                         + "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -90,6 +126,23 @@ public class ImageUtils {
         return null;
     }
 
+    public static byte[] convertToPngIfNeeded(byte[] imageBytes) throws IOException {
+        if (imageBytes.length >= 4
+                && imageBytes[0] == (byte) 0x89
+                && imageBytes[1] == (byte) 0x50
+                && imageBytes[2] == (byte) 0x4E
+                && imageBytes[3] == (byte) 0x47) {
+            return imageBytes;
+        }
+
+        BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(imageBytes));
+        if (bufferedImage == null)
+            throw new IOException("Unsupported image format");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage, "png", baos);
+        return baos.toByteArray();
+    }
 
     public static boolean isLocalResourceUrl(String imageUrl){
         return imageUrl.startsWith(LOCAL_RESOURCE_PREFIX);
