@@ -40,8 +40,8 @@ import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Style TEAMMSG_SUGGEST_STYLE = Style.EMPTY
-            .withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.type.team.hover")))
-            .withClickEvent(new ClickEvent.SuggestCommand("/teammsg "));
+            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.type.team.hover")))
+            .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/teammsg "));
 
     public record ProcessChatMessageResult(Component forMinecraft, String forDiscord) {
     }
