@@ -45,6 +45,9 @@ import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Style TEAMMSG_SUGGEST_STYLE = Style.EMPTY
+            .withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.type.team.hover")))
+            .withClickEvent(new ClickEvent.SuggestCommand("/teammsg "));
 
     public record ProcessChatMessageResult(Component forMinecraft, String forDiscord) {
     }
@@ -168,7 +171,10 @@ public class MinecraftUtils {
                 new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, null, player)
         ).orElse(
                 applyParametersToTemplate(
-                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                        parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(
+                                ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT,
+                                COMMANDS_MESSAGE_DISPLAY_INCOMING
+                        )),
                         mergeMaps(Map.of(SENDER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
                 )
         );
@@ -176,6 +182,11 @@ public class MinecraftUtils {
         for (ServerPlayer serverPlayer : targetPlayers) {
             serverPlayer.sendSystemMessage(preparedContent);
         }
+
+        MutableComponent outgoingDefaultTemplateMarkdown = parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(
+                ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT,
+                COMMANDS_MESSAGE_DISPLAY_OUTGOING
+        ));
 
         if (singleOutgoing) {
             Component receivers = targetPlayers.stream()
@@ -187,10 +198,8 @@ public class MinecraftUtils {
                     CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
                     new MinecraftChatStyleProvider.ChatMessageComponents(receivers, content, null, player)
             ).orElse(
-                    applyParametersToTemplate(
-                            parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
-                            mergeMaps(Map.of(RECEIVER, receivers, MESSAGE, content), buildPositionComponentParameters(player))
-                    )
+                    applyParametersToTemplate(outgoingDefaultTemplateMarkdown,
+                            mergeMaps(Map.of(RECEIVER, receivers, MESSAGE, content), buildPositionComponentParameters(player)))
             );
 
             player.sendSystemMessage(outgoingContent);
@@ -200,10 +209,8 @@ public class MinecraftUtils {
                         CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
                         new MinecraftChatStyleProvider.ChatMessageComponents(serverPlayer.getDisplayName(), content, null, player)
                 ).orElse(
-                        applyParametersToTemplate(
-                                parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
-                                mergeMaps(Map.of(RECEIVER, serverPlayer.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
-                        )
+                        applyParametersToTemplate(outgoingDefaultTemplateMarkdown,
+                                mergeMaps(Map.of(RECEIVER, serverPlayer.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player)))
                 );
 
                 player.sendSystemMessage(outgoingContent);
@@ -216,13 +223,14 @@ public class MinecraftUtils {
         if (playerList == null)
             return;
 
+        Component teamDisplayName = team.getFormattedDisplayName().withStyle(TEAMMSG_SUGGEST_STYLE);
         MinecraftChatStyleProvider.ChatMessageComponents chatMessageComponents
-                = new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, team.getDisplayName(), player);
+                = new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, teamDisplayName, player);
 
         Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING, chatMessageComponents).orElse(
                 applyParametersToTemplate(
                         parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT),
-                        mergeMaps(Map.of(TEAM, team.getDisplayName(), PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                        mergeMaps(Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
                 )
         );
 
@@ -237,7 +245,7 @@ public class MinecraftUtils {
         Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING, chatMessageComponents).orElse(
                 applyParametersToTemplate(
                         parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT),
-                        mergeMaps(Map.of(TEAM, team.getDisplayName(), PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                        mergeMaps(Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
                 )
         );
 
