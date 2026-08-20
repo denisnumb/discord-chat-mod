@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.PlayerTeam;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,7 +61,7 @@ public class ImageTransceiver {
         MinecraftUtils.showTitleBarMessage(Component.literal(getTranslateClient(SENDING_IMAGE)));
         networkPool.execute(() -> {
             try {
-                byte[] data = gson.toJson(payload).getBytes();
+                byte[] data = gson.toJson(payload).getBytes(StandardCharsets.UTF_8);
                 lastImageSendTime = currentTime;
 
                 BigPacketsTransceiver.send(data, (partIndex, totalParts, part) ->
@@ -91,7 +92,7 @@ public class ImageTransceiver {
     }
 
     private static void handleReceivedImageClient(byte[] rawPayload) {
-        ImagePartPacketPayload payload = gson.fromJson(new String(rawPayload), ImagePartPacketPayload.class);
+        ImagePartPacketPayload payload = gson.fromJson(new String(rawPayload, StandardCharsets.UTF_8), ImagePartPacketPayload.class);
         try {
             ImageStorage.registerImageFromBytes(payload.url(), payload.mimeType(), payload.imageData());
         } catch (Exception e) {
@@ -100,7 +101,7 @@ public class ImageTransceiver {
     }
 
     private static void handleReceivedImageServer(byte[] rawPayload, ServerPlayer fromPlayer) {
-        ImagePartPacketPayload payload = gson.fromJson(new String(rawPayload), ImagePartPacketPayload.class);
+        ImagePartPacketPayload payload = gson.fromJson(new String(rawPayload, StandardCharsets.UTF_8), ImagePartPacketPayload.class);
         SendTarget target = payload.sendTarget();
 
         if (target instanceof SendTarget.All){
