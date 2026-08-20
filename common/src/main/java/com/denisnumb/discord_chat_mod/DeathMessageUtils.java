@@ -17,6 +17,8 @@ import org.jetbrains.annotations.Nullable;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 
@@ -37,11 +39,25 @@ public class DeathMessageUtils {
             @Nullable Component item
     ) {
         public DeathMessageComponents {
-            deathCause = Component.literal(deathCause.getString()
+            deathCause = Component.literal(indexPlaceholders(deathCause.getString())
                     .replace("%1$s", DIED_ENTITY_REPLACEMENT_TAG)
                     .replace("%2$s", KILLER_ENTITY_REPLACEMENT_TAG)
                     .replace("%3$s", ITEM_REPLACEMENT_TAG)
             );
+        }
+
+        private static String indexPlaceholders(String template) {
+            Matcher matcher = Pattern.compile("%s").matcher(template);
+            StringBuilder result = new StringBuilder();
+
+            int index = 1;
+            while (matcher.find()) {
+                matcher.appendReplacement(result, Matcher.quoteReplacement("%" + index + "$s"));
+                index++;
+            }
+            matcher.appendTail(result);
+
+            return result.toString();
         }
     }
 
