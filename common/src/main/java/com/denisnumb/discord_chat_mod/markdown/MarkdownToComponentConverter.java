@@ -4,7 +4,6 @@ import com.denisnumb.discord_chat_mod.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import net.minecraft.network.chat.*;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -52,7 +51,7 @@ public class MarkdownToComponentConverter{
             if (mentionData.memberData != null){
                 component = component.withStyle(style -> style
                         .withInsertion(mentionData.prettyMention)
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(mentionData.memberData.discordName)))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(mentionData.memberData.discordName)))
                 );
             }
         }
@@ -67,7 +66,7 @@ public class MarkdownToComponentConverter{
                         .withObfuscated(token.obfuscated);
 
                 if (token.obfuscated)
-                    style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal(finalTextPart)));
+                    style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(finalTextPart)));
 
                 if (token.isColored())
                     style = style.withColor(token.color);
@@ -75,10 +74,8 @@ public class MarkdownToComponentConverter{
                 if (token.isUrl()){
                     String hoverValue = token.obfuscated ? String.format("%s (%s)", finalTextPart, token.url) : token.url;
                     style = style.withColor(CHAT_LINK_COLOR)
-                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(hoverValue)));
-                    try{
-                        style = style.withClickEvent(new ClickEvent.OpenUrl(URI.create(token.url)));
-                    } catch (IllegalArgumentException ignored) {}
+                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(hoverValue)))
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, token.url));
                 }
 
                 return style;

@@ -250,7 +250,7 @@ public class MinecraftUtils {
 
     public static MutableComponent buildGradientComponent(String text, int[] gradientColors) {
         if (gradientColors.length == 1){
-            return Component.literal(text).withColor(gradientColors[0]);
+            return Component.literal(text).withStyle(s -> s.withColor(gradientColors[0]));
         }
 
         MutableComponent result = Component.empty();
@@ -260,7 +260,7 @@ public class MinecraftUtils {
         }
 
         if (length == 1) {
-            return result.append(Component.literal(text).withColor(gradientColors[0]));
+            return result.append(Component.literal(text).withStyle(s -> s.withColor(gradientColors[0])));
         }
 
         int segments = gradientColors.length - 1;
@@ -274,7 +274,7 @@ public class MinecraftUtils {
             double t = (double) index / (length - 1);
 
             int color = ColorUtils.interpolateGradient(gradientColors, segments, t);
-            result.append(Component.literal(ch).withColor(color));
+            result.append(Component.literal(ch).withStyle(s -> s.withColor(color)));
 
             i += charCount;
             index++;

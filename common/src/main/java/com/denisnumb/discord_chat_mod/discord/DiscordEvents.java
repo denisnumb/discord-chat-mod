@@ -23,7 +23,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.net.URI;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -68,7 +67,7 @@ public class DiscordEvents extends ListenerAdapter {
 
     private static void retranslateGuildMessage(DiscordGuildContext guildContext, MessageReceivedEvent event) {
         List<MessageEmbed> embeds = event.getMessage().getEmbeds();
-        MessageEmbed embed = embeds.isEmpty() ? null : event.getMessage().getEmbeds().getFirst();
+        MessageEmbed embed = embeds.isEmpty() ? null : event.getMessage().getEmbeds().get(0);
 
         List<WebhookUtils.WebhookAttachment> attachments = new ArrayList<>();
 
@@ -79,7 +78,7 @@ public class DiscordEvents extends ListenerAdapter {
         }
 
         if (attachments.size() < 10 && !event.getMessage().getStickers().isEmpty()){
-            StickerItem sticker = event.getMessage().getStickers().getFirst();
+            StickerItem sticker = event.getMessage().getStickers().get(0);
             try {
                 attachments.add(new WebhookUtils.WebhookAttachment(
                         getInputStreamFromUrl(sticker.getIconUrl()).readAllBytes(),
@@ -169,8 +168,8 @@ public class DiscordEvents extends ListenerAdapter {
         String displayName = ChannelMembersProvider.getMemberDisplayName(member);
         MutableComponent root = Component.empty().withStyle(style -> style
                 .withInsertion("@" + displayName)
-                .withClickEvent(new ClickEvent.SuggestCommand("/mention " + displayName))
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.getUser().getName())))
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/mention " + displayName))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.getUser().getName())))
         );
 
         int[] colors = ColorUtils.parseRoleColors(member.getColors());
@@ -191,11 +190,13 @@ public class DiscordEvents extends ListenerAdapter {
                 : rawPreview;
 
         return Component.literal(String.format(getTranslate(REPLY), replyAuthor) + " ")
-                .withColor(0x7A7A7A)
                 .withStyle(style -> style
+                        .withColor(0x7A7A7A)
                         .withItalic(true)
-                        .withHoverEvent(new HoverEvent.ShowText(
-                                Component.literal(replyAuthor + ": " + preview)))
+                        .withHoverEvent(new HoverEvent(
+                                HoverEvent.Action.SHOW_TEXT,
+                                Component.literal(replyAuthor + ": " + preview))
+                        )
                 );
     }
 
@@ -244,11 +245,11 @@ public class DiscordEvents extends ListenerAdapter {
             boolean isLast = i == attachments.size() - 1;
             part.append(
                     Component.literal(file.getFileName() + (isLast ? "" : "\n"))
-                            .withColor(CHAT_LINK_COLOR)
                             .withStyle(style -> style
+                                    .withColor(CHAT_LINK_COLOR)
                                     .withItalic(true)
-                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(file.getUrl())))
-                                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(file.getUrl())))
+                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl()))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(file.getUrl())))
                             )
             );
         }
@@ -259,11 +260,11 @@ public class DiscordEvents extends ListenerAdapter {
         if (message.getStickers().isEmpty())
             return Optional.empty();
 
-        StickerItem sticker = message.getStickers().getFirst();
+        StickerItem sticker = message.getStickers().get(0);
         Component part = Component.literal(String.format(getTranslate(STICKER), sticker.getName()))
                 .withStyle(style -> style
                         .withItalic(true)
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(sticker.getIconUrl())))
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, sticker.getIconUrl()))
                 );
 
         return Optional.of(wrap(part, ctx));
