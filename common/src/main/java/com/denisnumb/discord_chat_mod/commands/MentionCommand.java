@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands;
 
+import com.denisnumb.discord_chat_mod.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
@@ -16,7 +17,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
@@ -51,7 +51,7 @@ public class MentionCommand {
                                     }
 
                                     Optional<DiscordUserData> optionalMemberData = memberData.stream()
-                                            .filter(data -> data.prettyMention.substring(1).equals(name))
+                                            .filter(data -> data.displayName.equals(name))
                                             .findFirst();
 
                                     if (optionalMemberData.isEmpty()) {
@@ -63,9 +63,9 @@ public class MentionCommand {
                                     if (context.getSource().getEntity() instanceof ServerPlayer player) {
                                         DiscordUserData member = optionalMemberData.get();
 
-                                        Component mentionComponent = Component.literal(String.format("@%s", name))
-                                                .withStyle(style -> style.withColor(TextColor.parseColor(member.color).getOrThrow())
-                                                        .withInsertion("@" + name)
+                                        Component mentionComponent = MinecraftUtils.buildGradientComponent(member.prettyMention, member.colors)
+                                                .withStyle(style -> style
+                                                        .withInsertion(member.prettyMention)
                                                         .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.discordName)))
                                                 );
 
