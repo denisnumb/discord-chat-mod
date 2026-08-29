@@ -1,8 +1,10 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
+import com.denisnumb.discord_chat_mod.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import net.minecraft.network.chat.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -43,17 +45,15 @@ public class MarkdownToComponentConverter{
         MutableComponent component = Component.literal(textPart);
 
         if (mentions.containsKey(textPart)){
-            String mentionString = textPart;
-            DiscordMentionData mentionData = mentions.get(mentionString);
+            DiscordMentionData mentionData = mentions.get(textPart);
             textPart = mentionData.prettyMention;
-            component = Component.literal(textPart).withStyle(style ->
-                    style.withColor(TextColor.parseColor(mentionData.color).getOrThrow())
-            );
+            component = MinecraftUtils.buildGradientComponent(textPart, mentionData.colors);
 
             if (mentionData.memberData != null){
                 component = component.withStyle(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(mentionData.memberData.discordName)))
-                        .withInsertion(mentionData.prettyMention));
+                        .withInsertion(mentionData.prettyMention)
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(mentionData.memberData.discordName)))
+                );
             }
         }
 
@@ -67,7 +67,7 @@ public class MarkdownToComponentConverter{
                         .withObfuscated(token.obfuscated);
 
                 if (token.obfuscated)
-                    style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(finalTextPart)));
+                    style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal(finalTextPart)));
 
                 if (token.isColored())
                     style = style.withColor(token.color);
@@ -75,8 +75,10 @@ public class MarkdownToComponentConverter{
                 if (token.isUrl()){
                     String hoverValue = token.obfuscated ? String.format("%s (%s)", finalTextPart, token.url) : token.url;
                     style = style.withColor(CHAT_LINK_COLOR)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, token.url))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(hoverValue)));
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(hoverValue)));
+                    try{
+                        style = style.withClickEvent(new ClickEvent.OpenUrl(URI.create(token.url)));
+                    } catch (IllegalArgumentException ignored) {}
                 }
 
                 return style;

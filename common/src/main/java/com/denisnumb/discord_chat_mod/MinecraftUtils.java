@@ -248,6 +248,41 @@ public class MinecraftUtils {
         player.sendSystemMessage(outgoingContent);
     }
 
+    public static MutableComponent buildGradientComponent(String text, int[] gradientColors) {
+        if (gradientColors.length == 1){
+            return Component.literal(text).withColor(gradientColors[0]);
+        }
+
+        MutableComponent result = Component.empty();
+        int length = text.codePointCount(0, text.length());
+        if (length == 0) {
+            return result;
+        }
+
+        if (length == 1) {
+            return result.append(Component.literal(text).withColor(gradientColors[0]));
+        }
+
+        int segments = gradientColors.length - 1;
+        int index = 0;
+
+        int i = 0;
+        while (i < text.length()) {
+            int codePoint = text.codePointAt(i);
+            int charCount = Character.charCount(codePoint);
+            String ch = text.substring(i, i + charCount);
+            double t = (double) index / (length - 1);
+
+            int color = ColorUtils.interpolateGradient(gradientColors, segments, t);
+            result.append(Component.literal(ch).withColor(color));
+
+            i += charCount;
+            index++;
+        }
+
+        return result;
+    }
+
     public static void showTitleBarMessage(Component message) {
         Minecraft.getInstance().gui.setOverlayMessage(message, false);
     }
