@@ -35,7 +35,7 @@ public class ChannelMembersProvider {
                         getMemberDisplayName(member),
                         member.getUser().getName(),
                         member.getAsMention(),
-                        member.getColor()
+                        member.getColors()
                 ))
                 .toList();
     }

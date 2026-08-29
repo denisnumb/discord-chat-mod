@@ -13,18 +13,17 @@ import com.denisnumb.discord_chat_mod.discord.utils.EmbedToComponentConverter;
 import com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
-import net.dv8tion.jda.api.entities.EmbedType;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.sticker.StickerItem;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.FileUpload;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 
-import java.awt.*;
+import java.net.URI;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +68,7 @@ public class DiscordEvents extends ListenerAdapter {
 
     private static void retranslateGuildMessage(DiscordGuildContext guildContext, MessageReceivedEvent event) {
         List<MessageEmbed> embeds = event.getMessage().getEmbeds();
-        MessageEmbed embed = embeds.isEmpty() ? null : event.getMessage().getEmbeds().get(0);
+        MessageEmbed embed = embeds.isEmpty() ? null : event.getMessage().getEmbeds().getFirst();
 
         List<WebhookUtils.WebhookAttachment> attachments = new ArrayList<>();
 
@@ -80,7 +79,7 @@ public class DiscordEvents extends ListenerAdapter {
         }
 
         if (attachments.size() < 10 && !event.getMessage().getStickers().isEmpty()){
-            StickerItem sticker = event.getMessage().getStickers().get(0);
+            StickerItem sticker = event.getMessage().getStickers().getFirst();
             try {
                 attachments.add(new WebhookUtils.WebhookAttachment(
                         getInputStreamFromUrl(sticker.getIconUrl()).readAllBytes(),
@@ -113,8 +112,8 @@ public class DiscordEvents extends ListenerAdapter {
                             new DiscordChatStyleProvider.DiscordMessageComponents(
                                     Optional.of(message),
                                     embed == null
-                                            ? Optional.empty()
-                                            : Optional.of(embed)
+                                        ? Optional.empty()
+                                        : Optional.of(embed)
                             )
                     ).ifPresent(mca -> {
                         for (WebhookUtils.WebhookAttachment attachment : attachments)
@@ -154,19 +153,8 @@ public class DiscordEvents extends ListenerAdapter {
     ) {}
 
     private static MessageContext buildMessageContext(Member member, Message message) {
-        Color roleColor = member.getColor() == null ? Color.WHITE : member.getColor();
         Component guild = Component.literal(message.getGuild().getName());
-
-        Component userName = Component.empty().append(
-                Component.literal(member.getEffectiveName())
-                        .withStyle(style -> style
-                                .withColor(TextColor.parseColor(ColorUtils.getHexColor(roleColor.getRGB())))
-                                .withInsertion("@" + ChannelMembersProvider.getMemberDisplayName(member))
-                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/mention " + ChannelMembersProvider.getMemberDisplayName(member)))
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.getUser().getName())))
-                        )
-        );
-
+        Component userName = buildUserNameComponent(member);
         Component replyPrefix = buildReplyPrefix(message.getReferencedMessage());
 
         return new MessageContext(
@@ -175,6 +163,18 @@ public class DiscordEvents extends ListenerAdapter {
                 replyPrefix,
                 ConfigProvider.getConfig().minecraftDiscordMessagesStyle()
         );
+    }
+
+    private static Component buildUserNameComponent(Member member) {
+        String displayName = ChannelMembersProvider.getMemberDisplayName(member);
+        MutableComponent root = Component.empty().withStyle(style -> style
+                .withInsertion("@" + displayName)
+                .withClickEvent(new ClickEvent.SuggestCommand("/mention " + displayName))
+                .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.getUser().getName())))
+        );
+
+        int[] colors = ColorUtils.parseRoleColors(member.getColors());
+        return root.append(MinecraftUtils.buildGradientComponent(member.getEffectiveName(), colors));
     }
 
     private static Component buildReplyPrefix(Message referencedMessage) {
@@ -191,11 +191,10 @@ public class DiscordEvents extends ListenerAdapter {
                 : rawPreview;
 
         return Component.literal(String.format(getTranslate(REPLY), replyAuthor) + " ")
+                .withColor(0x7A7A7A)
                 .withStyle(style -> style
-                        .withColor(0x7A7A7A)
                         .withItalic(true)
-                        .withHoverEvent(new HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
+                        .withHoverEvent(new HoverEvent.ShowText(
                                 Component.literal(replyAuthor + ": " + preview)))
                 );
     }
@@ -207,7 +206,7 @@ public class DiscordEvents extends ListenerAdapter {
         if (message.getContentRaw().isEmpty())
             return CompletableFuture.completedFuture(Optional.of(wrap(ctx.replyPrefix(), ctx)));
 
-        Map<String, DiscordMentionData> mentions = collectMentions(message);
+        Map<String, DiscordMentionData> mentions = DiscordMentionsUtils.collectMessageMentions(message);
         String rawContent = EmojiUtils.replaceDiscordEmojiMentionsToEmojiNames(message.getContentRaw());
 
         return retrieveMessageEmbedUrls(message)
@@ -245,11 +244,11 @@ public class DiscordEvents extends ListenerAdapter {
             boolean isLast = i == attachments.size() - 1;
             part.append(
                     Component.literal(file.getFileName() + (isLast ? "" : "\n"))
+                            .withColor(CHAT_LINK_COLOR)
                             .withStyle(style -> style
-                                    .withColor(CHAT_LINK_COLOR)
                                     .withItalic(true)
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl()))
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(file.getUrl())))
+                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(file.getUrl())))
+                                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(file.getUrl())))
                             )
             );
         }
@@ -260,11 +259,11 @@ public class DiscordEvents extends ListenerAdapter {
         if (message.getStickers().isEmpty())
             return Optional.empty();
 
-        StickerItem sticker = message.getStickers().get(0);
+        StickerItem sticker = message.getStickers().getFirst();
         Component part = Component.literal(String.format(getTranslate(STICKER), sticker.getName()))
                 .withStyle(style -> style
                         .withItalic(true)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, sticker.getIconUrl()))
+                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(sticker.getIconUrl())))
                 );
 
         return Optional.of(wrap(part, ctx));
@@ -292,24 +291,6 @@ public class DiscordEvents extends ListenerAdapter {
                 parseConfigTemplateMarkdown(ctx.configTemplate()),
                 Map.of(GUILD, ctx.guild(), MEMBER, ctx.userName(), MESSAGE, messageComponent)
         );
-    }
-
-    private static Map<String, DiscordMentionData> collectMentions(Message message) {
-        Map<String, DiscordMentionData> mentions = new HashMap<>();
-
-        message.getMentions()
-                .getMembers()
-                .forEach(u -> mentions.put(u.getAsMention(), new DiscordMentionData(u)));
-
-        message.getMentions()
-                .getRoles()
-                .forEach(r -> mentions.put(r.getAsMention(), new DiscordMentionData(r)));
-
-        message.getMentions()
-                .getChannels()
-                .forEach(c -> mentions.put(c.getAsMention(), new DiscordMentionData(c)));
-
-        return mentions;
     }
 
     private static boolean isTrackedChannel(String channelId) {
