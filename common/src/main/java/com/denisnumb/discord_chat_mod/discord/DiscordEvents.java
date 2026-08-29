@@ -23,7 +23,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.net.URI;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -169,8 +168,8 @@ public class DiscordEvents extends ListenerAdapter {
         String displayName = ChannelMembersProvider.getMemberDisplayName(member);
         MutableComponent root = Component.empty().withStyle(style -> style
                 .withInsertion("@" + displayName)
-                .withClickEvent(new ClickEvent.SuggestCommand("/mention " + displayName))
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.getUser().getName())))
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/mention " + displayName))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.getUser().getName())))
         );
 
         int[] colors = ColorUtils.parseRoleColors(member.getColors());
@@ -194,7 +193,7 @@ public class DiscordEvents extends ListenerAdapter {
                 .withColor(0x7A7A7A)
                 .withStyle(style -> style
                         .withItalic(true)
-                        .withHoverEvent(new HoverEvent.ShowText(
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                 Component.literal(replyAuthor + ": " + preview)))
                 );
     }
@@ -247,8 +246,8 @@ public class DiscordEvents extends ListenerAdapter {
                             .withColor(CHAT_LINK_COLOR)
                             .withStyle(style -> style
                                     .withItalic(true)
-                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(file.getUrl())))
-                                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(file.getUrl())))
+                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl()))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(file.getUrl())))
                             )
             );
         }
@@ -263,7 +262,7 @@ public class DiscordEvents extends ListenerAdapter {
         Component part = Component.literal(String.format(getTranslate(STICKER), sticker.getName()))
                 .withStyle(style -> style
                         .withItalic(true)
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(sticker.getIconUrl())))
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, sticker.getIconUrl()))
                 );
 
         return Optional.of(wrap(part, ctx));

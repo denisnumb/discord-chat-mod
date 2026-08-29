@@ -66,7 +66,7 @@ public class MentionCommand {
                                         Component mentionComponent = MinecraftUtils.buildGradientComponent(member.prettyMention, member.colors)
                                                 .withStyle(style -> style
                                                         .withInsertion(member.prettyMention)
-                                                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.discordName)))
+                                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(member.discordName)))
                                                 );
 
                                         sendMessageToAllPlayersFromPlayer(player, mentionComponent);
