@@ -1,27 +1,26 @@
 package com.denisnumb.discord_chat_mod.discord.model;
 
 import com.denisnumb.discord_chat_mod.ColorUtils;
-
-import java.awt.Color;
+import net.dv8tion.jda.api.entities.RoleColors;
 
 public class DiscordUserData {
     public String displayName;
     public String discordName;
     public String prettyMention;
     public String mentionString;
-    public String color;
+    public int[] colors;
 
     public DiscordUserData(
             String displayName,
             String discordName,
             String mentionString,
-            Color color
+            RoleColors colors
     ){
         this.displayName = displayName;
         this.discordName = discordName;
         this.prettyMention = "@" + displayName;
         this.mentionString = mentionString;
-        this.color = ColorUtils.getHexColor(color);
+        this.colors = ColorUtils.parseRoleColors(colors);
     }
 
     public String getPrettyMention() {

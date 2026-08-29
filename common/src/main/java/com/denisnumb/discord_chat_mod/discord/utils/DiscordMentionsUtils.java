@@ -1,10 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord.utils;
 
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 
 import java.util.HashMap;
@@ -17,6 +14,24 @@ public final class DiscordMentionsUtils {
     private static final Pattern MENTION_PATTERN = Pattern.compile("<(@!?|@&|#)(\\d+)>");
 
     private DiscordMentionsUtils() {}
+
+    public static Map<String, DiscordMentionData> collectMessageMentions(Message message) {
+        Map<String, DiscordMentionData> mentions = new HashMap<>();
+
+        message.getMentions()
+                .getMembers()
+                .forEach(u -> mentions.put(u.getAsMention(), new DiscordMentionData(u)));
+
+        message.getMentions()
+                .getRoles()
+                .forEach(r -> mentions.put(r.getAsMention(), new DiscordMentionData(r)));
+
+        message.getMentions()
+                .getChannels()
+                .forEach(c -> mentions.put(c.getAsMention(), new DiscordMentionData(c)));
+
+        return mentions;
+    }
 
     public static Map<String, DiscordMentionData> collectEmbedMentions(MessageEmbed embed, Guild guild) {
         Map<String, DiscordMentionData> mentions = new HashMap<>();
