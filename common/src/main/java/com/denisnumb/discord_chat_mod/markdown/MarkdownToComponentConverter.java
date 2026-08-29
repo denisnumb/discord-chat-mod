@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
+import com.denisnumb.discord_chat_mod.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import net.minecraft.network.chat.*;
 
@@ -44,17 +45,15 @@ public class MarkdownToComponentConverter{
         MutableComponent component = Component.literal(textPart);
 
         if (mentions.containsKey(textPart)){
-            String mentionString = textPart;
-            DiscordMentionData mentionData = mentions.get(mentionString);
+            DiscordMentionData mentionData = mentions.get(textPart);
             textPart = mentionData.prettyMention;
-            component = Component.literal(textPart).withStyle(style ->
-                    style.withColor(TextColor.parseColor(mentionData.color).getOrThrow())
-            );
+            component = MinecraftUtils.buildGradientComponent(textPart, mentionData.colors);
 
             if (mentionData.memberData != null){
                 component = component.withStyle(style -> style
+                        .withInsertion(mentionData.prettyMention)
                         .withHoverEvent(new HoverEvent.ShowText(Component.literal(mentionData.memberData.discordName)))
-                        .withInsertion(mentionData.prettyMention));
+                );
             }
         }
 

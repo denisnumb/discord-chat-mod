@@ -35,7 +35,7 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 
-    shadowBundle(implementation("net.dv8tion:JDA:6.1.1")) {transitive = false }
+    shadowBundle(implementation("net.dv8tion:JDA:6.2.0")) {transitive = false }
     shadowBundle(implementation("com.squareup.okhttp3:okhttp:4.12.0")) {transitive = false }
     shadowBundle(implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")) {transitive = false }
     shadowBundle(implementation("com.squareup.okio:okio:3.9.1")) {transitive = false }
@@ -54,7 +54,8 @@ dependencies {
     shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0"))
     compileOnly("org.apache.logging.log4j:log4j-core:2.20.0")
 
-    minecraftRuntimeLibraries "net.dv8tion:JDA:6.1.1"
+
+    minecraftRuntimeLibraries "net.dv8tion:JDA:6.2.0"
     minecraftRuntimeLibraries "org.json:json:20231013"
     minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-webp:3.12.0"
     minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-core:3.12.0"
