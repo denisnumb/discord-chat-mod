@@ -12,7 +12,7 @@ MineCraft mod for combining the game chat with discord, chat customizing and cha
 
 ### **Quick start:** 
 
-If you don't have a Discord bot, read the [**Quick start guilde**](https://github.com/denisnumb/discord-chat-mod/wiki/Quick-Start)
+If you don't have a Discord bot, read the [**Quick start guide**](https://github.com/denisnumb/discord-chat-mod/wiki/Quick-Start)
 
 Install the mod on the server and run it to generate the `discord_chat_mod-common.toml`-config file. 
 Configure the necessary parameters and run server. For additional features, install the mod on the client side.
