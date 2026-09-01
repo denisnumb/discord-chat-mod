@@ -12,6 +12,7 @@ import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvi
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.mojang.logging.LogUtils;
 import com.neovisionaries.ws.client.ProxySettings;
 import com.neovisionaries.ws.client.WebSocketFactory;
@@ -34,7 +35,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.initServerStatusController;
@@ -98,7 +98,7 @@ public final class DiscordChatMod {
             initJDA();
             getDiscordMessageComponents(MessageType.LOCAL_SERVER_START,
                     Map.of(
-                            Parameters.LOCAL_SERVER_STARTED, String.format(getTranslate(ModLanguageKey.LOCAL_SERVER_STARTED), server.getPort()),
+                            Parameters.LOCAL_SERVER_STARTED, ServerLocaleProvider.Server.localStarted(server.getPort()),
                             Parameters.SERVER_PORT, String.valueOf(server.getPort())
                     )
             ).ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));

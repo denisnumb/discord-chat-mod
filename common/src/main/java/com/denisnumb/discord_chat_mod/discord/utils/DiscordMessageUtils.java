@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.discord.utils;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Webhook;
@@ -21,9 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.logErrorToServer;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils.*;
@@ -247,13 +246,13 @@ public class DiscordMessageUtils {
 
             return Optional.of(mca);
         } catch (InsufficientPermissionException e) {
-            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMessage()));
+            logErrorToServer(ServerLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMessage()));
             e.printStackTrace();
         } catch (ErrorResponseException e) {
-            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMeaning()));
+            logErrorToServer(ServerLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMeaning()));
             e.printStackTrace();
         } catch (Exception e) {
-            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR), channel.getName()));
+            logErrorToServer(ServerLocaleProvider.Discord.Error.sendMessage(channel.getName()));
             e.printStackTrace();
         }
 
@@ -267,13 +266,13 @@ public class DiscordMessageUtils {
             else
                 mca.queue();
         } catch (InsufficientPermissionException e) {
-            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMessage()));
+            logErrorToServer(ServerLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMessage()));
             e.printStackTrace();
         } catch (ErrorResponseException e) {
-            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR_WITH_CAUSE), channel.getName(), e.getMeaning()));
+            logErrorToServer(ServerLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMeaning()));
             e.printStackTrace();
         } catch (Exception e) {
-            logErrorToServer(String.format(getTranslate(SEND_MESSAGE_ERROR), channel.getName()));
+            logErrorToServer(ServerLocaleProvider.Discord.Error.sendMessage(channel.getName()));
             e.printStackTrace();
         }
 

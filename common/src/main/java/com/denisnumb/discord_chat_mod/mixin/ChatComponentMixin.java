@@ -5,6 +5,7 @@ import com.denisnumb.discord_chat_mod.MinecraftClientEvents;
 import com.denisnumb.discord_chat_mod.chat_images.model.*;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.utils.EmbedToComponentConverter;
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.GuiMessageTag;
@@ -29,9 +30,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.CLICK_TO_OPEN_IMAGE;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.SPOILER;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.*;
 
 
@@ -164,7 +162,7 @@ public abstract class ChatComponentMixin {
 
         return base.append(content)
                 .withStyle(style -> style
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal(getTranslateClient(CLICK_TO_OPEN_IMAGE))))
+                .withHoverEvent(new HoverEvent.ShowText(ClientLocaleProvider.Command.clickToOpenImage()))
                 .withClickEvent(new ClickEvent.RunCommand(OPEN_IMAGE_COMMAND + image.url))
         );
     }
@@ -361,7 +359,7 @@ public abstract class ChatComponentMixin {
             );
 
             if (abstractImage.isSpoilerAndNotOpened()) {
-                Component spoilerText = Component.literal(getTranslateClient(SPOILER))
+                Component spoilerText = ClientLocaleProvider.spoiler()
                         .setStyle(Style.EMPTY.withBold(true));
                 float maxScale = 1.5f;
                 float scaleX = (imageWidth / MAX_WIDTH) * maxScale;

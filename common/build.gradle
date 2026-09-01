@@ -33,3 +33,13 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+import com.denisnumb.buildtools.GenerateLocaleProviderTask
+
+tasks.register("generateLocaleProviders", GenerateLocaleProviderTask) {
+    sourceJson.set(file("src/main/resources/assets/discord_chat_mod/lang/en_us.json"))
+    outputDirectory.set(layout.buildDirectory.dir("generated/sources/localeProvider"))
+}
+
+sourceSets.main.java.srcDir(tasks.named("generateLocaleProviders").map { it.outputDirectory })
+tasks.named("compileJava") { dependsOn("generateLocaleProviders") }

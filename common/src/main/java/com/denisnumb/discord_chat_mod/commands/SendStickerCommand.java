@@ -4,6 +4,7 @@ import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -18,9 +19,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayersFromPlayer;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
@@ -41,10 +40,10 @@ public class SendStickerCommand {
                                     StickersProvider.StickerData stickerData = StickersProvider.getNameToStickerDataMap().get(stickerName);
 
                                     if (stickerData == null)
-                                        throw new SimpleCommandExceptionType(Component.literal(String.format(getTranslate(UNKNOWN_STICKER), stickerName))).create();
+                                        throw new SimpleCommandExceptionType(ServerLocaleProvider.Command.SendSticker.Error.unknownStickerComponent(stickerName)).create();
 
                                     if (context.getSource().getEntity() instanceof ServerPlayer player) {
-                                        String stickerMessageContent = String.format(getTranslate(STICKER), stickerData.originalName());
+                                        String stickerMessageContent = ServerLocaleProvider.sticker(stickerData.originalName());
 
                                         Component messageWithStickerComponent = Component.literal(stickerMessageContent)
                                                 .withStyle(style -> style.withItalic(true)

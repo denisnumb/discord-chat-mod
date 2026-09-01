@@ -6,6 +6,7 @@ import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
 import com.denisnumb.discord_chat_mod.network.image.model.ImagePartPacketPayload;
@@ -30,10 +31,7 @@ import java.util.function.Consumer;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
@@ -52,13 +50,12 @@ public class ImageTransceiver {
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - lastImageSendTime < 2000) {
-            MinecraftUtils.showTitleBarMessage(Component.literal(
-                    getTranslateClient(IMAGE_SEND_COOLDOWN)
-            ).withColor(ChatFormatting.YELLOW.getColor()));
+            MinecraftUtils.showTitleBarMessage(ClientLocaleProvider.SendImage.cooldown()
+                    .withColor(ChatFormatting.YELLOW.getColor()));
             return;
         }
 
-        MinecraftUtils.showTitleBarMessage(Component.literal(getTranslateClient(SENDING_IMAGE)));
+        MinecraftUtils.showTitleBarMessage(ClientLocaleProvider.SendImage.sending());
         networkPool.execute(() -> {
             try {
                 byte[] data = gson.toJson(payload).getBytes(StandardCharsets.UTF_8);
@@ -221,7 +218,6 @@ public class ImageTransceiver {
     }
 
     private static void sendErrorMessageToPlayer(Player player, String errorMessage) {
-        String message = String.format(getTranslate(SEND_IMAGE_ERROR_WITH_REASON), errorMessage);
-        player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.RED), false);
+        player.displayClientMessage(ClientLocaleProvider.SendImage.Error.send(errorMessage).withStyle(ChatFormatting.RED), false);
     }
 }

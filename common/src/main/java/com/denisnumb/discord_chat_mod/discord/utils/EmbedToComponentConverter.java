@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.discord.utils;
 import com.denisnumb.discord_chat_mod.EmojiUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -28,8 +29,6 @@ import java.util.function.UnaryOperator;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.DISCORD_DEFAULT_COLOR;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 
 public final class EmbedToComponentConverter {
     private static final int EMBED_LINE_MAX_LENGTH = 45;
@@ -105,11 +104,11 @@ public final class EmbedToComponentConverter {
             separateEmbedSections.add(() -> {
                 if (embed.getThumbnail() != null) {
                     String thumbnailUrl = embed.getThumbnail().getUrl();
-                    appendEmbedLine(result, sideColor, () -> buildImageLine(String.format("\uD83D\uDDBC %s: ", getTranslate(THUMBNAIL)), thumbnailUrl));
+                    appendEmbedLine(result, sideColor, () -> buildImageLine(String.format("\uD83D\uDDBC %s: ", ServerLocaleProvider.thumbnail()), thumbnailUrl));
                 }
                 if (embed.getImage() != null) {
                     String imageUrl = embed.getImage().getUrl();
-                    appendEmbedLine(result, sideColor, () -> buildImageLine(String.format("\uD83D\uDDBC %s: ", getTranslate(IMAGE)), imageUrl));
+                    appendEmbedLine(result, sideColor, () -> buildImageLine(String.format("\uD83D\uDDBC %s: ", ServerLocaleProvider.image()), imageUrl));
                 }
             });
         }
@@ -474,7 +473,7 @@ public final class EmbedToComponentConverter {
     private static Component buildImageLine(String label, String url) {
         MutableComponent line = Component.literal(label).withColor(ChatFormatting.GRAY.getColor());
         line.append(
-                Component.literal(String.format("[%s]", getTranslate(OPEN)))
+                Component.literal(String.format("[%s]", ServerLocaleProvider.open()))
                         .withColor(ChatFormatting.AQUA.getColor())
                         .withStyle(style -> style
                                 .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))

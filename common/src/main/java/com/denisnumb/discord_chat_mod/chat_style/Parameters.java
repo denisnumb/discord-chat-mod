@@ -1,7 +1,5 @@
 package com.denisnumb.discord_chat_mod.chat_style;
 
-import com.denisnumb.discord_chat_mod.ModLanguageKey;
-
 public class Parameters {
     public static final String MESSAGE = "{message}";
     public static final String PLAYER = "{player}";
@@ -29,13 +27,13 @@ public class Parameters {
     public static final String COMMANDS_MESSAGE_DISPLAY_INCOMING = "commands.message.display.incoming";
     public static final String COMMANDS_MESSAGE_DISPLAY_OUTGOING = "commands.message.display.outgoing";
     public static final String ICON_URL = "{icon_url}";
-    public static final String SERVER_STARTED = ModLanguageKey.SERVER_STARTED;
-    public static final String LOCAL_SERVER_STARTED = String.format("{%s}", ModLanguageKey.LOCAL_SERVER_STARTED);
-    public static final String SERVER_CLOSED = ModLanguageKey.SERVER_CLOSED;
+    public static final String SERVER_STARTED = "discord_chat_mod.server.started";
+    public static final String LOCAL_SERVER_STARTED = "{discord_chat_mod.server.local_started}";
+    public static final String SERVER_CLOSED = "discord_chat_mod.server.closed";
     public static final String SERVER_PORT = "{server_port}";
-    public static final String SERVER_UNAVAILABLE = ModLanguageKey.SERVER_UNAVAILABLE;
-    public static final String SERVER_AVAILABLE = ModLanguageKey.SERVER_AVAILABLE;
-    public static final String ONLINE_PLAYERS = String.format("{%s}", ModLanguageKey.ONLINE_PLAYERS);
+    public static final String SERVER_UNAVAILABLE = "discord_chat_mod.server.status.unavailable";
+    public static final String SERVER_AVAILABLE = "discord_chat_mod.server.status.available";
+    public static final String ONLINE_PLAYERS = "{discord_chat_mod.server.status.online_players}";
     public static final String PLAYER_LIST = "{player_list}";
     public static final String PLAYER_COUNT = "{player_count}";
     public static final String MAX_PLAYERS = "{max_players}";

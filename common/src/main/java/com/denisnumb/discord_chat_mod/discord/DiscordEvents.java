@@ -11,6 +11,7 @@ import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.discord.utils.DiscordMentionsUtils;
 import com.denisnumb.discord_chat_mod.discord.utils.EmbedToComponentConverter;
 import com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import net.dv8tion.jda.api.entities.*;
@@ -31,9 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.getServerPlayerCount;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
@@ -106,7 +105,7 @@ public class DiscordEvents extends ListenerAdapter {
                     );
                 },
                 () -> {
-                    String message = String.format(getTranslate(FORWARDED_GUILD_MESSAGE), event.getMember().getEffectiveName(), event.getGuild().getName()) + "\n" + messageContent;
+                    String message = ServerLocaleProvider.Discord.forwardedGuildMessage(event.getMember().getEffectiveName(), event.getGuild().getName()) + "\n" + messageContent;
                     prepareDiscordMessage(
                             guildContext.defaultChannel,
                             new DiscordChatStyleProvider.DiscordMessageComponents(
@@ -190,7 +189,8 @@ public class DiscordEvents extends ListenerAdapter {
                 ? rawPreview.substring(0, 50) + "..."
                 : rawPreview;
 
-        return Component.literal(String.format(getTranslate(REPLY), replyAuthor) + " ")
+        return ServerLocaleProvider.replyComponent(replyAuthor)
+                .append(" ")
                 .withColor(0x7A7A7A)
                 .withStyle(style -> style
                         .withItalic(true)
@@ -260,7 +260,7 @@ public class DiscordEvents extends ListenerAdapter {
             return Optional.empty();
 
         StickerItem sticker = message.getStickers().getFirst();
-        Component part = Component.literal(String.format(getTranslate(STICKER), sticker.getName()))
+        Component part = ServerLocaleProvider.stickerComponent(sticker.getName())
                 .withStyle(style -> style
                         .withItalic(true)
                         .withClickEvent(new ClickEvent.OpenUrl(URI.create(sticker.getIconUrl())))

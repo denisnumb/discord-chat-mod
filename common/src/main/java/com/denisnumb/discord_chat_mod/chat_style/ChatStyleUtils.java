@@ -2,6 +2,7 @@ package com.denisnumb.discord_chat_mod.chat_style;
 
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import net.minecraft.core.BlockPos;
@@ -24,7 +25,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COMMANDS_MESSAGE_DISPLAY_INCOMING;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COMMANDS_MESSAGE_DISPLAY_OUTGOING;
@@ -89,7 +89,7 @@ public class ChatStyleUtils {
         String result = configTemplate;
 
         for (String param : translatableParameters)
-            result = result.replace(String.format("{%s}", param), clearTranslatedString(getTranslate(param)));
+            result = result.replace(String.format("{%s}", param), clearTranslatedString(ServerLocaleProvider.getTranslate(param)));
 
         return result;
     }

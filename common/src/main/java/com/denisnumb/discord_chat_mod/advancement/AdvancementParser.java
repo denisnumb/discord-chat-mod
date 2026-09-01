@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.advancement;
 
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -15,7 +16,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 
 public class AdvancementParser {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -61,7 +61,7 @@ public class AdvancementParser {
     private static String translateAndFormatRecursively(AdvancementDisplayComponent component){
         String text = component.text != null
                 ? component.text
-                : getTranslate(component.translate);
+                : ServerLocaleProvider.getTranslate(component.translate);
 
         if (text.equals(component.translate))
             return null;

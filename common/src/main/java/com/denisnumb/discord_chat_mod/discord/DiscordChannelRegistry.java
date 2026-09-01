@@ -6,6 +6,7 @@ import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
@@ -19,9 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 
 public class DiscordChannelRegistry {
@@ -50,7 +49,7 @@ public class DiscordChannelRegistry {
         return channel == null;
     }
 
-    public static void initDiscordChannels(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) throws Exception {
+    public static void initDiscordChannels(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) {
         GUILD_CONTEXTS.clear();
 
         IConfigProvider config = ConfigProvider.getConfig();
@@ -71,7 +70,7 @@ public class DiscordChannelRegistry {
 
             Guild guild = jda.getGuildById(guildConfig.guildId());
             if (guild == null) {
-                logErrorToServer(String.format(getTranslate(INVALID_GUILD_ERROR), guildConfig.guildId()));
+                logErrorToServer(ServerLocaleProvider.Discord.Error.invalidGuild(guildConfig.guildId()));
                 continue;
             }
 
@@ -85,7 +84,7 @@ public class DiscordChannelRegistry {
             try{
                 context.setDefaultChannel(getDiscordChannel(context, guildConfig.defaultChannelId()));
             } catch (IllegalStateException e){
-                logErrorToServer(String.format(getTranslate(INVALID_DEFAULT_CHANNEL_ERROR), guild.getName()));
+                logErrorToServer(ServerLocaleProvider.Discord.Error.invalidDefaultChannel(guild.getName()));
                 continue;
             }
 
@@ -110,7 +109,7 @@ public class DiscordChannelRegistry {
         }
 
         if (GUILD_CONTEXTS.isEmpty())
-            logWarnToServer(getTranslate(NO_CONFIG_GUILDS_CONFIGURED));
+            logWarnToServer(ServerLocaleProvider.Discord.Warn.noGuildsConfigured());
     }
 
     private static @Nullable GuildMessageChannel getDiscordChannel(@Nullable DiscordGuildContext context, String channelId) {
@@ -124,7 +123,7 @@ public class DiscordChannelRegistry {
                         : context.guild.getChannelById(GuildMessageChannel.class, channelId);
 
                 if (channel == null)
-                    throw new IllegalArgumentException(String.format(getTranslate(INVALID_CHANNEL_ERROR), channelId));
+                    throw new IllegalArgumentException(ServerLocaleProvider.Discord.Error.invalidChannel(channelId));
 
                 checkDiscordBotPermissionsInChannel(channel);
                 initChannelWebhook(context, channel);
@@ -146,10 +145,9 @@ public class DiscordChannelRegistry {
 
         if (channel instanceof TextChannel textChannel){
             if (!textChannel.getGuild().getSelfMember().hasPermission(textChannel, Permission.MANAGE_WEBHOOKS)){
-                logWarnToServer(
-                        String.format(
-                                getTranslate(WEBHOOK_INITIALIZE_ERROR),
-                                String.format(getTranslate(MISSING_MANAGE_WEBHOOK_PERMISSION), "#" + channel.getName())
+                logErrorToServer(
+                        ServerLocaleProvider.Discord.Webhook.Error.init(
+                                ServerLocaleProvider.Discord.Webhook.Error.missingPermission("#" + channel.getName())
                         )
                 );
                 return;
@@ -170,14 +168,13 @@ public class DiscordChannelRegistry {
 
                 context.registerWebhook(channel, webhook);
             } catch (Exception e) {
-                logWarnToServer(String.format(getTranslate(WEBHOOK_INITIALIZE_ERROR), e.getMessage()));
+                logWarnToServer(ServerLocaleProvider.Discord.Webhook.Error.init(e.getMessage()));
             }
 
         } else {
             logWarnToServer(
-                    String.format(
-                            getTranslate(WEBHOOK_INITIALIZE_ERROR),
-                            String.format(getTranslate(INVALID_CHANNEL_TYPE_FOR_WEBHOOK), "#" + channel.getName())
+                    ServerLocaleProvider.Discord.Webhook.Error.init(
+                            ServerLocaleProvider.Discord.Webhook.Error.invalidChannelType("#" + channel.getName())
                     )
             );
         }
@@ -190,8 +187,9 @@ public class DiscordChannelRegistry {
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
 
         if (!missingPermissions.isEmpty()){
-            throw new IllegalStateException(String.format(
-                    getTranslate(MISSING_PERMISSIONS_ERROR),
+
+
+            throw new IllegalStateException(ServerLocaleProvider.Discord.Error.missingPermissions(
                     "#" + channel.getName(),
                     String.join("\n", missingPermissions.stream().map(Permission::getName).toList())
             ));

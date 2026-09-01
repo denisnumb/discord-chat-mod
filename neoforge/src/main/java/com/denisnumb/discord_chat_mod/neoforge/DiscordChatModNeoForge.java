@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.neoforge;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
-import com.denisnumb.discord_chat_mod.LocaleProvider;
+import com.denisnumb.discord_chat_mod.locale.LocaleStorage;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
@@ -23,14 +23,14 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforgespi.language.IModInfo;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.*;
+import static com.denisnumb.discord_chat_mod.locale.LocaleStorage.*;
 
 
 @Mod(DiscordChatMod.MOD_ID)
 public final class DiscordChatModNeoForge {
     public DiscordChatModNeoForge(IEventBus modEventBus, ModContainer modContainer) {
         NeoForgeLocaleLoader localeLoader = new NeoForgeLocaleLoader();
-        LocaleProvider.setLocaleLoader(localeLoader);
+        LocaleStorage.setLocaleLoader(localeLoader);
         modEventBus.addListener(localeLoader::loadLocalizationFromSetup);
         NeoForge.EVENT_BUS.register(this);
         ConfigManager.load(FMLEnvironment.getDist() == Dist.CLIENT);

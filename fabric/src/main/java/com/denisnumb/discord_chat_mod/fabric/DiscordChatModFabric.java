@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.fabric;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
-import com.denisnumb.discord_chat_mod.LocaleProvider;
+import com.denisnumb.discord_chat_mod.locale.LocaleStorage;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
 import com.denisnumb.discord_chat_mod.config.ConfigProviderImpl;
@@ -15,7 +15,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.*;
+import static com.denisnumb.discord_chat_mod.locale.LocaleStorage.*;
 
 public final class DiscordChatModFabric implements ModInitializer{
     @Override
@@ -23,7 +23,7 @@ public final class DiscordChatModFabric implements ModInitializer{
         ConfigManager.load(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
         FabricNetworking.init();
         ConfigProvider.setConfigProvider(new ConfigProviderImpl());
-        LocaleProvider.setLocaleLoader(new FabricLocaleLoader());
+        LocaleStorage.setLocaleLoader(new FabricLocaleLoader());
         loadLocalization();
         PlatformPacketDistributor.setHandler(new FabricPacketDistributor());
         VanishCompat.init();

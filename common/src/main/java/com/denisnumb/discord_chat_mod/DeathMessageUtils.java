@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
+import static com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider.getTranslate;
 
 public class DeathMessageUtils {
     private static final Style INTENTIONAL_GAME_DESIGN_STYLE = Style.EMPTY

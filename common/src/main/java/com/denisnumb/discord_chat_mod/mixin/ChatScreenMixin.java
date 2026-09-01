@@ -10,6 +10,7 @@ import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.chat_images.widgets.AttachImageWidget;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -38,8 +39,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.MAX_DRAG_DROP_FILE_SIZE;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.MAX_DRAG_DROP_FILE_SIZE_MB;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
@@ -88,10 +87,10 @@ public abstract class ChatScreenMixin extends Screen {
             if (imageBytes.length == 0)
                 return;
 
-            discord_minecraft_chat$openImageSendScreen(imageBytes, getTranslateClient(IMAGE));
+            discord_minecraft_chat$openImageSendScreen(imageBytes, ClientLocaleProvider.image().getString());
             cir.setReturnValue(true);
         } catch (IllegalStateException e) {
-            MinecraftUtils.showTitleBarMessage(Component.literal(String.format(getTranslateClient(READ_IMAGE_FROM_CLIPBOARD_ERROR), e.getMessage())));
+            MinecraftUtils.showTitleBarMessage(ClientLocaleProvider.SendImage.Error.readClipboard(e.getMessage()));
             discord_chat_mod$LOGGER.error("ClipboardImagePasteError: ", e);
         }
     }
@@ -112,7 +111,7 @@ public abstract class ChatScreenMixin extends Screen {
                             try {
                                 discord_minecraft_chat$openImageSendScreen(
                                         Files.readAllBytes(screenshotFile.toPath()),
-                                        getTranslateClient(SCREENSHOT)
+                                        ClientLocaleProvider.screenshot().getString()
                                 );
                             } catch (IOException ignored) {}
                         }
@@ -149,7 +148,7 @@ public abstract class ChatScreenMixin extends Screen {
                 filters.flip();
 
                 path = TinyFileDialogs.tinyfd_openFileDialog(
-                        getTranslateClient(SELECT_IMAGE),
+                        ClientLocaleProvider.SendImage.selectImage().getString(),
                         "",
                         filters,
                         "Image Files (png, jpg, gif, webp, bmp)",
@@ -164,16 +163,14 @@ public abstract class ChatScreenMixin extends Screen {
                 try {
                     Path filePath = Path.of(path);
                     if (Files.size(filePath) > MAX_DRAG_DROP_FILE_SIZE) {
-                        MinecraftUtils.showTitleBarMessage(
-                                Component.literal(String.format(getTranslateClient(FILE_IS_TOO_LARGE), MAX_DRAG_DROP_FILE_SIZE_MB))
-                        );
+                        MinecraftUtils.showTitleBarMessage(ClientLocaleProvider.SendImage.Error.fileTooLarge(MAX_DRAG_DROP_FILE_SIZE_MB));
                         return;
                     }
 
                     byte[] imageBytes = Files.readAllBytes(filePath);
                     discord_minecraft_chat$openImageSendScreen(imageBytes, filePath.getFileName().toString());
                 } catch (IOException e) {
-                    MinecraftUtils.showTitleBarMessage(Component.literal(String.format(getTranslateClient(READ_IMAGE_FROM_FILE_ERROR), e.getMessage())));
+                    MinecraftUtils.showTitleBarMessage(ClientLocaleProvider.SendImage.Error.readFile(e.getMessage()));
                     discord_chat_mod$LOGGER.error("ReadImageFromFileError: ", e);
                 }
             });

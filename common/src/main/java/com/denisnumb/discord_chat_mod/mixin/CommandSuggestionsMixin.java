@@ -9,6 +9,7 @@ import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvi
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
 import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersTransceiver;
@@ -39,9 +40,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.COLORED_TEXT_EXAMPLE;
 
 @Mixin(CommandSuggestions.class)
 public abstract class CommandSuggestionsMixin {
@@ -83,7 +81,7 @@ public abstract class CommandSuggestionsMixin {
 
     @Unique
     private void discord_chat_mod$renderColors(GuiGraphics guiGraphics, Rect2i rect, Integer color){
-        String text = getTranslate(COLORED_TEXT_EXAMPLE);
+        String text = ClientLocaleProvider.coloredTextExample().getString();
         int boxHeight = font.lineHeight + 4;
         int boxWidth = font.width(text) + 4;
         int boxX = rect.getX() + rect.getWidth() + 2;

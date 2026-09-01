@@ -5,10 +5,10 @@ import com.denisnumb.discord_chat_mod.chat_images.ImageSendScreen;
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWDropCallback;
 import org.slf4j.Logger;
@@ -21,9 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.io.File;
 import java.nio.file.Files;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.FILE_IS_TOO_LARGE;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.READ_IMAGE_FROM_FILE_ERROR;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.MAX_DRAG_DROP_FILE_SIZE;
 import static com.denisnumb.discord_chat_mod.chat_images.ImageStorage.MAX_DRAG_DROP_FILE_SIZE_MB;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
@@ -59,7 +56,7 @@ public abstract class MinecraftMixin {
 
         if (file.length() > MAX_DRAG_DROP_FILE_SIZE) {
             mc.execute(() -> MinecraftUtils.showTitleBarMessage(
-                    Component.literal(String.format(getTranslateClient(FILE_IS_TOO_LARGE), MAX_DRAG_DROP_FILE_SIZE_MB))
+                    ClientLocaleProvider.SendImage.Error.fileTooLarge(MAX_DRAG_DROP_FILE_SIZE_MB)
             ));
             return;
         }
@@ -74,7 +71,7 @@ public abstract class MinecraftMixin {
                 AbstractImage image = ImageStorage.registerImageFromBytes(imagePreviewUrl, mimeType, imageBytes);
                 mc.setScreen(new ImageSendScreen(image, imageBytes, mimeType, file.getName(), mc.screen, mc.player));
             } catch (Exception e) {
-                MinecraftUtils.showTitleBarMessage(Component.literal(String.format(getTranslateClient(READ_IMAGE_FROM_FILE_ERROR), e.getMessage())));
+                MinecraftUtils.showTitleBarMessage(ClientLocaleProvider.SendImage.Error.readFile(e.getMessage()));
                 discord_chat_mod$LOGGER.error("ReadImageFromFileError: ", e);
             }
         });

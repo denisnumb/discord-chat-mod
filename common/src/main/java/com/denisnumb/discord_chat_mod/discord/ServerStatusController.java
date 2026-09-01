@@ -6,6 +6,7 @@ import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.chat_style.Parameters;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
@@ -24,9 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COUNTER;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.PLAYER;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
@@ -162,8 +161,7 @@ public class ServerStatusController {
     }
 
     private static String getOnlineCountString() {
-        return String.format(
-                getTranslate(ONLINE_PLAYERS),
+        return ServerLocaleProvider.Server.Status.onlinePlayers(
                 getServerPlayerCount(server),
                 getServerMaxPlayers(server)
         );

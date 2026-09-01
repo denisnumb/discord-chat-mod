@@ -6,6 +6,7 @@ import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.StringRange;
@@ -24,11 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.MinecraftUtils.sendMessageToAllPlayersFromPlayer;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.SERVER_IS_NOT_CONNECTED_TO_DISCORD;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.UNKNOWN_MENTION;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
@@ -45,9 +43,7 @@ public class MentionCommand {
                                     List<DiscordUserData> memberData = ChannelMembersProvider.getMemberData(ChannelCategory.PLAYER_CHAT);
 
                                     if (!isDiscordConnected()) {
-                                        throw new SimpleCommandExceptionType(Component.literal(
-                                                getTranslate(SERVER_IS_NOT_CONNECTED_TO_DISCORD)
-                                        )).create();
+                                        throw new SimpleCommandExceptionType(ServerLocaleProvider.Server.discordNotConnectedComponent()).create();
                                     }
 
                                     Optional<DiscordUserData> optionalMemberData = memberData.stream()
@@ -55,9 +51,9 @@ public class MentionCommand {
                                             .findFirst();
 
                                     if (optionalMemberData.isEmpty()) {
-                                        throw new SimpleCommandExceptionType(Component.literal(String.format(
-                                                getTranslate(UNKNOWN_MENTION), name
-                                        ))).create();
+                                        throw new SimpleCommandExceptionType(
+                                                ServerLocaleProvider.Command.Mention.Error.unknownMentionComponent(name)
+                                        ).create();
                                     }
 
                                     if (context.getSource().getEntity() instanceof ServerPlayer player) {

@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.chat_images.widgets;
 
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
@@ -14,9 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.ATTACH_IMAGE;
-
 public class AttachImageWidget extends AbstractWidget {
     private final Consumer<AttachImageWidget> onPress;
 
@@ -24,7 +22,7 @@ public class AttachImageWidget extends AbstractWidget {
         super(x, y, width, height, Component.literal("📎"));
         this.onPress = onPress;
         this.setFocused(false);
-        this.setTooltip(Tooltip.create(Component.literal(getTranslateClient(ATTACH_IMAGE))));
+        this.setTooltip(Tooltip.create(ClientLocaleProvider.SendImage.attachImage()));
     }
 
     @Override

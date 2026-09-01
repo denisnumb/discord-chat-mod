@@ -2,6 +2,7 @@ package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
@@ -15,9 +16,6 @@ import net.minecraft.network.chat.MutableComponent;
 
 import java.io.File;
 
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
-
 public class MinecraftClientEvents {
     public static Component handleScreenshot(File screenshotFile){
         Component screenshotName = Component.literal(screenshotFile.getName())
@@ -26,15 +24,14 @@ public class MinecraftClientEvents {
                         style.withClickEvent(new ClickEvent.OpenFile(screenshotFile.getAbsolutePath()))
                 );
 
-        Component clickToSendComponent = Component.literal(" " + getTranslateClient(CLICK_TO_SEND_SCREENSHOT)).withStyle(style ->
-                style.withColor(ChatFormatting.GREEN.getColor())
+        Component clickToSendComponent = Component.literal(" ").append(ClientLocaleProvider.Command.SendScreenshot.clickToSend())
+                .withStyle(style -> style
+                        .withColor(ChatFormatting.GREEN.getColor())
                         .withClickEvent(new ClickEvent.RunCommand(ImageStorage.SEND_SCREENSHOT_COMMAND + screenshotFile.getAbsolutePath()))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(getTranslateClient(CLICK_TO_SEND_SCREENSHOT_HINT))))
-        );
+                        .withHoverEvent(new HoverEvent.ShowText(ClientLocaleProvider.Command.SendScreenshot.clickToSendHint()))
+                );
 
-        return Component.literal(getTranslateClient("screenshot.success").replace("%s", ""))
-                .append(screenshotName)
-                .append(clickToSendComponent);
+        return Component.translatable("screenshot.success", screenshotName).append(clickToSendComponent);
     }
 
     public static Component handleChatMessage(Component message){

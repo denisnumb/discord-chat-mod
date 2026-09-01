@@ -6,16 +6,14 @@ import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.loadLocalization;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.CONFIG_RELOADED;
+import static com.denisnumb.discord_chat_mod.locale.LocaleStorage.loadLocalization;
 
 public class ReloadConfigCommand {
     public static boolean isReloadingNow = false;
@@ -41,7 +39,7 @@ public class ReloadConfigCommand {
                         loadLocalization();
 
                         if (ctx.getSource().getPlayer() instanceof ServerPlayer player)
-                            player.sendSystemMessage(Component.literal(getTranslate(CONFIG_RELOADED)));
+                            player.sendSystemMessage(ServerLocaleProvider.Command.ReloadConfig.successComponent());
 
                         isReloadingNow = false;
 

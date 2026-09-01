@@ -6,6 +6,7 @@ import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvide
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissions;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -29,8 +30,6 @@ import static com.denisnumb.discord_chat_mod.ColorUtils.Color.DISCORD_GREEN_COLO
 import static com.denisnumb.discord_chat_mod.ColorUtils.Color.DISCORD_RED_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.LOGGER;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissionUtils.getMemberPermissions;
 import static com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissionUtils.hasCommandPermission;
@@ -79,7 +78,7 @@ public class SlashCommandListener extends ListenerAdapter {
             if (ctx == null || !ctx.enableSlashCommands){
                 event.replyEmbeds(new EmbedBuilder()
                                 .setColor(DISCORD_RED_COLOR)
-                                .setDescription(getTranslate(SLASH_COMMANDS_ARE_DISABLED))
+                                .setDescription(ServerLocaleProvider.Discord.SlashCommands.commandsAreDisabled())
                                 .build())
                         .setEphemeral(true)
                         .queue();
@@ -127,7 +126,7 @@ public class SlashCommandListener extends ListenerAdapter {
         long uptimeMs = ManagementFactory.getRuntimeMXBean().getUptime();
         String formatted = formatDuration(uptimeMs);
 
-        event.reply(String.format(getTranslate(SLASH_COMMANDS_UPTIME_SUCCESS), formatted))
+        event.reply(ServerLocaleProvider.Discord.SlashCommands.Uptime.success(formatted))
                 .setEphemeral(true)
                 .queue();
     }
@@ -169,12 +168,12 @@ public class SlashCommandListener extends ListenerAdapter {
         if (allowAll && !denyAll) {
             String denied = perms.deny().isEmpty()
                     ? ""
-                    : getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_EXCEPT) + formatCommands(perms.deny());
-            result = getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_ALL_ALLOWED) + denied;
+                    : ServerLocaleProvider.Discord.SlashCommands.AllowedCommands.except() + formatCommands(perms.deny());
+            result = ServerLocaleProvider.Discord.SlashCommands.AllowedCommands.allAllowed() + denied;
         } else if (!perms.allow().isEmpty()) {
-            result = getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_ALLOWED_LIST) + formatCommands(perms.allow());
+            result = ServerLocaleProvider.Discord.SlashCommands.AllowedCommands.allowedList() + formatCommands(perms.allow());
         } else {
-            result = getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_ALL_DENIED);
+            result = ServerLocaleProvider.Discord.SlashCommands.AllowedCommands.allDenied();
             color = DISCORD_RED_COLOR;
         }
 
@@ -202,7 +201,7 @@ public class SlashCommandListener extends ListenerAdapter {
         if (!hasCommandPermission(event.getMember(), commandName)) {
             event.replyEmbeds(new EmbedBuilder()
                             .setColor(DISCORD_RED_COLOR)
-                            .setDescription(getTranslate(SLASH_COMMANDS_CMD_MISSING_PERMISSION))
+                            .setDescription(ServerLocaleProvider.Discord.SlashCommands.Cmd.Error.missingPermission())
                             .build()
                     )
                     .setEphemeral(true)
@@ -218,7 +217,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 srv.getCommands().performPrefixedCommand(CommandOutputCapture.createSourceStack(srv, capture), command);
                 String output = capture.getOutput();
 
-                String response = String.format(getTranslate(SLASH_COMMANDS_CMD_SUCCESS), command);
+                String response = ServerLocaleProvider.Discord.SlashCommands.Cmd.success(command);
                 if (!output.isEmpty()) {
                     if (output.length() > 1800) {
                         output = output.substring(0, 1800) + "\n. . .";
@@ -235,7 +234,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 LOGGER.error("Error executing Discord /cmd: {}", command, e);
                 event.getHook().editOriginalEmbeds(new EmbedBuilder()
                                 .setColor(DISCORD_RED_COLOR)
-                                .setDescription(String.format(getTranslate(SLASH_COMMANDS_CMD_EXECUTE_ERROR), e.getMessage()))
+                                .setDescription(ServerLocaleProvider.Discord.SlashCommands.Cmd.Error.executeError(e.getMessage()))
                                 .build())
                         .queue();
             }

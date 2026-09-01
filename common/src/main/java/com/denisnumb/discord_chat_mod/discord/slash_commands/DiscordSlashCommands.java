@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord.slash_commands;
 
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -9,8 +10,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import java.util.List;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.LOGGER;
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslate;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 
 public class DiscordSlashCommands {
     private static SlashCommandListener listener;
@@ -21,12 +20,12 @@ public class DiscordSlashCommands {
         jda.updateCommands().queue();
 
         List<CommandData> commandList = List.of(
-                Commands.slash("list", getTranslate(SLASH_COMMANDS_LIST_DESCRIPTION)),
-                Commands.slash("uptime", getTranslate(SLASH_COMMANDS_UPTIME_DESCRIPTION)),
-                Commands.slash("tps", getTranslate(SLASH_COMMANDS_TPS_DESCRIPTION)),
-                Commands.slash("allowed_commands", getTranslate(SLASH_COMMANDS_ALLOWED_COMMANDS_DESCRIPTION)),
-                Commands.slash("cmd", getTranslate(SLASH_COMMANDS_CMD_DESCRIPTION))
-                        .addOption(OptionType.STRING, "command", getTranslate(SLASH_COMMANDS_CMD_ARG_COMMAND_DESCRIPTION), true, true)
+                Commands.slash("list", ServerLocaleProvider.Discord.SlashCommands.List.description()),
+                Commands.slash("uptime", ServerLocaleProvider.Discord.SlashCommands.Uptime.description()),
+                Commands.slash("tps", ServerLocaleProvider.Discord.SlashCommands.Tps.description()),
+                Commands.slash("allowed_commands", ServerLocaleProvider.Discord.SlashCommands.AllowedCommands.description()),
+                Commands.slash("cmd", ServerLocaleProvider.Discord.SlashCommands.Cmd.description())
+                        .addOption(OptionType.STRING, "command", ServerLocaleProvider.Discord.SlashCommands.Cmd.Args.Command.description(), true, true)
         );
 
         for (DiscordGuildContext ctx : guildContexts) {

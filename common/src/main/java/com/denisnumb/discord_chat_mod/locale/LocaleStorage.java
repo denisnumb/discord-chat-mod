@@ -1,5 +1,6 @@
-package com.denisnumb.discord_chat_mod;
+package com.denisnumb.discord_chat_mod.locale;
 
+import com.denisnumb.discord_chat_mod.DiscordChatMod;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -23,13 +24,15 @@ import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getInputStreamFromUrl;
 
-public class LocaleProvider {
+public final class LocaleStorage {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type TYPE = new TypeToken<Map<String, String>>(){}.getType();
     private static final Map<String, String> LANGUAGE_DATA = new HashMap<>();
     private static final String CACHE_DIR_NAME = "locale_cache";
     private static final String BASE_GITHUB_URL = "https://raw.githubusercontent.com/denisnumb/discord-chat-mod/1.21.11/data/minecraft_locales/";
+
+    private LocaleStorage() {}
 
     public interface LocaleLoader {
         void loadLocalization();
@@ -45,11 +48,7 @@ public class LocaleProvider {
             localeLoader.loadLocalization();
     }
 
-    public static String getTranslateClient(String key){
-        return Language.getInstance().getOrDefault(key);
-    }
-
-    public static String getTranslate(String key) {
+    static String getTranslate(String key) {
         return LANGUAGE_DATA.containsKey(key)
                 ? LANGUAGE_DATA.get(key)
                 : Language.getInstance().getOrDefault(key);

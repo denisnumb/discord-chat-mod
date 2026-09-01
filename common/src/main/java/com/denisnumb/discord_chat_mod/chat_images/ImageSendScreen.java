@@ -7,6 +7,7 @@ import com.denisnumb.discord_chat_mod.chat_images.widgets.FlowButtonLayout;
 import com.denisnumb.discord_chat_mod.chat_images.widgets.FlowButtonLayout.ButtonSlot;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.chat_images.widgets.PlayerSelectionPopup;
+import com.denisnumb.discord_chat_mod.locale.ClientLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.image.ImageTransceiver;
 import com.denisnumb.discord_chat_mod.network.image.model.ImagePartPacketPayload;
 import com.denisnumb.discord_chat_mod.network.image.model.SendTarget;
@@ -28,9 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.denisnumb.discord_chat_mod.LocaleProvider.getTranslateClient;
-import static com.denisnumb.discord_chat_mod.ModLanguageKey.*;
 
 public class ImageSendScreen extends Screen {
     private static final int BUTTON_HEIGHT = 20;
@@ -116,13 +114,13 @@ public class ImageSendScreen extends Screen {
         int aboveButtonsY = topRowY - 26;
 
         spoilerCheckbox = Checkbox.builder(
-                Component.literal(getTranslateClient(SEND_AS_SPOILER)),
+                ClientLocaleProvider.SendImage.Screen.sendAsSpoiler(),
                 this.font
         ).pos((this.width - imageNameBoxWidth) / 2 + imageNameBoxWidth / 2, aboveButtonsY).build();
         addRenderableWidget(spoilerCheckbox);
 
         imageNameBox = new EditBox(this.font, 0, 0, imageNameBoxWidth, 20, Component.literal(""));
-        imageNameBox.setHint(Component.literal(getTranslateClient(IMAGE_DISPLAY_NAME)));
+        imageNameBox.setHint(ClientLocaleProvider.SendImage.Screen.imageDisplayName());
         imageNameBox.setMaxLength(64);
         imageNameBox.setPosition(spoilerCheckbox.getX() - imageNameBoxWidth - BUTTON_SPACING, aboveButtonsY);
         imageNameBox.setValue(defaultImageDisplayName);
@@ -135,10 +133,10 @@ public class ImageSendScreen extends Screen {
         PlayerTeam team = localPlayer.getTeam();
 
         List<ActionDef> defs = new ArrayList<>();
-        defs.add(new ActionDef(Component.literal(getTranslateClient(SEND_PUBLIC)), btn -> sendPublic()));
+        defs.add(new ActionDef(ClientLocaleProvider.SendImage.Screen.sendPublic(), btn -> sendPublic()));
 
         if (!otherPlayers.isEmpty()) {
-            defs.add(new ActionDef(Component.literal(getTranslateClient(SEND_TO_PLAYERS)), btn -> {
+            defs.add(new ActionDef(ClientLocaleProvider.SendImage.Screen.sendToPlayers(), btn -> {
                 setMainControlsVisible(false);
                 playerSelectionPopup.show(this.width, this.height, getOtherPlayers());
             }));
@@ -146,9 +144,9 @@ public class ImageSendScreen extends Screen {
 
         if (team != null) {
             String teamName = team.getDisplayName().getString();
-            defs.add(new ActionDef(Component.literal(String.format(getTranslateClient(SEND_TO_TEAM), teamName)), btn -> sendToTeam(team)));
+            defs.add(new ActionDef(ClientLocaleProvider.SendImage.Screen.sendToTeam(teamName), btn -> sendToTeam(team)));
         }
-        defs.add(new ActionDef(Component.literal(getTranslateClient(CANCEL)), btn -> cancelAndRestorePreviousScreen()));
+        defs.add(new ActionDef(ClientLocaleProvider.cancel(), btn -> cancelAndRestorePreviousScreen()));
 
         return defs;
     }
@@ -238,7 +236,7 @@ public class ImageSendScreen extends Screen {
 
         String displayName = imageNameBox.getValue();
         if (displayName.isBlank())
-            displayName = getTranslateClient(IMAGE);
+            displayName = ClientLocaleProvider.image().getString();
 
         return new ImagePartPacketPayload(null, fileName, imageMimeType, displayName, sendTarget, imageBytes);
     }
