@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod;
 
+import com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils;
 import com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider;
 import com.denisnumb.discord_chat_mod.config.ConfigDefaults;
@@ -32,16 +33,14 @@ import org.slf4j.Logger;
 
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -144,12 +143,10 @@ public class MinecraftUtils {
         Component preparedContent = MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.CHAT,
                 new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, null, player)
-        ).orElse(
-                applyParametersToTemplate(
-                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT),
-                        mergeMaps(Map.of(PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
-                )
-        );
+        ).orElseGet(() -> applyParametersToTemplate(
+                parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT),
+                Map.of(PLAYER, player.getDisplayName(), MESSAGE, content)
+        ));
 
         try {
             for (ServerPlayer serverPlayer : playerList.getPlayers())
@@ -169,24 +166,19 @@ public class MinecraftUtils {
         Component preparedContent = MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.MSG_COMMAND_INCOMING,
                 new MinecraftChatStyleProvider.ChatMessageComponents(player.getDisplayName(), content, null, player)
-        ).orElse(
-                applyParametersToTemplate(
-                        parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(
-                                ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT,
-                                COMMANDS_MESSAGE_DISPLAY_INCOMING
-                        )),
-                        mergeMaps(Map.of(SENDER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
-                )
-        );
+        ).orElseGet(() -> ChatStyleUtils.getStyledTranslatableMessage(
+                parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                COMMANDS_MESSAGE_DISPLAY_INCOMING,
+                newLinkedHashMapOf(
+                        Map.entry(SENDER, player.getDisplayName()),
+                        Map.entry(MESSAGE, content)
+                ),
+                Map.of()
+        ));
 
         for (ServerPlayer serverPlayer : targetPlayers) {
             serverPlayer.sendSystemMessage(preparedContent);
         }
-
-        MutableComponent outgoingDefaultTemplateMarkdown = parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(
-                ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT,
-                COMMANDS_MESSAGE_DISPLAY_OUTGOING
-        ));
 
         if (singleOutgoing) {
             Component receivers = targetPlayers.stream()
@@ -197,10 +189,15 @@ public class MinecraftUtils {
             Component outgoingContent = MinecraftEvents.handleChatMessage(
                     CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
                     new MinecraftChatStyleProvider.ChatMessageComponents(receivers, content, null, player)
-            ).orElse(
-                    applyParametersToTemplate(outgoingDefaultTemplateMarkdown,
-                            mergeMaps(Map.of(RECEIVER, receivers, MESSAGE, content), buildPositionComponentParameters(player)))
-            );
+            ).orElseGet(() -> ChatStyleUtils.getStyledTranslatableMessage(
+                    parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT),
+                    COMMANDS_MESSAGE_DISPLAY_OUTGOING,
+                    newLinkedHashMapOf(
+                            Map.entry(RECEIVER, receivers),
+                            Map.entry(MESSAGE, content)
+                    ),
+                    Map.of()
+            ));
 
             player.sendSystemMessage(outgoingContent);
         } else {
@@ -208,10 +205,15 @@ public class MinecraftUtils {
                 Component outgoingContent = MinecraftEvents.handleChatMessage(
                         CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
                         new MinecraftChatStyleProvider.ChatMessageComponents(serverPlayer.getDisplayName(), content, null, player)
-                ).orElse(
-                        applyParametersToTemplate(outgoingDefaultTemplateMarkdown,
-                                mergeMaps(Map.of(RECEIVER, serverPlayer.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player)))
-                );
+                ).orElseGet(() -> ChatStyleUtils.getStyledTranslatableMessage(
+                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT),
+                        COMMANDS_MESSAGE_DISPLAY_OUTGOING,
+                        newLinkedHashMapOf(
+                                Map.entry(RECEIVER, serverPlayer.getDisplayName()),
+                                Map.entry(MESSAGE, content)
+                        ),
+                        Map.of()
+                ));
 
                 player.sendSystemMessage(outgoingContent);
             }
@@ -230,7 +232,7 @@ public class MinecraftUtils {
         Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING, chatMessageComponents).orElse(
                 applyParametersToTemplate(
                         parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT),
-                        mergeMaps(Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                        Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content)
                 )
         );
 
@@ -245,7 +247,7 @@ public class MinecraftUtils {
         Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING, chatMessageComponents).orElse(
                 applyParametersToTemplate(
                         parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT),
-                        mergeMaps(Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content), buildPositionComponentParameters(player))
+                        Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content)
                 )
         );
 

@@ -111,8 +111,10 @@ public class ImageStorage {
         if (skipHandledUrls)
             HANDLED_URLS.add(url);
 
-        String mimeType = getMimeType(url);
+        if (isLocalResourceUrl(url))
+            return waitForLocalResource(IMAGE_CACHE, url, 15000, 50);
 
+        String mimeType = getMimeType(url);
         if (isImageUrl(mimeType) || isGifPlatformUrl(url)) {
             try {
                 registerImageFromUrl(url, mimeType);
@@ -120,8 +122,6 @@ public class ImageStorage {
             } catch (Exception e) {
                 LOGGER.error("ImageLoadError", e);
             }
-        } else if (isLocalResourceUrl(url)) {
-            return waitForLocalResource(IMAGE_CACHE, url, 15000, 50);
         }
 
         return null;

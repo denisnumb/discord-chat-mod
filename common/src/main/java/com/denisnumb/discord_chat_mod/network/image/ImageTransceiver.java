@@ -65,6 +65,7 @@ public class ImageTransceiver {
                         PlatformPacketDistributor.sendToServer(new ImagePartPacket(currentTime, partIndex, totalParts, part))
                 );
             } catch (Exception e) {
+                DiscordChatMod.LOGGER.error("ImageSendError: ", e);
                 sendErrorMessageToPlayer(fromPlayer, e.getMessage());
             }
         });
@@ -183,6 +184,7 @@ public class ImageTransceiver {
 
                 onSent.accept(localResourceUrl);
             } catch (Exception e) {
+                DiscordChatMod.LOGGER.error("ImageSendError: ", e);
                 sendErrorMessageToPlayer(fromPlayer, e.getMessage());
             }
         });

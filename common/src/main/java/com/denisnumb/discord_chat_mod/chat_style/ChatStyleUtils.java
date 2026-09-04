@@ -1,15 +1,13 @@
 package com.denisnumb.discord_chat_mod.chat_style;
 
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
-import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -20,20 +18,47 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COMMANDS_MESSAGE_DISPLAY_INCOMING;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.COMMANDS_MESSAGE_DISPLAY_OUTGOING;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.unwrapBraces;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.X;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Y;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Z;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.DIMENSION;
 
 public class ChatStyleUtils {
+    public static Component getStyledTranslatableMessage(
+            MutableComponent template,
+            String translatableParam,
+            LinkedHashMap<String, Component> placeholderComponents,
+            Map<String, Component> extraParams
+    ) {
+        if (!template.getString().contains(translatableParam))
+            return applyParametersToTemplate(template, mergeMaps(placeholderComponents, extraParams));
+
+        String[] placeholderNames = placeholderComponents.keySet().toArray(new String[0]);
+        Map<String, Style> paramStyles = parseTemplateParameterStyles(template.copy(), placeholderNames);
+
+        Object[] translatableArgs = placeholderComponents.entrySet().stream()
+                .map(entry -> {
+                    String placeholder = entry.getKey();
+                    Component baseComponent = entry.getValue();
+                    Style style = paramStyles.getOrDefault(placeholder, Style.EMPTY);
+                    return baseComponent.copy().setStyle(mergeStyles(baseComponent.getStyle(), style));
+                })
+                .toArray();
+
+        Component translatableContent = Component.translatable(unwrapBraces(translatableParam), translatableArgs);
+        MutableComponent cleanedTemplate = removeParametersFromTemplate(template.copy(), placeholderNames);
+        Map<String, Component> allParams = mergeMaps(Map.of(translatableParam, translatableContent), extraParams);
+
+        return applyParametersToTemplate(cleanedTemplate, allParams);
+    }
+
     public static Map<String, Style> parseTemplateParameterStyles(MutableComponent template, String... parameters) {
         Map<String, Style> parameterStyles = new HashMap<>();
 
@@ -57,26 +82,34 @@ public class ChatStyleUtils {
         return parameterStyles;
     }
 
-    @Nullable
-    public static String getConfigTemplateByChatType(ResourceKey<ChatType> key) {
-        IConfigProvider config = ConfigProvider.getConfig();
+    public static MutableComponent removeParametersFromTemplate(MutableComponent template, String... parameters) {
+        String orPattern = Arrays.stream(parameters)
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|"));
+        Pattern placeholderPattern = Pattern.compile(orPattern);
 
-        return switch (key.identifier().getPath()) {
-            case CHAT_PATH -> config.minecraftPlayerMessageStyle();
-            case SAY_COMMAND_PATH -> config.minecraftSayCommandStyle();
-            case MSG_COMMAND_INCOMING_PATH -> setConfigTemplateTranslatableParameters(
-                    config.minecraftTellMessageReceivedStyle(),
-                    COMMANDS_MESSAGE_DISPLAY_INCOMING
-            );
-            case MSG_COMMAND_OUTGOING_PATH -> setConfigTemplateTranslatableParameters(
-                    config.minecraftTellMessageSentStyle(),
-                    COMMANDS_MESSAGE_DISPLAY_OUTGOING
-            );
-            case TEAM_MSG_COMMAND_INCOMING_PATH -> config.minecraftTeamMessageReceivedStyle();
-            case TEAM_MSG_COMMAND_OUTGOING_PATH -> config.minecraftTeamMessageSentStyle();
-            case EMOTE_COMMAND_PATH -> config.minecraftMeCommandStyle();
-            default -> null;
-        };
+        MutableComponent result = Component.empty();
+        boolean pendingSpaceTrim = false;
+
+        for (Component templatePart : template.toFlatList()) {
+            String templateString = templatePart.getString();
+            boolean hadPlaceholder = placeholderPattern.matcher(templateString).find();
+            String cleaned = placeholderPattern.matcher(templateString).replaceAll("");
+
+            if (hadPlaceholder) {
+                cleaned = cleaned.stripLeading();
+                pendingSpaceTrim = true;
+            } else if (pendingSpaceTrim) {
+                cleaned = cleaned.stripLeading();
+                pendingSpaceTrim = false;
+            }
+
+            if (!cleaned.isEmpty()) {
+                result.append(Component.literal(cleaned).withStyle(templatePart.getStyle()));
+            }
+        }
+
+        return result;
     }
 
     public static MutableComponent parseConfigTemplateMarkdown(String configTemplate) {
@@ -85,16 +118,8 @@ public class ChatStyleUtils {
         ).convertMarkdownTokensToComponent();
     }
 
-    public static String setConfigTemplateTranslatableParameters(String configTemplate, String... translatableParameters) {
-        String result = configTemplate;
-
-        for (String param : translatableParameters)
-            result = result.replace(String.format("{%s}", param), clearTranslatedString(ServerLocaleProvider.getTranslate(param)));
-
-        return result;
-    }
-
     public static MutableComponent applyParametersToTemplate(MutableComponent template, Map<String, Component> parameterToComponent) {
+        checkNoTranslatableContents(template);
         parameterToComponent = mergeMaps(parameterToComponent, buildTimestampParameters());
 
         MutableComponent result = Component.empty();
@@ -117,15 +142,12 @@ public class ChatStyleUtils {
 
             do {
                 String textBefore = templateString.substring(currentPos, matcher.start());
-                result.append(Component.literal(textBefore).withStyle(templatePart.getStyle()));
+                if (!textBefore.isEmpty())
+                    result.append(Component.literal(textBefore).withStyle(templatePart.getStyle()));
 
                 Component toReplace = parameterToComponent.get(matcher.group());
                 if (toReplace != null) {
-                    for (Component toReplaceInnerComp : toReplace.toFlatList()) {
-                        result.append(Component.literal(toReplaceInnerComp.getString())
-                                .withStyle(mergeStyles(toReplaceInnerComp.getStyle(), templatePart.getStyle()))
-                        );
-                    }
+                    result.append(toReplace.copy().withStyle(mergeStyles(toReplace.getStyle(), templatePart.getStyle())));
                 }
 
                 currentPos = matcher.end();
@@ -148,9 +170,9 @@ public class ChatStyleUtils {
     public static Map<String, Component> buildTimestampParameters(){
         HashMap<String, Component> result = new HashMap<>();
         OffsetDateTime now = getDateTimeWithUtcOffset();
-        result.put("{HH}", Component.literal(String.format("%02d", now.getHour())));
-        result.put("{MM}", Component.literal(String.format("%02d", now.getMinute())));
-        result.put("{SS}", Component.literal(String.format("%02d", now.getSecond())));
+        result.put(Parameters.HH, Component.literal(String.format("%02d", now.getHour())));
+        result.put(Parameters.MM, Component.literal(String.format("%02d", now.getMinute())));
+        result.put(Parameters.SS, Component.literal(String.format("%02d", now.getSecond())));
 
         return result;
     }
@@ -210,6 +232,16 @@ public class ChatStyleUtils {
                 ));
     }
 
+    @SafeVarargs
+    public static <K, V> LinkedHashMap<K, V> newLinkedHashMapOf(Map.Entry<? extends K, ? extends V>... entries) {
+        LinkedHashMap<K, V> map = new LinkedHashMap<>(entries.length);
+        for (Map.Entry<? extends K, ? extends V> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+
+        return map;
+    }
+
     private static <T> T nullSafeElse(T first, T second) {
         return first != null ? first : second;
     }
@@ -226,7 +258,14 @@ public class ChatStyleUtils {
                 .withInsertion(nullSafeElse(main.getInsertion(), second.getInsertion()));
     }
 
-    private static String clearTranslatedString(String text) {
-        return text.replaceAll("%s|:|«|»", "").trim();
+    private static void checkNoTranslatableContents(Component component) {
+        if (component.getContents() instanceof TranslatableContents translatable) {
+            throw new IllegalStateException(
+                    "Template must not contain TranslatableContents, but it does (key=" + translatable.getKey() + ")"
+            );
+        }
+        for (Component sibling : component.getSiblings()) {
+            checkNoTranslatableContents(sibling);
+        }
     }
 }

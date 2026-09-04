@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.config;
 
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
 public class ConfigComments {
@@ -304,160 +306,229 @@ public class ConfigComments {
     //                                      MINECRAFT CHAT CUSTOMIZATION COMMENTS
     // =================================================================================================================
 
-    public static final String ENABLE_MINECRAFT_CHAT_CUSTOMIZATION_COMMENT
-            = """
+    public static final String ENABLE_MINECRAFT_CHAT_CUSTOMIZATION_COMMENT = String.format(
+            """
              If true, messages in the game chat will be formatted in the formats specified below.\
             
              For each format, you can use dynamic parameters specified in the comment above the parameter.\
 
              Global parameters available for all styles listed below:\
 
-             {HH}, {MM}, {SS} — Hours, minutes, and seconds at the time the message was sent. Example usage: "[{HH}:{MM}] <{player}> {message}"\
+             %s, %s, %s — Hours, minutes, and seconds at the time the message was sent. Example usage: "[%s:%s] <%s> %s"\
 
-             {x}, {y}, {z}, {dimension} — the player's coordinates and dimension name\
+             %s, %s, %s, %s — the player's coordinates and dimension name\
 
              You can read more about this configuration section and see examples here: https://github.com/denisnumb/discord-chat-mod/wiki/Minecraft-Chat-Customization\
 
              [!] If enabled, make sure you don't have any other chat styling mods installed.\
-            """;
+            """,
+            HH, MM, SS,
+            HH, MM, PLAYER, MESSAGE,
+            X, Y, Z, DIMENSION
+    );
 
     public static final String MINECRAFT_CHAT_LINK_COLOR_COMMENT
             = " Color of links in game chat";
 
-    public static final String MINECRAFT_DISCORD_MESSAGES_STYLE_COMMENT
-            = String.format("""
-             Style for displaying Discord messages in game chat\
-            
-             Parameters: {guild}, {member}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT);
+    public static final String MINECRAFT_DISCORD_MESSAGES_STYLE_COMMENT = String.format(
+            """
+            Style for displaying Discord messages in game chat\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            GUILD,
+            MEMBER,
+            MESSAGE,
+            MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_PLAYER_MESSAGE_STYLE_COMMENT
-            = String.format("""
-             Chat message from player\
-            
-             Parameters: {player}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT);
+    public static final String MINECRAFT_PLAYER_MESSAGE_STYLE_COMMENT = String.format(
+            """
+            Chat message from player\
+           
+            Parameters: %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            MESSAGE,
+            MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_PLAYER_JOINED_STYLE_COMMENT
-            = String.format("""
-             Player joined the game\
-            
-             Parameters: {player}, {multiplayer.player.joined}\
-            
-             Default: "%s"\
-            """, MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT);
+    public static final String MINECRAFT_PLAYER_JOINED_STYLE_COMMENT = String.format(
+            """
+            Player joined the game\
+           
+            Parameters: %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            PLAYER_JOINED,
+            MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_PLAYER_LEFT_STYLE_COMMENT
-            = String.format("""
-             Player left the game\
-            
-             Parameters: {player}, {multiplayer.player.left}\
-            
-             Default: "%s"\
-            """, MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT);
+    public static final String MINECRAFT_PLAYER_LEFT_STYLE_COMMENT = String.format(
+            """
+            Player left the game\
+           
+            Parameters: %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            PLAYER_LEFT,
+            MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_PLAYER_DEATH_STYLE_COMMENT
-            = """
+    public static final String MINECRAFT_PLAYER_DEATH_STYLE_COMMENT = String.format(
+            """
              Player death message\
 
              Death messages are composite and contain: Player Name, Cause of Death, Second Entity (optional), Murder Weapon (optional).\
 
              You can customize them separately using the configuration fields below.\
 
-             Parameters: {death_cause}, {player}, {second_entity}, {item}\
-            """;
+             Parameters: %s, %s, %s, %s\
+            """,
+            DEATH_CAUSE,
+            PLAYER,
+            SECOND_ENTITY,
+            ITEM
+    );
 
-    public static final String MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT
-            = String.format("""
-             Player has made the advancement\
-            
-             Parameters: {player}, {chat.type.advancement.task}, {advancement}\
-            
-             Default: "%s"\
-            """, MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT);
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT = String.format(
+            """
+            Player has made the advancement\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            ADVANCEMENT_TASK,
+            ADVANCEMENT,
+            MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT
-            = String.format("""
-             Player has reached the goal\
-            
-             Parameters: {player}, {chat.type.advancement.goal}, {advancement}\
-            
-             Default: "%s"\
-            """, MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT);
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT = String.format(
+            """
+            Player has reached the goal\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            ADVANCEMENT_GOAL,
+            ADVANCEMENT,
+            MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT
-            = String.format("""
-             Player has completed the challenge\
-            
-             Parameters: {player}, {chat.type.advancement.challenge}, {advancement}\
-            
-             Default: "%s"\
-            """, MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT);
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT = String.format(
+            """
+            Player has completed the challenge\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            ADVANCEMENT_CHALLENGE,
+            ADVANCEMENT,
+            MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_TEAM_MESSAGE_SENT_STYLE_COMMENT
-            = String.format("""
-             Team message sent by the player\
-            
-             Parameters: {team}, {player}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT);
+    public static final String MINECRAFT_TEAM_MESSAGE_SENT_STYLE_COMMENT = String.format(
+            """
+            Team message sent by the player\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            TEAM,
+            PLAYER,
+            MESSAGE,
+            MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_COMMENT
-            = String.format("""
-             Team message received from any player\
-            
-             Parameters: {team}, {player}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT);
+    public static final String MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_COMMENT = String.format(
+            """
+            Team message received from any player\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            TEAM,
+            PLAYER,
+            MESSAGE,
+            MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_TELL_MESSAGE_SENT_STYLE_COMMENT
-            = String.format("""
-             Private message sent by the player using /tell or /msg command\
-            
-             Parameters: {commands.message.display.outgoing}, {receiver}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT);
+    public static final String MINECRAFT_TELL_MESSAGE_SENT_STYLE_COMMENT = String.format(
+            """
+            Private message sent by the player using /tell or /msg command\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            COMMANDS_MESSAGE_DISPLAY_OUTGOING,
+            RECEIVER,
+            MESSAGE,
+            MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_COMMENT
-            = String.format("""
-             Private message received from any player who used the /tell or /msg command\
-            
-             Parameters: {sender}, {commands.message.display.incoming}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT);
+    public static final String MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_COMMENT = String.format(
+            """
+            Private message received from any player who used the /tell or /msg command\
+           
+            Parameters: %s, %s, %s\
+           
+            Default: "%s"\
+           """,
+            SENDER,
+            COMMANDS_MESSAGE_DISPLAY_INCOMING,
+            MESSAGE,
+            MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_SAY_COMMAND_STYLE_COMMENT
-            = String.format("""
-             Chat message from player sent using /say command\
-            
-             Parameters: {player}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_SAY_COMMAND_STYLE_DEFAULT);
+    public static final String MINECRAFT_SAY_COMMAND_STYLE_COMMENT = String.format(
+            """
+            Chat message from player sent using /say command\
+           
+            Parameters: %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            MESSAGE,
+            MINECRAFT_SAY_COMMAND_STYLE_DEFAULT
+    );
 
-    public static final String MINECRAFT_ME_COMMAND_STYLE_COMMENT
-            = String.format("""
-             Chat message from player sent using /me command\
-            
-             Parameters: {player}, {message}\
-            
-             Default: "%s"\
-            """, MINECRAFT_ME_COMMAND_STYLE_DEFAULT);
+    public static final String MINECRAFT_ME_COMMAND_STYLE_COMMENT = String.format(
+            """
+            Chat message from player sent using /me command\
+           
+            Parameters: %s, %s\
+           
+            Default: "%s"\
+           """,
+            PLAYER,
+            MESSAGE,
+            MINECRAFT_ME_COMMAND_STYLE_DEFAULT
+    );
 
     // =================================================================================================================
     //                                      DISCORD CHAT CUSTOMIZATION COMMENTS
     // =================================================================================================================
 
-    public static final String DISCORD_PLAYER_MESSAGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_MESSAGE_STYLE_COMMENT = String.format(
+            """
              The configuration settings below determine how messages sent from Minecraft to Discord will be formatted.\
 
              The message format is specified in JSON format. You can remove the parameter from the configuration to get the default value\
@@ -466,13 +537,13 @@ public class ConfigComments {
 
              Global parameters available for all styles listed below:\
 
-             {player_avatar_url} — link to the player's avatar (available wherever the {player} parameter is present)\
+             %s — link to the player's avatar (available wherever the %s parameter is present)\
 
-             {x}, {y}, {z}, {dimension} — the player's coordinates and dimension name (available wherever the {player} parameter is present)\
+             %s, %s, %s, %s — the player's coordinates and dimension name (available wherever the %s parameter is present)\
 
-             {timestamp} — current number of seconds in the system. It's convenient to substitute when using Discord timestamps, for example: <t:{timestamp}:R>\
+             %s — current number of seconds in the system. It's convenient to substitute when using Discord timestamps, for example: <t:%s:R>\
 
-             {datetime} — A string with the current date and time in the format "2025-11-02T10:00:00.000Z". May be useful for embed timestamps.\
+             %s — A string with the current date and time in the format "2025-11-02T10:00:00.000Z". May be useful for embed timestamps.\
 
              You can read more about this configuration section and see examples here: https://github.com/denisnumb/discord-chat-mod/wiki/Discord-Chat-Customization\
 
@@ -480,172 +551,256 @@ public class ConfigComments {
 
              Chat message from player\
             
-             Parameters: {player}, {message}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER_AVATAR_URL, PLAYER,
+            X, Y, Z, DIMENSION, PLAYER,
+            TIMESTAMP, TIMESTAMP,
+            DATETIME,
+            PLAYER, MESSAGE
+    );
 
-    public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_COMMENT = String.format(
+            """
              Chat message from player (if webhook mode is enabled) \
             
-             Parameters: {player}, {message}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            MESSAGE
+    );
 
-    public static final String DISCORD_PLAYER_JOINED_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_JOINED_STYLE_COMMENT = String.format(
+            """
              Player joined the game\
             
-             Parameters: {player}, {multiplayer.player.joined}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            PLAYER_JOINED
+    );
 
-    public static final String DISCORD_PLAYER_LEFT_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_LEFT_STYLE_COMMENT = String.format(
+            """
              Player left the game\
             
-             Parameters: {player}, {multiplayer.player.left}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            PLAYER_LEFT
+    );
 
-    public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_COMMENT = String.format(
+            """
              You can apply Markdown to individual components of the death message using the parameters below.\
 
-             They will ultimately be compiled into the {death_message} substitution parameter, which you can use to form the final message in Discord.\
-            """;
+             They will ultimately be compiled into the %s substitution parameter, which you can use to form the final message in Discord.\
+            """,
+            DEATH_MESSAGE
+    );
 
-    public static final String DISCORD_PLAYER_DEATH_MESSAGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_DEATH_MESSAGE_STYLE_COMMENT = String.format(
+            """
              Player death message (configure parameters above)\
 
-             Parameters: {player}, {death_message}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            DEATH_MESSAGE
+    );
 
-    public static final String DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT = String.format(
+            """
              Player has made the advancement\
             
-             Parameters: {player}, {chat.type.advancement.task}, {advancement}, {description}, {icon_url}\
-            """;
+             Parameters: %s, %s, %s, %s, %s\
+            """,
+            PLAYER,
+            ADVANCEMENT_TASK,
+            ADVANCEMENT,
+            DESCRIPTION,
+            ICON_URL
+    );
 
-    public static final String DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT = String.format(
+            """
              Player has reached the goal\
             
-             Parameters: {player}, {chat.type.advancement.goal}, {advancement}, {description}, {icon_url}\
-            """;
+             Parameters: %s, %s, %s, %s, %s\
+            """,
+            PLAYER,
+            ADVANCEMENT_GOAL,
+            ADVANCEMENT,
+            DESCRIPTION,
+            ICON_URL
+    );
 
-    public static final String DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT = String.format(
+            """
              Player has completed the challenge\
             
-             Parameters: {player}, {chat.type.advancement.challenge}, {advancement}, {description}, {icon_url}\
-            """;
+             Parameters: %s, %s, %s, %s, %s\
+            """,
+            PLAYER,
+            ADVANCEMENT_CHALLENGE,
+            ADVANCEMENT,
+            DESCRIPTION,
+            ICON_URL
+    );
 
-    public static final String DISCORD_SAY_COMMAND_STYLE_COMMENT
-            = """
+    public static final String DISCORD_SAY_COMMAND_STYLE_COMMENT = String.format(
+            """
              Chat message from player sent using /say command\
             
-             Parameters: {player}, {message}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            MESSAGE
+    );
 
-    public static final String DISCORD_ME_COMMAND_STYLE_COMMENT
-            = """
+    public static final String DISCORD_ME_COMMAND_STYLE_COMMENT = String.format(
+            """
              Chat message from player sent using /me command\
             
-             Parameters: {player}, {message}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            MESSAGE
+    );
 
-    public static final String DISCORD_ME_COMMAND_WEBHOOK_STYLE_COMMENT
-            = """
+    public static final String DISCORD_ME_COMMAND_WEBHOOK_STYLE_COMMENT = String.format(
+            """
              Chat message from player sent using /me command (if webhook mode is enabled)\
             
-             Parameters: {player}, {message}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            MESSAGE
+    );
 
-    public static final String DISCORD_TELLRAW_COMMAND_STYLE_COMMENT
-            = """
+    public static final String DISCORD_TELLRAW_COMMAND_STYLE_COMMENT = String.format(
+            """
              Chat message from send using /tellraw @a command\
 
-             Parameters: {message}\
-            """;
+             Parameters: %s\
+            """,
+            MESSAGE
+    );
 
-    public static final String DISCORD_COMMAND_LOG_STYLE_COMMENT
-            = """
+    public static final String DISCORD_COMMAND_LOG_STYLE_COMMENT = String.format(
+            """
              Command executed by a player above the configured permission level\
 
-             Parameters: {player}, {command}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            COMMAND
+    );
 
-    public static final String DISCORD_IMAGE_MESSAGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_IMAGE_MESSAGE_STYLE_COMMENT = String.format(
+            """
              Image from player\
             
-             Parameters: {player}, {image_url}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            IMAGE_URL
+    );
 
-    public static final String DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_COMMENT
-            = """
+    public static final String DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_COMMENT = String.format(
+            """
              Image from player (if webhook mode is enabled)\
             
-             Parameters: {player}, {image_url}\
-            """;
+             Parameters: %s, %s\
+            """,
+            PLAYER,
+            IMAGE_URL
+    );
 
-    public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT = String.format(
+            """
              Server started message\
             
-             Parameters: {discord_chat_mod.server.started}\
-            """;
+             Parameters: %s\
+            """,
+            SERVER_STARTED
+    );
 
-    public static final String DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_COMMENT = String.format(
+            """
              Local server started message\
             
-             Parameters: {discord_chat_mod.server.local_started}, {server_port}\
-            """;
+             Parameters: %s, %s\
+            """,
+            LOCAL_SERVER_STARTED,
+            SERVER_PORT
+    );
 
-    public static final String DISCORD_SERVER_CLOSED_MESSAGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_SERVER_CLOSED_MESSAGE_STYLE_COMMENT = String.format(
+            """
              Server closed message\
             
-             Parameters: {discord_chat_mod.server.closed}\
-            """;
+             Parameters: %s\
+            """,
+            SERVER_CLOSED
+    );
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_COMMENT = String.format(
+            """
              Pinned server status message when server is unavailable\
             
-             Parameters: {discord_chat_mod.server.status.unavailable}\
-            """;
+             Parameters: %s\
+            """,
+            SERVER_UNAVAILABLE
+    );
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_COMMENT = String.format(
+            """
              Pinned server status message when server is available but there are no players\
             
-             Parameters: {discord_chat_mod.server.status.available}\
-            """;
+             Parameters: %s\
+            """,
+            SERVER_AVAILABLE
+    );
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_COMMENT
-            = " The characters separating player nicknames in the {player_list} parameter for the pinned status message style";
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_COMMENT = String.format(
+            " The characters separating player nicknames in the %s parameter for the pinned status message style",
+            PLAYER_LIST
+    );
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_COMMENT
-            = """
-             Style of a single nickname in the {player_list} parameter of a pinned status message\
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_COMMENT = String.format(
+            """
+             Style of a single nickname in the %s parameter of a pinned status message\
             
-             Parameters: {player}, {counter} — can be used to number players in order\
-            """;
+             Parameters: %s, %s — can be used to number players in order\
+            """,
+            PLAYER_LIST,
+            PLAYER,
+            COUNTER
+    );
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_STYLE_COMMENT
-            = """
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_STYLE_COMMENT = String.format(
+            """
              Pinned server status message when there are players on the server\
             
-             Parameters: {discord_chat_mod.server.status.online_players}, {player_list}, {player_count}, {max_players}\
-            """;
+             Parameters: %s, %s, %s, %s\
+            """,
+            ONLINE_PLAYERS,
+            PLAYER_LIST,
+            PLAYER_COUNT,
+            MAX_PLAYERS
+    );
 
-    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_COMMENT
-            = """
+    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_COMMENT = String.format(
+            """
              The username displayed in Discord when forwarding a message from another guild\
             
-             Parameters: {member}, {user}, {guild}\
-            """;
+             Parameters: %s, %s, %s\
+            """,
+            MEMBER,
+            USER,
+            GUILD
+    );
 
     // =================================================================================================================
     //                                             CLIENT CONFIG COMMENTS

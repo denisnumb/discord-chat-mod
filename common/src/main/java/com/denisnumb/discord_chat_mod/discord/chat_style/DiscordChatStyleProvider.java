@@ -5,6 +5,7 @@ import com.denisnumb.discord_chat_mod.DeathMessageUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.utils.WebhookUtils;
+import com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
@@ -12,6 +13,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
@@ -23,9 +26,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.DeathMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
 
 public class DiscordChatStyleProvider {
     private static final Gson GSON = new Gson();
@@ -89,20 +92,26 @@ public class DiscordChatStyleProvider {
     public static String formatDeathMessageComponents(DeathMessageUtils.DeathMessageComponents components){
         IConfigProvider config = ConfigProvider.getConfig();
 
-        String playerTemplate = config.discordPlayerDeathNameStyle().replace(PLAYER, components.diedEntityName().getString());
+        String playerTemplate = config.discordPlayerDeathNameStyle().replace(PLAYER, getTranslatedComponent(components.diedEntity()));
         String killerTemplate = config.discordPlayerDeathSecondEntityStyle().replace(SECOND_ENTITY,
-                components.killerEntity() == null ? "" : components.killerEntity().getString()
+                components.killerEntity() == null ? "" : getTranslatedComponent(components.killerEntity())
         );
         String weaponTemplate = config.discordPlayerDeathWeaponStyle().replace(ITEM,
                 components.item() == null ? "" : components.item().getString()
         );
 
-        return config.discordPlayerDeathCauseStyle().replace(DEATH_CAUSE,
-                components.deathCause().getString()
-                        .replace(DIED_ENTITY_REPLACEMENT_TAG, playerTemplate)
-                        .replace(KILLER_ENTITY_REPLACEMENT_TAG, killerTemplate)
-                        .replace(ITEM_REPLACEMENT_TAG, weaponTemplate)
+        return String.format(
+                config.discordPlayerDeathCauseStyle().replace(DEATH_CAUSE, ServerLocaleProvider.getTranslate(components.deathCauseLocaleKey())),
+                playerTemplate,
+                killerTemplate,
+                weaponTemplate
         );
+    }
+
+    private static String getTranslatedComponent(Component component){
+        return component.getContents() instanceof TranslatableContents tc
+                ? ServerLocaleProvider.getTranslate(tc.getKey())
+                : component.getString();
     }
 
     public static Map<String, String> buildPlayerParameters(CommandSourceStack source){
@@ -195,5 +204,16 @@ public class DiscordChatStyleProvider {
         }
 
         return Optional.empty();
+    }
+
+    private static String setConfigTemplateTranslatableParameters(String configTemplate, String... translatableParameters) {
+        for (String param : translatableParameters)
+            configTemplate = configTemplate.replace(param, clearTranslatedString(ServerLocaleProvider.getTranslate(unwrapBraces(param))));
+
+        return configTemplate;
+    }
+
+    private static String clearTranslatedString(String text) {
+        return text.replaceAll("%s|:|«|»", "").trim();
     }
 }

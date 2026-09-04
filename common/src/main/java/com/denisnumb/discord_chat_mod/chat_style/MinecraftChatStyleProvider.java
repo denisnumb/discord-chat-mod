@@ -2,7 +2,6 @@ package com.denisnumb.discord_chat_mod.chat_style;
 
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.network.chat.*;
@@ -12,27 +11,27 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.denisnumb.discord_chat_mod.DeathMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.*;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
 
 public class MinecraftChatStyleProvider {
-    private static Component applyStyleToAdvancement(String translatedTitle, String translatedDescription, Style advancementStyle) {
-        Component title = Component.literal(translatedTitle);
-        Component description = ComponentUtils.mergeStyles(title.copy(), Style.EMPTY.withColor(advancementStyle.getColor())).append("\n")
-                .append(Component.literal(translatedDescription));
-        Component result = title.copy().withStyle((style) -> style.withHoverEvent(new HoverEvent.ShowText(description)));
+    private static Component applyStyleToAdvancement(Component translatableTitle, Component translatableDescription, Style advancementStyle) {
+        Component description = ComponentUtils.mergeStyles(translatableTitle.copy(), Style.EMPTY.withColor(advancementStyle.getColor()))
+                .append("\n")
+                .append(translatableDescription);
 
-        return ComponentUtils.wrapInSquareBrackets(result).withStyle(advancementStyle);
+        Component title = translatableTitle.copy()
+                .withStyle((style) -> style.withHoverEvent(new HoverEvent.ShowText(description)));
+
+        return ComponentUtils.wrapInSquareBrackets(title).withStyle(advancementStyle);
     }
 
-    public static Optional<Component> getStyledAdvancementMessage(Player player, AdvancementHolder advancementHolder, String title, String description){
+    public static Component getStyledAdvancementMessage(Player player, DisplayInfo displayInfo){
         IConfigProvider config = ConfigProvider.getConfig();
-        DisplayInfo displayInfo = advancementHolder.value().display().get();
 
         String messageStringTemplate = displayInfo.getType() == AdvancementType.TASK
                 ? config.minecraftPlayerAdvancementTaskStyle()
@@ -46,16 +45,22 @@ public class MinecraftChatStyleProvider {
                 ? ADVANCEMENT_GOAL
                 : ADVANCEMENT_CHALLENGE;
 
-        MutableComponent template = parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(messageStringTemplate, translationKey));
+        MutableComponent template = parseConfigTemplateMarkdown(messageStringTemplate);
         Style advancementStyle = parseTemplateParameterStyles(template, ADVANCEMENT).get(ADVANCEMENT);
+        LinkedHashMap<String, Component> placeholders = newLinkedHashMapOf(
+                Map.entry(PLAYER, player.getDisplayName()),
+                Map.entry(ADVANCEMENT, applyStyleToAdvancement(displayInfo.getTitle(), displayInfo.getDescription(), advancementStyle))
+        );
 
-        return Optional.of(applyParametersToTemplate(template, mergeMaps(
-                Map.of(PLAYER, player.getDisplayName(), ADVANCEMENT, applyStyleToAdvancement(title, description, advancementStyle)),
+        return getStyledTranslatableMessage(
+                template,
+                translationKey,
+                placeholders,
                 buildPositionComponentParameters(player)
-        )));
+        );
     }
 
-    public static Optional<Component> getStyledJoinedLeftMessage(Player player, boolean isJoin) {
+    public static Component getStyledJoinedLeftMessage(Player player, boolean isJoin) {
         IConfigProvider config = ConfigProvider.getConfig();
 
         String messageStringTemplate = isJoin
@@ -66,16 +71,36 @@ public class MinecraftChatStyleProvider {
                 ? PLAYER_JOINED
                 : PLAYER_LEFT;
 
-        return Optional.of(applyParametersToTemplate(
-                parseConfigTemplateMarkdown(setConfigTemplateTranslatableParameters(messageStringTemplate, translationKey)),
-                mergeMaps(Map.of(PLAYER, player.getDisplayName()), buildPositionComponentParameters(player))
-        ));
+        return getStyledTranslatableMessage(
+                parseConfigTemplateMarkdown(messageStringTemplate),
+                translationKey,
+                newLinkedHashMapOf(Map.entry(PLAYER, player.getDisplayName())),
+                buildPositionComponentParameters(player)
+        );
     }
 
     public record ChatMessageComponents(Component player, Component content, @Nullable Component team, @Nullable Entity sender) {}
 
     public static Optional<Component> getStyledChatMessage(ResourceKey<ChatType> chatType, ChatMessageComponents components){
-        String configTemplate = getConfigTemplateByChatType(chatType);
+        IConfigProvider config = ConfigProvider.getConfig();
+        String translationKey = null;
+
+        String configTemplate = switch (chatType.identifier().getPath()) {
+            case CHAT_PATH -> config.minecraftPlayerMessageStyle();
+            case SAY_COMMAND_PATH -> config.minecraftSayCommandStyle();
+            case TEAM_MSG_COMMAND_INCOMING_PATH -> config.minecraftTeamMessageReceivedStyle();
+            case TEAM_MSG_COMMAND_OUTGOING_PATH -> config.minecraftTeamMessageSentStyle();
+            case EMOTE_COMMAND_PATH -> config.minecraftMeCommandStyle();
+            case MSG_COMMAND_INCOMING_PATH -> {
+                translationKey = COMMANDS_MESSAGE_DISPLAY_INCOMING;
+                yield config.minecraftTellMessageReceivedStyle();
+            }
+            case MSG_COMMAND_OUTGOING_PATH -> {
+                translationKey = COMMANDS_MESSAGE_DISPLAY_OUTGOING;
+                yield config.minecraftTellMessageSentStyle();
+            }
+            default -> null;
+        };
 
         if (configTemplate == null)
             return Optional.empty();
@@ -85,42 +110,61 @@ public class MinecraftChatStyleProvider {
                 ? new Component[] { components.team, components.player, components.content }
                 : new Component[] { components.player, components.content };
 
-        Map<String, Component> parameterToComponent = IntStream.range(0, params.length)
-                .boxed()
-                .collect(Collectors.toMap(i -> params[i], i -> values[i]));
+        MutableComponent template = parseConfigTemplateMarkdown(configTemplate);
+        LinkedHashMap<String, Component> parameterToComponent = new LinkedHashMap<>();
+        for (int i = 0; i < params.length; i++) {
+            parameterToComponent.put(params[i], values[i]);
+        }
 
-        return Optional.of(applyParametersToTemplate(
-                parseConfigTemplateMarkdown(configTemplate),
-                mergeMaps(parameterToComponent, buildPositionComponentParameters(components.sender()))
-        ));
+        if (translationKey != null) {
+            return Optional.of(getStyledTranslatableMessage(
+                    template,
+                    translationKey,
+                    parameterToComponent,
+                    buildPositionComponentParameters(components.sender())
+            ));
+        }
+
+        return Optional.of(applyParametersToTemplate(template, mergeMaps(
+                parameterToComponent,
+                buildPositionComponentParameters(components.sender())
+        )));
     }
 
-    public static Optional<Component> getStyledDeathMessage(DeathMessageComponents components, Entity entity) {
+    private static final String DEATH_CAUSE_REPLACEMENT_TAG = "{death.cause}";
+    private static final String DIED_ENTITY_REPLACEMENT_TAG = "{died.entity}";
+    private static final String KILLER_ENTITY_REPLACEMENT_TAG = "{second.entity}";
+
+    public static Component getStyledDeathMessage(DeathMessageComponents components, Entity entity) {
         IConfigProvider config = ConfigProvider.getConfig();
 
         String causeStyle = config.minecraftPlayerDeathCauseStyle().replace(DEATH_CAUSE, DEATH_CAUSE_REPLACEMENT_TAG);
-        String nameStyle = config.minecraftPlayerDeathNameStyle().replace(PLAYER, DIED_ENTITY_REPLACEMENT_TAG);
-        String entityStyle = config.minecraftPlayerDeathSecondEntityNameStyle().replace(SECOND_ENTITY, KILLER_ENTITY_REPLACEMENT_TAG);
-        String itemStyle = config.minecraftPlayerDeathWeaponStyle().replace(ITEM, ITEM_REPLACEMENT_TAG);
+        String diedEntityStyle = config.minecraftPlayerDeathNameStyle().replace(PLAYER, DIED_ENTITY_REPLACEMENT_TAG);
+        String killerEntityStyle = config.minecraftPlayerDeathSecondEntityNameStyle().replace(SECOND_ENTITY, KILLER_ENTITY_REPLACEMENT_TAG);
+        String itemStyle = config.minecraftPlayerDeathWeaponStyle();
 
-        Component causeTemplate = parseConfigTemplateMarkdown(causeStyle);
-        Component playerTemplate = parseConfigTemplateMarkdown(nameStyle);
-        Component entityTemplate = parseConfigTemplateMarkdown(entityStyle);
-        Component itemTemplate = parseConfigTemplateMarkdown(itemStyle);
+        Component diedEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(diedEntityStyle), Map.of(DIED_ENTITY_REPLACEMENT_TAG, components.diedEntity()));
+        Component killerEntity = null;
+        Component item = null;
 
-        playerTemplate = applyParametersToTemplate(playerTemplate.copy(), Map.of(DIED_ENTITY_REPLACEMENT_TAG, components.diedEntityName()));
-        causeTemplate = applyParametersToTemplate(causeTemplate.copy(), Map.of(DEATH_CAUSE_REPLACEMENT_TAG, components.deathCause()));
         if (components.killerEntity() != null)
-            entityTemplate = applyParametersToTemplate(entityTemplate.copy(), Map.of(KILLER_ENTITY_REPLACEMENT_TAG, components.killerEntity()));
+            killerEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(killerEntityStyle), Map.of(KILLER_ENTITY_REPLACEMENT_TAG, components.killerEntity()));
         if (components.item() != null)
-            itemTemplate = applyParametersToTemplate(itemTemplate.copy(), Map.of(ITEM_REPLACEMENT_TAG, components.item()));
+            item = applyParametersToTemplate(parseConfigTemplateMarkdown(itemStyle), Map.of(ITEM, components.item()));
 
-        Map<String, Component> parameterToDeathMessageComponent = new HashMap<>();
-        parameterToDeathMessageComponent.put(DIED_ENTITY_REPLACEMENT_TAG, playerTemplate);
-        parameterToDeathMessageComponent.put(KILLER_ENTITY_REPLACEMENT_TAG, components.killerEntity() != null ? entityTemplate : null);
-        parameterToDeathMessageComponent.put(ITEM_REPLACEMENT_TAG, components.item() != null ? itemTemplate : null);
-        parameterToDeathMessageComponent.putAll(buildPositionComponentParameters(entity));
+        List<Object> args = new ArrayList<>();
+        args.add(diedEntity);
+        if (killerEntity != null)
+            args.add(killerEntity);
+        if (item != null)
+            args.add(item);
 
-        return Optional.of(applyParametersToTemplate(causeTemplate.copy(), parameterToDeathMessageComponent));
+        Component deathCause = Component.translatable(components.deathCauseLocaleKey(), args.toArray());
+
+        Map<String, Component> parameters = new HashMap<>();
+        parameters.put(DEATH_CAUSE_REPLACEMENT_TAG, deathCause);
+        parameters.putAll(buildPositionComponentParameters(entity));
+
+        return applyParametersToTemplate(parseConfigTemplateMarkdown(causeStyle), parameters);
     }
 }

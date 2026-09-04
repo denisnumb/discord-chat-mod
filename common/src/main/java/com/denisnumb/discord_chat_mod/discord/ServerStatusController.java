@@ -93,7 +93,7 @@ public class ServerStatusController {
                 : getDiscordMessageComponents(
                 MessageType.PINNED_STATUS_PLAYERS,
                 Map.of(
-                        Parameters.ONLINE_PLAYERS, getOnlineCountString(),
+                        Parameters.Translatable.ONLINE_PLAYERS, getOnlineCountString(),
                         Parameters.PLAYER_LIST, buildPlayerList(),
                         Parameters.PLAYER_COUNT, String.valueOf(getServerPlayerCount(server)),
                         Parameters.MAX_PLAYERS, String.valueOf(getServerMaxPlayers(server))

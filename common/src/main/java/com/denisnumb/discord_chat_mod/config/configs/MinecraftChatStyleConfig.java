@@ -2,15 +2,18 @@ package com.denisnumb.discord_chat_mod.config.configs;
 
 import com.denisnumb.discord_chat_mod.ColorUtils;
 import com.electronwill.nightconfig.core.CommentedConfig;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 import java.util.Objects;
 
 import static com.denisnumb.discord_chat_mod.ColorUtils.parseColor;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.MINECRAFT_ME_COMMAND_STYLE_COMMENT;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
 public class MinecraftChatStyleConfig {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     public static boolean enableMinecraftChatCustomization;
     public static String minecraftChatLinkColor;
     public static String minecraftDiscordMessagesStyle;
@@ -109,6 +112,29 @@ public class MinecraftChatStyleConfig {
         minecraftChatStyle.set("minecraftMeCommandStyle", minecraftMeCommandStyle);
         minecraftChatStyle.setComment("minecraftMeCommandStyle", MINECRAFT_ME_COMMAND_STYLE_COMMENT);
 
+        updateTellMessageExistedDefaultStyle(minecraftChatStyle);
+
         return minecraftChatStyle;
+    }
+
+    /**
+     * Migration method for configs generated with version 2.8.0 or less
+     * @since 2.9.0
+     */
+    private static void updateTellMessageExistedDefaultStyle(CommentedConfig minecraftChatStyle) {
+        String oldSentStyle = "<grey>*{commands.message.display.outgoing} {receiver}: {message}*<grey/>";
+        String oldReceivedStyle = "<grey>*{sender} {commands.message.display.incoming}: {message}*<grey/>";
+
+        if (minecraftTellMessageSentStyle.equals(oldSentStyle)) {
+            minecraftTellMessageSentStyle = MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT;
+            minecraftChatStyle.set("minecraftTellMessageSentStyle", minecraftTellMessageSentStyle);
+            LOGGER.info("[minecraftChatStyle] Updating the default style for messages sent via the /tell command.");
+        }
+
+        if (minecraftTellMessageReceivedStyle.equals(oldReceivedStyle)) {
+            minecraftTellMessageReceivedStyle = MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT;
+            minecraftChatStyle.set("minecraftTellMessageReceivedStyle", minecraftTellMessageReceivedStyle);
+            LOGGER.info("[minecraftChatStyle] Updating the default style for messages received via the /tell command.");
+        }
     }
 }

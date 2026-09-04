@@ -2,6 +2,9 @@ package com.denisnumb.discord_chat_mod.config;
 
 import java.util.List;
 
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
+
 public class ConfigDefaults {
     public static final String DISCORD_BOT_TOKEN_DEFAULT = "";
     public static final String MOD_LOCALE_DEFAULT = "en_us";
@@ -71,187 +74,314 @@ public class ConfigDefaults {
 
     public static final boolean ENABLE_MINECRAFT_CHAT_CUSTOMIZATION_DEFAULT = false;
     public static final String MINECRAFT_CHAT_LINK_COLOR_DEFAULT = "#00b7ff";
-    public static final String MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT = "**<#5f78d9>[discord]<#5f78d9/>** <{member}> {message}";
-    public static final String MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT = "<{player}> {message}";
-    public static final String MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT = "<yellow>{player} {multiplayer.player.joined}<yellow/>";
-    public static final String MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT = "<yellow>{player} {multiplayer.player.left}<yellow/>";
-    public static final String MINECRAFT_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = "{death_cause}";
-    public static final String MINECRAFT_PLAYER_DEATH_NAME_STYLE_DEFAULT = "{player}";
-    public static final String MINECRAFT_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = "{second_entity}";
-    public static final String MINECRAFT_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = "{item}";
-    public static final String MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT = "{player} {chat.type.advancement.task} <green>{advancement}<green/>";
-    public static final String MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT = "{player} {chat.type.advancement.goal} <green>{advancement}<green/>";
-    public static final String MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT = "{player} {chat.type.advancement.challenge} <darkpurple>{advancement}<darkpurple/>";
-    public static final String MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT = "-> {team} <{player}> {message}";
-    public static final String MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT = "{team} <{player}> {message}";
-    public static final String MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT = "<grey>*{commands.message.display.outgoing} {receiver}: {message}*<grey/>";
-    public static final String MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT = "<grey>*{sender} {commands.message.display.incoming}: {message}*<grey/>";
-    public static final String MINECRAFT_SAY_COMMAND_STYLE_DEFAULT = "[{player}] {message}";
-    public static final String MINECRAFT_ME_COMMAND_STYLE_DEFAULT = "* {player} {message}";
+
+    public static final String MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT = String.format(
+            "**<#5f78d9>[discord]<#5f78d9/>** <%s> %s",
+            MEMBER,
+            MESSAGE
+    );
+
+    public static final String MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT = String.format(
+            "<%s> %s",
+            PLAYER,
+            MESSAGE
+    );
+
+    public static final String MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT = String.format(
+            "<yellow>%s %s<yellow/>",
+            PLAYER,
+            PLAYER_JOINED
+    );
+
+    public static final String MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT = String.format(
+            "<yellow>%s %s<yellow/>",
+            PLAYER,
+            PLAYER_LEFT
+    );
+
+    public static final String MINECRAFT_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = DEATH_CAUSE;
+    public static final String MINECRAFT_PLAYER_DEATH_NAME_STYLE_DEFAULT = PLAYER;
+    public static final String MINECRAFT_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = SECOND_ENTITY;
+    public static final String MINECRAFT_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = ITEM;
+
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT = String.format(
+            "%s %s <green>%s<green/>",
+            PLAYER,
+            ADVANCEMENT_TASK,
+            ADVANCEMENT
+    );
+
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT = String.format(
+            "%s %s <green>%s<green/>",
+            PLAYER,
+            ADVANCEMENT_GOAL,
+            ADVANCEMENT
+    );
+
+    public static final String MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT = String.format(
+            "%s %s <darkpurple>%s<darkpurple/>",
+            PLAYER,
+            ADVANCEMENT_CHALLENGE,
+            ADVANCEMENT
+    );
+
+    public static final String MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT = String.format(
+            "-> %s <%s> %s",
+            TEAM,
+            PLAYER,
+            MESSAGE
+    );
+
+    public static final String MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT = String.format(
+            "%s <%s> %s",
+            TEAM,
+            PLAYER,
+            MESSAGE
+    );
+
+    public static final String MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT = String.format(
+            "<grey>*%s %s %s*<grey/>",
+            COMMANDS_MESSAGE_DISPLAY_OUTGOING,
+            RECEIVER,
+            MESSAGE
+    );
+
+    public static final String MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT = String.format(
+            "<grey>*%s %s %s*<grey/>",
+            SENDER,
+            COMMANDS_MESSAGE_DISPLAY_INCOMING,
+            MESSAGE
+    );
+
+    public static final String MINECRAFT_SAY_COMMAND_STYLE_DEFAULT = String.format(
+            "[%s] %s",
+            PLAYER,
+            MESSAGE
+    );
+
+    public static final String MINECRAFT_ME_COMMAND_STYLE_DEFAULT = String.format(
+            "* %s %s",
+            PLAYER,
+            MESSAGE
+    );
 
     // =================================================================================================================
     //                                      DISCORD CHAT CUSTOMIZATION DEFAULTS
     // =================================================================================================================
 
-    public static final String DISCORD_PLAYER_MESSAGE_STYLE_DEFAULT = 
+    public static final String DISCORD_PLAYER_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
-                "content": "`<{player}>` {message}"
+                "content": "`<%s>` %s"
             }
-            """;
-    
-    public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_DEFAULT = 
+            """,
+            PLAYER,
+            MESSAGE
+    );
+
+    public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_DEFAULT = String.format(
             """
             {
-                "content": "{message}"
+                "content": "%s"
             }
-            """;
-    
-    public static final String DISCORD_PLAYER_JOINED_STYLE_DEFAULT =
+            """,
+            MESSAGE
+    );
+
+    public static final String DISCORD_PLAYER_JOINED_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
                     "author": {
-                        "name": "{player} {multiplayer.player.joined}",
-                        "icon_url": "{player_avatar_url}"
+                        "name": "%s %s",
+                        "icon_url": "%s"
                     },
                     "color": "#2ECC71"
                 }
             }
-            """;
-    
-    public static final String DISCORD_PLAYER_LEFT_STYLE_DEFAULT =
+            """,
+            PLAYER,
+            PLAYER_JOINED,
+            PLAYER_AVATAR_URL
+    );
+
+    public static final String DISCORD_PLAYER_LEFT_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
                     "author": {
-                        "name": "{player} {multiplayer.player.left}",
-                        "icon_url": "{player_avatar_url}"
+                        "name": "%s %s",
+                        "icon_url": "%s"
                     },
                     "color": "#E74C3C"
                 }
             }
-            """;
+            """,
+            PLAYER,
+            PLAYER_LEFT,
+            PLAYER_AVATAR_URL
+    );
 
-    public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = "{death_cause}";
-    public static final String DISCORD_PLAYER_DEATH_NAME_STYLE_DEFAULT = "{player}";
-    public static final String DISCORD_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = "{second_entity}";
-    public static final String DISCORD_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = "{item}";
-    public static final String DISCORD_PLAYER_DEATH_MESSAGE_STYLE_DEFAULT =
+    public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = DEATH_CAUSE;
+    public static final String DISCORD_PLAYER_DEATH_NAME_STYLE_DEFAULT = PLAYER;
+    public static final String DISCORD_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = SECOND_ENTITY;
+    public static final String DISCORD_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = ITEM;
+    public static final String DISCORD_PLAYER_DEATH_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
                     "author": {
-                        "name": "{death_message}",
-                        "icon_url": "{player_avatar_url}"
+                        "name": "%s",
+                        "icon_url": "%s"
                     }
                 }
             }
-            """;
+            """,
+            DEATH_MESSAGE,
+            PLAYER_AVATAR_URL
+    );
 
-    public static final String DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT =
+    public static final String DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "title": "**{advancement}**",
-                    "description": "{description}",
+                    "title": "**%s**",
+                    "description": "%s",
                     "color": "#F1C40F",
                     "author": {
-                        "name": "{player} {chat.type.advancement.task}",
-                        "icon_url": "{player_avatar_url}"
+                        "name": "%s %s",
+                        "icon_url": "%s"
                     },
                     "thumbnail": {
-                        "url": "{icon_url}"
+                        "url": "%s"
                     }
                 }
             }
-            """;
+            """,
+            ADVANCEMENT,
+            DESCRIPTION,
+            PLAYER,
+            ADVANCEMENT_TASK,
+            PLAYER_AVATAR_URL,
+            ICON_URL
+    );
 
-    public static final String DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT =
+    public static final String DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "title": "**{advancement}**",
-                    "description": "{description}",
+                    "title": "**%s**",
+                    "description": "%s",
                     "color": "#F1C40F",
                     "author": {
-                        "name": "{player} {chat.type.advancement.goal}",
-                        "icon_url": "{player_avatar_url}"
+                        "name": "%s %s",
+                        "icon_url": "%s"
                     },
                     "thumbnail": {
-                        "url": "{icon_url}"
+                        "url": "%s"
                     }
                 }
             }
-            """;
+            """,
+            ADVANCEMENT,
+            DESCRIPTION,
+            PLAYER,
+            ADVANCEMENT_GOAL,
+            PLAYER_AVATAR_URL,
+            ICON_URL
+    );
 
-    public static final String DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT =
+    public static final String DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "title": "**{advancement}**",
-                    "description": "{description}",
+                    "title": "**%s**",
+                    "description": "%s",
                     "color": "#A700A7",
                     "author": {
-                        "name": "{player} {chat.type.advancement.challenge}",
-                        "icon_url": "{player_avatar_url}"
+                        "name": "%s %s",
+                        "icon_url": "%s"
                     },
                     "thumbnail": {
-                        "url": "{icon_url}"
+                        "url": "%s"
                     }
                 }
             }
-            """;
+            """,
+            ADVANCEMENT,
+            DESCRIPTION,
+            PLAYER,
+            ADVANCEMENT_CHALLENGE,
+            PLAYER_AVATAR_URL,
+            ICON_URL
+    );
 
-    public static final String DISCORD_SAY_COMMAND_STYLE_DEFAULT =
+    public static final String DISCORD_SAY_COMMAND_STYLE_DEFAULT = String.format(
             """
             {
-                "content": "`[{player}]` {message}"
+                "content": "`[%s]` %s"
             }
-            """;
+            """,
+            PLAYER,
+            MESSAGE
+    );
 
-    public static final String DISCORD_ME_COMMAND_STYLE_DEFAULT =
+    public static final String DISCORD_ME_COMMAND_STYLE_DEFAULT = String.format(
             """
             {
-                "content": "* {player} {message}"
+                "content": "* %s %s"
             }
-            """;
+            """,
+            PLAYER,
+            MESSAGE
+    );
 
-    public static final String DISCORD_ME_COMMAND_WEBHOOK_STYLE_DEFAULT =
+    public static final String DISCORD_ME_COMMAND_WEBHOOK_STYLE_DEFAULT = String.format(
             """
             {
-                "content": "> {message}"
+                "content": "> %s"
             }
-            """;
+            """,
+            MESSAGE
+    );
 
-    public static final String DISCORD_TELLRAW_COMMAND_STYLE_DEFAULT =
+    public static final String DISCORD_TELLRAW_COMMAND_STYLE_DEFAULT = String.format(
             """
             {
-                "content": "{message}"
+                "content": "%s"
             }
-            """;
+            """,
+            MESSAGE
+    );
 
-    public static final String DISCORD_COMMAND_LOG_STYLE_DEFAULT =
+    public static final String DISCORD_COMMAND_LOG_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "description": "`{command}`",
+                    "description": "`%s`",
                     "color": "#F1C40F",
                     "author": {
-                        "name": "{player}",
-                        "icon_url": "{player_avatar_url}"
+                        "name": "%s",
+                        "icon_url": "%s"
                     },
-                    "timestamp": "{datetime}"
+                    "timestamp": "%s"
                 }
             }
-            """;
+            """,
+            COMMAND,
+            PLAYER,
+            PLAYER_AVATAR_URL,
+            DATETIME
+    );
 
-    public static final String DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT =
+    public static final String DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
-                "content": "`<{player}>`"
+                "content": "`<%s>`"
             }
-            """;
+            """,
+            PLAYER
+    );
 
     public static final String DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT =
             """
@@ -260,72 +390,92 @@ public class ConfigDefaults {
             }
             """;
 
-    public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT =
+    public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "description": "{discord_chat_mod.server.started} <t:{timestamp}:R>",
+                    "description": "%s <t:%s:R>",
                     "color": "#2ECC71"
                 }
             }
-            """;
+            """,
+            SERVER_STARTED,
+            TIMESTAMP
+    );
 
-    public static final String DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_DEFAULT =
+    public static final String DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "description": "{discord_chat_mod.server.local_started} <t:{timestamp}:R>",
+                    "description": "%s <t:%s:R>",
                     "color": "#2ECC71"
                 }
             }
-            """;
+            """,
+            LOCAL_SERVER_STARTED,
+            TIMESTAMP
+    );
 
-    public static final String DISCORD_SERVER_CLOSED_MESSAGE_STYLE_DEFAULT =
+    public static final String DISCORD_SERVER_CLOSED_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "description": "{discord_chat_mod.server.closed} <t:{timestamp}:R>",
+                    "description": "%s <t:%s:R>",
                     "color": "#E74C3C"
                 }
             }
-            """;
+            """,
+            SERVER_CLOSED,
+            TIMESTAMP
+    );
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_DEFAULT =
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_DEFAULT = String.format(
             """
-            {
-                "embed": {
-                    "description": "{discord_chat_mod.server.status.unavailable}",
-                    "color": "#E74C3C"
-                }
-            }
-            """;
+           {
+               "embed": {
+                   "description": "%s",
+                   "color": "#E74C3C"
+               }
+           }
+           """,
+            SERVER_UNAVAILABLE
+    );
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_DEFAULT =
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_DEFAULT = String.format(
             """
-            {
-                "embed": {
-                    "description": "{discord_chat_mod.server.status.available}",
-                    "color": "#1F8B4C"
-                }
-            }
-            """;
+           {
+               "embed": {
+                   "description": "%s",
+                   "color": "#1F8B4C"
+               }
+           }
+           """,
+            SERVER_AVAILABLE
+    );
 
     public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_DEFAULT = "\n";
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_DEFAULT = "{player}";
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_DEFAULT = PLAYER;
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_STYLE_DEFAULT =
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
                 "embed": {
-                    "title": "{discord_chat_mod.server.status.online_players}",
-                    "description": "{player_list}",
+                    "title": "%s",
+                    "description": "%s",
                     "color": "#2ECC71"
                 }
             }
-            """;
+            """,
+            ONLINE_PLAYERS,
+            PLAYER_LIST
+    );
 
-    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_DEFAULT = "{user} ({guild})";
+    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_DEFAULT = String.format(
+            "%s (%s)",
+            USER,
+            GUILD
+    );
 
     // =================================================================================================================
     //                                             CLIENT CONFIG DEFAULTS

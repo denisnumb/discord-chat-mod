@@ -98,7 +98,7 @@ public final class DiscordChatMod {
             initJDA();
             getDiscordMessageComponents(MessageType.LOCAL_SERVER_START,
                     Map.of(
-                            Parameters.LOCAL_SERVER_STARTED, ServerLocaleProvider.Server.localStarted(server.getPort()),
+                            Parameters.Translatable.LOCAL_SERVER_STARTED, ServerLocaleProvider.Server.localStarted(server.getPort()),
                             Parameters.SERVER_PORT, String.valueOf(server.getPort())
                     )
             ).ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));

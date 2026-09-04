@@ -17,53 +17,22 @@ import org.jetbrains.annotations.Nullable;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.denisnumb.discord_chat_mod.locale.ServerLocaleProvider.getTranslate;
 
 public class DeathMessageUtils {
     private static final Style INTENTIONAL_GAME_DESIGN_STYLE = Style.EMPTY
             .withClickEvent(new ClickEvent.OpenUrl(URI.create("https://bugs.mojang.com/browse/MCPE-28723")))
             .withHoverEvent(new HoverEvent.ShowText(Component.literal("MCPE-28723")));
 
-    public static final String DEATH_CAUSE_REPLACEMENT_TAG = "{death.cause}";
-    public static final String DIED_ENTITY_REPLACEMENT_TAG = "{died.entity}";
-    public static final String KILLER_ENTITY_REPLACEMENT_TAG = "{second.entity}";
-    public static final String ITEM_REPLACEMENT_TAG = "{item}";
-
     public record DeathMessageComponents(
-            Component diedEntityName,
-            Component deathCause,
+            Component diedEntity,
+            String deathCauseLocaleKey,
             @Nullable Component killerEntity,
             @Nullable Component item
-    ) {
-        public DeathMessageComponents {
-            deathCause = Component.literal(indexPlaceholders(deathCause.getString())
-                    .replace("%1$s", DIED_ENTITY_REPLACEMENT_TAG)
-                    .replace("%2$s", KILLER_ENTITY_REPLACEMENT_TAG)
-                    .replace("%3$s", ITEM_REPLACEMENT_TAG)
-            );
-        }
-
-        private static String indexPlaceholders(String template) {
-            Matcher matcher = Pattern.compile("%s").matcher(template);
-            StringBuilder result = new StringBuilder();
-
-            int index = 1;
-            while (matcher.find()) {
-                matcher.appendReplacement(result, Matcher.quoteReplacement("%" + index + "$s"));
-                index++;
-            }
-            matcher.appendTail(result);
-
-            return result.toString();
-        }
-    }
+    ) {}
 
     public static DeathMessageComponents getDeathMessageComponents(List<CombatEntry> entries, LivingEntity diedEntity) {
         if (entries.isEmpty())
-            return new DeathMessageComponents(getLocalizedDisplayName(diedEntity), Component.literal(getTranslate("death.attack.generic")), null, null);
+            return new DeathMessageComponents(getEntityDisplayName(diedEntity), "death.attack.generic", null, null);
 
         DamageSource damageSource = entries.getLast().source();
         CombatEntry mostSignificantFall = getMostSignificantFall(entries);
@@ -74,8 +43,8 @@ public class DeathMessageUtils {
         else if (deathMessageType == DeathMessageType.INTENTIONAL_GAME_DESIGN) {
             String base = "death.attack." + damageSource.getMsgId();
             Component intentionalGameDesign
-                    = ComponentUtils.wrapInSquareBrackets(Component.literal(getTranslate(base + ".link"))).withStyle(INTENTIONAL_GAME_DESIGN_STYLE);
-            return new DeathMessageComponents(getLocalizedDisplayName(diedEntity), Component.literal(getTranslate(base + "message")), intentionalGameDesign, null);
+                    = ComponentUtils.wrapInSquareBrackets(Component.translatable(base + ".link")).withStyle(INTENTIONAL_GAME_DESIGN_STYLE);
+            return new DeathMessageComponents(getEntityDisplayName(diedEntity), base + "message", intentionalGameDesign, null);
         }
 
         return getLocalizedDeathMessage(damageSource, diedEntity);
@@ -84,23 +53,23 @@ public class DeathMessageUtils {
     private static DeathMessageComponents getFallMessage(CombatEntry combatEntry, @Nullable Entity killerEntity, LivingEntity diedEntity) {
         DamageSource damageSource = combatEntry.source();
         if (!damageSource.is(DamageTypeTags.IS_FALL) && !damageSource.is(DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL)) {
-            Component killerEntityDisplayName = getLocalizedDisplayName(killerEntity);
+            Component killerEntityDisplayName = getEntityDisplayName(killerEntity);
             Entity fallCauseEntity = damageSource.getEntity();
-            Component fallCauseEntityDisplayName = getLocalizedDisplayName(fallCauseEntity);
+            Component fallCauseEntityDisplayName = getEntityDisplayName(fallCauseEntity);
             if (fallCauseEntityDisplayName != null && !fallCauseEntityDisplayName.equals(killerEntityDisplayName))
                 return getMessageForAssistedFall(fallCauseEntity, fallCauseEntityDisplayName, "death.fell.assist.item", "death.fell.assist", diedEntity);
 
             return killerEntityDisplayName != null
                     ? getMessageForAssistedFall(killerEntity, killerEntityDisplayName, "death.fell.finish.item", "death.fell.finish", diedEntity)
-                    : new DeathMessageComponents(getLocalizedDisplayName(diedEntity), Component.literal(getTranslate("death.fell.killer")), null, null);
+                    : new DeathMessageComponents(getEntityDisplayName(diedEntity), "death.fell.killer", null, null);
         }
 
         FallLocation fallLocation = Objects.requireNonNullElse(combatEntry.fallLocation(), FallLocation.GENERIC);
-        return new DeathMessageComponents(getLocalizedDisplayName(diedEntity), Component.literal(getTranslate(fallLocation.languageKey())), null, null);
+        return new DeathMessageComponents(getEntityDisplayName(diedEntity), fallLocation.languageKey(), null, null);
     }
 
     private static DeathMessageComponents getLocalizedDeathMessage(DamageSource source, LivingEntity diedEntity) {
-        Component diedEntityName = getLocalizedDisplayName(diedEntity);
+        Component diedEntityName = getEntityDisplayName(diedEntity);
         String attackBase = "death.attack." + source.type().msgId();
 
         if (source.getEntity() == null && source.getDirectEntity() == null) {
@@ -108,12 +77,12 @@ public class DeathMessageUtils {
             String byPlayer = attackBase + ".player";
 
             return playerKiller != null
-                    ? new DeathMessageComponents(diedEntityName, Component.literal(getTranslate(byPlayer)), getLocalizedDisplayName(playerKiller), null)
-                    : new DeathMessageComponents(diedEntityName, Component.literal(getTranslate(attackBase)), null, null);
+                    ? new DeathMessageComponents(diedEntityName, byPlayer, getEntityDisplayName(playerKiller), null)
+                    : new DeathMessageComponents(diedEntityName, attackBase, null, null);
         } else {
             Component killerEntityName = source.getEntity() == null
-                    ? getLocalizedDisplayName(source.getDirectEntity())
-                    : getLocalizedDisplayName(source.getEntity());
+                    ? getEntityDisplayName(source.getDirectEntity())
+                    : getEntityDisplayName(source.getEntity());
 
             Entity entity = source.getEntity();
             ItemStack item = (entity instanceof LivingEntity)
@@ -121,8 +90,8 @@ public class DeathMessageUtils {
                     : ItemStack.EMPTY;
 
             return !item.isEmpty() && item.has(DataComponents.CUSTOM_NAME)
-                    ? new DeathMessageComponents(diedEntityName, Component.literal(getTranslate(attackBase + ".item")), killerEntityName, item.getDisplayName())
-                    : new DeathMessageComponents(diedEntityName, Component.literal(getTranslate(attackBase)), killerEntityName, null);
+                    ? new DeathMessageComponents(diedEntityName, attackBase + ".item", killerEntityName, item.getDisplayName())
+                    : new DeathMessageComponents(diedEntityName, attackBase, killerEntityName, null);
         }
     }
 
@@ -132,17 +101,17 @@ public class DeathMessageUtils {
                 : ItemStack.EMPTY;
 
         return !itemStack.isEmpty() && itemStack.has(DataComponents.CUSTOM_NAME)
-                ? new DeathMessageComponents(getLocalizedDisplayName(diedEntity), Component.literal(getTranslate(withItem)), killerDisplayName, itemStack.getDisplayName())
-                : new DeathMessageComponents(getLocalizedDisplayName(diedEntity), Component.literal(getTranslate(withoutItem)), killerDisplayName, null);
+                ? new DeathMessageComponents(getEntityDisplayName(diedEntity), withItem, killerDisplayName, itemStack.getDisplayName())
+                : new DeathMessageComponents(getEntityDisplayName(diedEntity), withoutItem, killerDisplayName, null);
     }
 
     @Nullable
-    private static Component getLocalizedDisplayName(@Nullable Entity entity) {
+    private static Component getEntityDisplayName(@Nullable Entity entity) {
         return switch (entity) {
             case null -> null;
             case Player player -> player.getDisplayName();
             case TamableAnimal animal when animal.hasCustomName() -> animal.getDisplayName();
-            default -> Component.literal(getTranslate(entity.getType().getDescriptionId()));
+            default -> Component.translatable(entity.getType().getDescriptionId());
         };
     }
 

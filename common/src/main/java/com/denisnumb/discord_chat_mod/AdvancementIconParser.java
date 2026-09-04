@@ -1,6 +1,5 @@
-package com.denisnumb.discord_chat_mod.advancement;
+package com.denisnumb.discord_chat_mod;
 
-import com.denisnumb.discord_chat_mod.DiscordChatMod;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
 import com.google.gson.Gson;

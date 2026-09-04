@@ -7,7 +7,7 @@ import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
-import com.google.gson.JsonObject;
+import com.denisnumb.discord_chat_mod.markdown.ComponentToMarkdownConverter;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
@@ -16,7 +16,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -28,8 +27,7 @@ import java.util.Optional;
 
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 
-import static com.denisnumb.discord_chat_mod.advancement.AdvancementIconParser.parseAdvancementIcon;
-import static com.denisnumb.discord_chat_mod.advancement.AdvancementParser.*;
+import static com.denisnumb.discord_chat_mod.AdvancementIconParser.parseAdvancementIcon;
 import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
@@ -70,7 +68,7 @@ public class MinecraftEvents {
             handleDiscord(() -> {
                 Map<String, String> parameters = mergeMaps(
                         Map.of(DEATH_MESSAGE, formatDeathMessageComponents(components)),
-                        buildPlayerParameters(components.diedEntityName().getString(), entity)
+                        buildPlayerParameters(components.diedEntity().getString(), entity)
                 );
                 getDiscordMessageComponents(MessageType.DEATH, parameters)
                         .ifPresent(discordMessageComponents -> sendMessageFromServer(ChannelCategory.DEATHS, getAllContexts(), discordMessageComponents));
@@ -78,7 +76,7 @@ public class MinecraftEvents {
         }
 
         if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
-            return getStyledDeathMessage(components, entity);
+            return Optional.of(getStyledDeathMessage(components, entity));
         return Optional.empty();
     }
 
@@ -90,24 +88,10 @@ public class MinecraftEvents {
         if (!displayInfo.shouldAnnounceChat())
             return Optional.empty();
 
-        Identifier advancementId = advancementHolder.id();
-        Identifier advancementIdentifier = Identifier.fromNamespaceAndPath(
-                advancementId.getNamespace(),
-                "advancement/" + advancementId.getPath() + ".json"
-        );
-
-        String title = displayInfo.getTitle().getString();
-        String description = displayInfo.getDescription().getString();
-
-        JsonObject advancementJson = getAdvancementFileAsJsonObject(advancementIdentifier);
-        if (advancementJson != null) {
-            title = getTranslatedAdvancementTitle(advancementJson, title);
-            description = getTranslatedAdvancementDescription(advancementJson, description);
-        }
-
-        String finalTitle = title;
-        String finalDescription = description;
         handleDiscord(() -> {
+            String formattedTitle = ComponentToMarkdownConverter.componentToDiscordMarkdown(displayInfo.getTitle());
+            String formattedDescription = ComponentToMarkdownConverter.componentToDiscordMarkdown(displayInfo.getDescription());
+
             MessageType messageType = switch (displayInfo.getType()) {
                 case TASK -> MessageType.ADVANCEMENT_TASK;
                 case CHALLENGE -> MessageType.ADVANCEMENT_CHALLENGE;
@@ -115,7 +99,7 @@ public class MinecraftEvents {
             };
 
             Map<String, String> parameters = mergeMaps(
-                    Map.of(ADVANCEMENT, finalTitle, DESCRIPTION, finalDescription, ICON_URL, "attachment://icon.png"),
+                    Map.of(ADVANCEMENT, formattedTitle, DESCRIPTION, formattedDescription, ICON_URL, "attachment://icon.png"),
                     buildPlayerParameters(player)
             );
 
@@ -128,7 +112,7 @@ public class MinecraftEvents {
         });
 
         if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
-            return getStyledAdvancementMessage(player, advancementHolder, title, description);
+            return Optional.of(getStyledAdvancementMessage(player, displayInfo));
         return Optional.empty();
     }
 
@@ -182,7 +166,7 @@ public class MinecraftEvents {
         });
 
         if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
-            return getStyledJoinedLeftMessage(player, isJoin);
+            return Optional.of(getStyledJoinedLeftMessage(player, isJoin));
         return Optional.empty();
     }
 }
