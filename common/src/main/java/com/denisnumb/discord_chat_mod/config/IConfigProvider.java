@@ -82,7 +82,8 @@ public interface IConfigProvider {
     String discordPinnedStatusMessagePlayerListDelimiter();
     String discordPinnedStatusMessagePlayerListNicknameStyle();
     String discordPinnedStatusMessageStyle();
-    String discordGuildForwardedMessageUserNameStyle();
+    String discordGuildForwardedMessageWebhookUsernameStyle();
+    String discordGuildForwardedMessageStyle();
 
     boolean isEmojifulCompatibilityEnabled();
     int maxChatHistory();

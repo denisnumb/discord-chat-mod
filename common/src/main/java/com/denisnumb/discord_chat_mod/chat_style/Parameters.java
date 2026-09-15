@@ -24,6 +24,7 @@ public final class Parameters {
     public static final String ADVANCEMENT = "{advancement}";
     public static final String DESCRIPTION = "{description}";
     public static final String ICON_URL = "{icon_url}";
+    public static final String AVATAR_URL = "{avatar_url}";
     public static final String SERVER_PORT = "{server_port}";
     public static final String PLAYER_LIST = "{player_list}";
     public static final String PLAYER_COUNT = "{player_count}";
@@ -43,6 +44,7 @@ public final class Parameters {
         public static final String SERVER_STARTED = "{discord_chat_mod.server.started}";
         public static final String LOCAL_SERVER_STARTED = "{discord_chat_mod.server.local_started}";
         public static final String SERVER_CLOSED = "{discord_chat_mod.server.closed}";
+        public static final String FORWARDED_MESSAGE = "{discord_chat_mod.discord.forwarded_guild_message}";
         public static final String ADVANCEMENT_TASK = "{chat.type.advancement.task}";
         public static final String ADVANCEMENT_GOAL = "{chat.type.advancement.goal}";
         public static final String ADVANCEMENT_CHALLENGE = "{chat.type.advancement.challenge}";

@@ -358,8 +358,13 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
-    public String discordGuildForwardedMessageUserNameStyle() {
-        return DiscordChatStyleConfig.discordGuildForwardedMessageUserNameStyle;
+    public String discordGuildForwardedMessageWebhookUsernameStyle() {
+        return DiscordChatStyleConfig.discordGuildForwardedMessageWebhookUsernameStyle;
+    }
+
+    @Override
+    public String discordGuildForwardedMessageStyle() {
+        return DiscordChatStyleConfig.discordGuildForwardedMessageStyle;
     }
 
     @Override

@@ -473,10 +473,20 @@ public final class ConfigDefaults {
             PLAYER_LIST
     );
 
-    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_DEFAULT = String.format(
+    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_DEFAULT = String.format(
             "%s (%s)",
             USER,
             GUILD
+    );
+
+    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_DEFAULT = String.format(
+            """
+            {
+                "content": "%s\n%s"
+            }
+            """,
+            FORWARDED_MESSAGE,
+            MESSAGE
     );
 
     // =================================================================================================================

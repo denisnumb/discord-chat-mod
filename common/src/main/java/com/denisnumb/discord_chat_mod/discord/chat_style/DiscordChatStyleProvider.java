@@ -198,6 +198,7 @@ public final class DiscordChatStyleProvider {
                 case ME_COMMAND_WEBHOOK -> parseDiscordConfigTemplate(config.discordMeCommandWebhookStyle(), parameterMap);
                 case TELLRAW_COMMAND -> parseDiscordConfigTemplate(config.discordTellrawCommandStyle(), parameterMap);
                 case COMMAND_LOG -> parseDiscordConfigTemplate(config.discordCommandLogStyle(), parameterMap);
+                case GUILD_FORWARDED_MESSAGE -> parseDiscordConfigTemplate(config.discordGuildForwardedMessageStyle(), parameterMap);
             };
 
             return Optional.of(result);

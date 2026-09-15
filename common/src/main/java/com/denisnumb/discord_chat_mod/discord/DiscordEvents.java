@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord;
 
+import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
@@ -70,13 +71,6 @@ public final class DiscordEvents extends ListenerAdapter {
         FileUpload[] attachments = collectAttachments(event.getMessage());
 
         Optional<Webhook> webhookOpt = guildContext.getWebhook(guildContext.defaultChannel);
-        if (webhookOpt.isEmpty()){
-            messageContent = DiscordLocaleProvider.Discord.forwardedGuildMessage(
-                    event.getMember().getEffectiveName(),
-                    event.getGuild().getName()
-            ) + "\n" + messageContent;
-        }
-
         DiscordChatStyleProvider.DiscordMessageComponents messageComponents = new DiscordChatStyleProvider.DiscordMessageComponents(
                 Optional.of(messageContent),
                 embeds.isEmpty() ? Optional.empty() : Optional.of(embeds.getFirst())
@@ -84,7 +78,7 @@ public final class DiscordEvents extends ListenerAdapter {
 
         if (webhookOpt.isPresent()){
             String userName = ConfigProvider.getConfig()
-                    .discordGuildForwardedMessageUserNameStyle()
+                    .discordGuildForwardedMessageWebhookUsernameStyle()
                     .replace(USER, event.getAuthor().getEffectiveName())
                     .replace(MEMBER, event.getMember().getEffectiveName())
                     .replace(GUILD, event.getGuild().getName());
@@ -92,6 +86,17 @@ public final class DiscordEvents extends ListenerAdapter {
             sendWebhookMessage(guildContext.defaultChannel, webhookOpt.get(), false,
                     event.getAuthor().getAvatarUrl(), userName, messageComponents, null, attachments);
         } else {
+            messageComponents = DiscordChatStyleProvider.getDiscordMessageComponents(MessageType.GUILD_FORWARDED_MESSAGE, Map.of(
+                    Translatable.FORWARDED_MESSAGE, DiscordLocaleProvider.Discord.forwardedGuildMessage(
+                            event.getMember().getEffectiveName(),
+                            event.getGuild().getName()
+                    ),
+                    MEMBER, event.getMember().getEffectiveName(),
+                    USER, event.getAuthor().getEffectiveName(),
+                    AVATAR_URL, event.getMember().getEffectiveAvatarUrl(),
+                    GUILD, event.getGuild().getName(),
+                    MESSAGE, messageContent
+            )).orElse(messageComponents);
             sendChannelMessage(guildContext.defaultChannel, false, messageComponents, null, attachments);
         }
     }

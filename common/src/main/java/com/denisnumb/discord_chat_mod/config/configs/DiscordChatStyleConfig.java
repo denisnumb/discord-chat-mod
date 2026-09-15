@@ -44,7 +44,8 @@ public final class DiscordChatStyleConfig {
     public static String discordPinnedStatusMessagePlayerListDelimiter;
     public static String discordPinnedStatusMessagePlayerListNicknameStyle;
     public static String discordPinnedStatusMessageStyle;
-    public static String discordGuildForwardedMessageUserNameStyle;
+    public static String discordGuildForwardedMessageWebhookUsernameStyle;
+    public static String discordGuildForwardedMessageStyle;
 
     public static CommentedConfig loadDiscordChatStyleConfig(CommentedConfig commonConfig){
         CommentedConfig existedDiscordChatStyle = commonConfig.getOrElse("discordChatStyle", commonConfig.createSubConfig());
@@ -176,11 +177,17 @@ public final class DiscordChatStyleConfig {
         discordChatStyle.setComment("discordPinnedStatusMessageStyle", DISCORD_PINNED_STATUS_MESSAGE_STYLE_COMMENT);
         discordPinnedStatusMessageStyle = validateJsonValue(discordPinnedStatusMessageStyle, DISCORD_PINNED_STATUS_MESSAGE_STYLE_DEFAULT);
 
-        discordGuildForwardedMessageUserNameStyle = existedDiscordChatStyle.getOrElse("discordGuildForwardedMessageUserNameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_DEFAULT);
-        discordChatStyle.set("discordGuildForwardedMessageUserNameStyle", discordGuildForwardedMessageUserNameStyle);
-        discordChatStyle.setComment("discordGuildForwardedMessageUserNameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_COMMENT);
+        discordGuildForwardedMessageWebhookUsernameStyle = existedDiscordChatStyle.getOrElse("discordGuildForwardedMessageWebhookUsernameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_DEFAULT);
+        discordChatStyle.set("discordGuildForwardedMessageWebhookUsernameStyle", discordGuildForwardedMessageWebhookUsernameStyle);
+        discordChatStyle.setComment("discordGuildForwardedMessageWebhookUsernameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_COMMENT);
+
+        discordGuildForwardedMessageStyle = existedDiscordChatStyle.getOrElse("discordGuildForwardedMessageStyle", DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_DEFAULT);
+        discordChatStyle.set("discordGuildForwardedMessageStyle", discordGuildForwardedMessageStyle.replace("\r", ""));
+        discordChatStyle.setComment("discordGuildForwardedMessageStyle", DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_COMMENT);
+        discordGuildForwardedMessageStyle = validateJsonValue(discordGuildForwardedMessageStyle, DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_DEFAULT);
 
         migrateScreenshotMessageStyle(existedDiscordChatStyle, discordChatStyle);
+        migrateDiscordGuildForwardedMessageUserNameStyle(existedDiscordChatStyle, discordChatStyle);
 
         return discordChatStyle;
     }
@@ -223,6 +230,19 @@ public final class DiscordChatStyleConfig {
             newDiscordChatStyle.set("discordImageMessageWebhookStyle", existedOldStyle.replace("\r", ""));
             discordImageMessageWebhookStyle = validateJsonValue(existedOldStyle, DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
             LOGGER.info("[discordChatStyle] Migrating \"discordScreenshotMessageWebhookStyle\" → \"discordImageMessageWebhookStyle\"");
+        }
+    }
+
+    /**
+     * Migration method for configs generated with version 2.8.0 or less
+     * @since 2.9.0
+     */
+    private static void migrateDiscordGuildForwardedMessageUserNameStyle(CommentedConfig existedDiscordChatStyle, CommentedConfig newDiscordChatStyle){
+        if (existedDiscordChatStyle.contains("discordGuildForwardedMessageUserNameStyle")){
+            String existedOldStyle = existedDiscordChatStyle.getOrElse("discordGuildForwardedMessageUserNameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_DEFAULT);
+            newDiscordChatStyle.set("discordGuildForwardedMessageWebhookUsernameStyle", existedOldStyle);
+            discordGuildForwardedMessageWebhookUsernameStyle = existedOldStyle;
+            LOGGER.info("[discordChatStyle] Migrating \"discordGuildForwardedMessageUserNameStyle\" → \"discordGuildForwardedMessageWebhookUsernameStyle\"");
         }
     }
 }

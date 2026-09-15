@@ -793,15 +793,29 @@ public final class ConfigComments {
             MAX_PLAYERS
     );
 
-    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_USERNAME_STYLE_COMMENT = String.format(
+    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_COMMENT = String.format(
             """
-             The username displayed in Discord when forwarding a message from another guild\
+             The webhook username displayed in Discord when forwarding a message from another guild\
             
              Parameters: %s, %s, %s\
             """,
             MEMBER,
             USER,
             GUILD
+    );
+
+    public static final String DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_COMMENT = String.format(
+            """
+              Style of a message forwarded from another guild\
+             
+              Parameters: %s, %s, %s, %s, %s, %s\
+             """,
+            FORWARDED_MESSAGE,
+            MEMBER,
+            USER,
+            AVATAR_URL,
+            GUILD,
+            MESSAGE
     );
 
     // =================================================================================================================
