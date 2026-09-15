@@ -100,7 +100,7 @@ public final class SlashCommandListener extends ListenerAdapter {
     ){
         if (components.hasContentAndEmbed())
             event.reply(components.getContent()).addEmbeds(components.getEmbed()).setEphemeral(true).queue();
-        else if (components.hasNoEmbed())
+        else if (components.hasOnlyContent())
             event.reply(components.getContent()).setEphemeral(true).queue();
         else
             event.replyEmbeds(components.getEmbed()).setEphemeral(true).queue();

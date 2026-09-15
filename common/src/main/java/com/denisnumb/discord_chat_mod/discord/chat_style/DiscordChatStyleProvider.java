@@ -42,7 +42,7 @@ public final class DiscordChatStyleProvider {
             return content.isPresent() && embed.isPresent();
         }
 
-        public boolean hasNoEmbed(){
+        public boolean hasOnlyContent(){
             return content.isPresent() && embed.isEmpty();
         }
 

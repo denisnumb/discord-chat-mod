@@ -13,7 +13,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Webhook;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.attribute.IWebhookContainer;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -160,40 +161,43 @@ public final class DiscordChannelRegistry {
         if (context == null || !ConfigProvider.getConfig().isWebhookModeEnabled())
             return;
 
-        if (channel instanceof TextChannel textChannel){
-            if (!textChannel.getGuild().getSelfMember().hasPermission(textChannel, Permission.MANAGE_WEBHOOKS)){
-                logErrorToServer(
-                        MinecraftLocaleProvider.Discord.Webhook.Error.init(
-                                MinecraftLocaleProvider.Discord.Webhook.Error.missingPermission("#" + channel.getName())
-                        )
-                );
-                return;
+        IWebhookContainer webhookContainer = null;
+        if (channel instanceof ThreadChannel thread) {
+            if (thread.getParentChannel() instanceof IWebhookContainer wc) {
+                webhookContainer = wc;
             }
+        } else if (channel instanceof IWebhookContainer wc) {
+            webhookContainer = wc;
+        }
 
-            Webhook webhook = textChannel.retrieveWebhooks()
+        if (webhookContainer == null){
+            logWarnToServer(MinecraftLocaleProvider.Discord.Webhook.Error.init(
+                    MinecraftLocaleProvider.Discord.Webhook.Error.invalidChannelType("#" + channel.getName())));
+            return;
+        }
+
+        if (!webhookContainer.getGuild().getSelfMember().hasPermission(webhookContainer, Permission.MANAGE_WEBHOOKS)){
+            logErrorToServer(MinecraftLocaleProvider.Discord.Webhook.Error.init(
+                    MinecraftLocaleProvider.Discord.Webhook.Error.missingPermission("#" + webhookContainer.getName())));
+            return;
+        }
+
+        try{
+            Webhook webhook = webhookContainer.retrieveWebhooks()
                     .complete()
                     .stream()
                     .filter(wh -> jda.getSelfUser().equals(wh.getOwnerAsUser()))
                     .findFirst()
                     .orElse(null);
 
-            try{
-                if (webhook == null)
-                    webhook = textChannel.createWebhook("DC & Chat Images").setAvatar(webhookAvatar).complete();
-                else
-                    webhook.getManager().setAvatar(webhookAvatar).queue();
+            if (webhook == null)
+                webhook = webhookContainer.createWebhook("DC & Chat Images").setAvatar(webhookAvatar).complete();
+            else
+                webhook.getManager().setAvatar(webhookAvatar).queue();
 
-                context.registerWebhook(channel, webhook);
-            } catch (Exception e) {
-                logWarnToServer(MinecraftLocaleProvider.Discord.Webhook.Error.init(e.getMessage()));
-            }
-
-        } else {
-            logWarnToServer(
-                    MinecraftLocaleProvider.Discord.Webhook.Error.init(
-                            MinecraftLocaleProvider.Discord.Webhook.Error.invalidChannelType("#" + channel.getName())
-                    )
-            );
+            context.registerWebhook(channel, webhook);
+        } catch (Exception e) {
+            logWarnToServer(MinecraftLocaleProvider.Discord.Webhook.Error.init(e.getMessage()));
         }
     }
 
@@ -204,14 +208,10 @@ public final class DiscordChannelRegistry {
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
 
         if (!missingPermissions.isEmpty()){
-
-
             throw new InvalidChannelException(MinecraftLocaleProvider.Discord.Error.missingPermissions(
                     "#" + channel.getName(),
                     String.join("\n", missingPermissions.stream().map(Permission::getName).toList())
             ));
         }
     }
-
-
 }

@@ -1,9 +1,9 @@
 package com.denisnumb.discord_chat_mod.discord.utils;
 
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
-import com.denisnumb.discord_chat_mod.discord.model.WebhookPayload;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.utils.JavaUtils;
 import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
@@ -11,10 +11,8 @@ import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.sticker.GuildSticker;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
-import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
@@ -27,15 +25,14 @@ import java.util.concurrent.Executors;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.logErrorToServer;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordWebhookUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 
 
 public final class DiscordMessageUtils {
-    private DiscordMessageUtils() {}
+    private DiscordMessageUtils() {
+    }
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    public record ImageData(String fileName, byte[] data){}
     private static ExecutorService EXECUTOR;
 
     public static void initDiscordSendExecutor() {
@@ -43,7 +40,7 @@ public final class DiscordMessageUtils {
     }
 
     public static void stopDiscordSendExecutor() {
-        if (EXECUTOR != null){
+        if (EXECUTOR != null) {
             EXECUTOR.shutdownNow();
             EXECUTOR = null;
         }
@@ -54,67 +51,15 @@ public final class DiscordMessageUtils {
             EXECUTOR.submit(prepareMessageFunc);
     }
 
-    public static Optional<String> sendMessageFromPlayer(
-            ChannelCategory channelCategory,
-            List<DiscordGuildContext> guildContexts,
-            Player player,
-            DiscordMessageComponents messageComponentsWebhook,
-            DiscordMessageComponents messageComponents,
-            ImageData imageData
-    ) {
-        Optional<String> optionalImageUrl = Optional.empty();
-
-        for (DiscordGuildContext guildContext : guildContexts){
-            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
-
-            if (isChannelCategoryDisabled(channel))
-                continue;
-
-            Optional<String> optionalNewUrl = sendImageFromPlayerToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData);
-            if (optionalImageUrl.isEmpty())
-                optionalImageUrl = optionalNewUrl;
-
-            duplicateMessageToDefaultChannel(guildContext, channelCategory,
-                    () -> sendImageFromPlayerToChannel(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData)
+    @Nullable
+    public static FileUpload downloadStickerFile(StickersProvider.StickerData stickerData) {
+        try {
+            return FileUpload.fromData(
+                    JavaUtils.getInputStreamFromUrl(stickerData.imageUrl()).readAllBytes(),
+                    getStickerFileName(stickerData.imageUrl())
             );
-        }
-
-        return optionalImageUrl;
-    }
-
-    private static Optional<String> sendImageFromPlayerToChannel(
-            DiscordGuildContext guildContext,
-            GuildMessageChannel channel,
-            Player player,
-            DiscordMessageComponents messageComponentsWebhook,
-            DiscordMessageComponents messageComponents,
-            ImageData imageData
-    ) {
-        Optional<Webhook> optionalWebhook = guildContext.getWebhook(channel);
-
-        if (optionalWebhook.isEmpty()) {
-            return prepareDiscordMessage(channel, messageComponents).flatMap(
-                    mca -> sendDiscordMessage(mca.addFiles(FileUpload.fromData(imageData.data, imageData.fileName)), channel, true).flatMap(
-                            message -> message.getAttachments().stream().findFirst().map(Message.Attachment::getUrl)
-                    )
-            );
-        } else {
-            try {
-                WebhookPayload payload = messageComponentsWebhook.hasContentAndEmbed()
-                        ? new WebhookPayload(messageComponentsWebhook.getContent(), messageComponentsWebhook.getEmbed())
-                        : messageComponentsWebhook.hasNoEmbed()
-                        ? new WebhookPayload(messageComponentsWebhook.getContent())
-                        : new WebhookPayload(messageComponentsWebhook.getEmbed());
-
-                return sendWebhookWithImage(
-                        optionalWebhook.get().getUrl(),
-                        payload.withUsername(player.getDisplayName().getString())
-                                .withAvatarUrl(MinecraftUtils.getPlayerAvatarUrl(player)),
-                        new WebhookPayload.WebhookAttachment(imageData.data(), imageData.fileName())
-                ).get();
-            } catch (Exception ignored) {
-                return Optional.empty();
-            }
+        } catch (Exception ignored) {
+            return null;
         }
     }
 
@@ -123,15 +68,44 @@ public final class DiscordMessageUtils {
             List<DiscordGuildContext> guildContexts,
             DiscordMessageComponents messageComponents
     ) {
-        sendMessage(channelCategory, guildContexts, null, messageComponents, messageComponents, null, null);
+        sendMessageToGuilds(channelCategory, guildContexts, null, messageComponents, messageComponents, null, null);
     }
+
     public static void sendMessageFromServer(
             ChannelCategory channelCategory,
             List<DiscordGuildContext> guildContexts,
             DiscordMessageComponents messageComponents,
-            ImageData imageData
+            FileUpload imageData
     ) {
-        sendMessage(channelCategory, guildContexts, null, messageComponents, messageComponents, imageData, null);
+        sendMessageToGuilds(channelCategory, guildContexts, null, messageComponents, messageComponents, null, imageData);
+    }
+
+    public static Optional<String> sendMessageFromPlayer(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            FileUpload imageData
+    ) {
+        Optional<String> optionalImageUrl = Optional.empty();
+
+        for (DiscordGuildContext guildContext : guildContexts) {
+            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
+
+            if (isChannelCategoryDisabled(channel))
+                continue;
+
+            Optional<String> optionalNewUrl = sendImageFromPlayer(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData);
+            if (optionalImageUrl.isEmpty())
+                optionalImageUrl = optionalNewUrl;
+
+            duplicateMessageToDefaultChannel(guildContext, channelCategory,
+                    () -> sendImageFromPlayer(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData)
+            );
+        }
+
+        return optionalImageUrl;
     }
 
     public static void sendMessageFromPlayer(
@@ -141,7 +115,7 @@ public final class DiscordMessageUtils {
             DiscordMessageComponents messageComponentsWebhook,
             DiscordMessageComponents messageComponents
     ) {
-        sendMessage(channelCategory, guildContexts, player, messageComponentsWebhook, messageComponents, null, null);
+        sendMessageToGuilds(channelCategory, guildContexts, player, messageComponentsWebhook, messageComponents, null, null);
     }
 
     public static void sendMessageFromPlayer(
@@ -152,123 +126,54 @@ public final class DiscordMessageUtils {
             DiscordMessageComponents messageComponents,
             StickersProvider.StickerData stickerData
     ) {
-        sendMessage(channelCategory, guildContexts, player, messageComponentsWebhook, messageComponents, null, stickerData);
+        sendMessageToGuilds(channelCategory, guildContexts, player, messageComponentsWebhook, messageComponents, stickerData, null);
     }
 
-    private static void sendMessage(
-            ChannelCategory channelCategory,
-            List<DiscordGuildContext> guildContexts,
-            @Nullable Player player,
-            DiscordMessageComponents messageComponentsWebhook,
-            DiscordMessageComponents messageComponents,
-            @Nullable ImageData imageData,
-            @Nullable StickersProvider.StickerData stickerData
-    ) {
-        for (DiscordGuildContext guildContext : guildContexts){
-            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
-
-            if (isChannelCategoryDisabled(channel))
-                continue;
-
-            duplicateMessageToDefaultChannel(guildContext, channelCategory,
-                    () -> sendMessageToChannel(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, imageData, stickerData)
-            );
-
-            sendMessageToChannel(guildContext, channel, player, messageComponentsWebhook, messageComponents, imageData, stickerData);
-        }
-    }
-
-    private static void sendMessageToChannel(
-            DiscordGuildContext guildContext,
+    public static Optional<Message> sendWebhookMessage(
             GuildMessageChannel channel,
-            @Nullable Player player,
-            DiscordMessageComponents messageComponentsWebhook,
+            Webhook webhook,
+            boolean complete,
+            @Nullable String avatarUrl,
+            String userName,
             DiscordMessageComponents messageComponents,
-            @Nullable ImageData imageData,
-            @Nullable StickersProvider.StickerData stickerData
+            @Nullable StickersProvider.StickerData stickerData,
+            @Nullable FileUpload... files
     ) {
-        guildContext.getWebhook(channel).ifPresentOrElse(
-                webhook -> sendDiscordWebhookMessage(webhook.getUrl(), player, messageComponentsWebhook, imageData),
-                () -> prepareDiscordMessage(channel, messageComponents).ifPresent(mca -> {
-                    if (imageData != null)
-                        mca.addFiles(FileUpload.fromData(imageData.data, imageData.fileName));
-
-                    if (stickerData != null){
-                        GuildSticker sticker = guildContext.guild.getStickerById(stickerData.discordId());
-                        if (sticker != null)
-                            mca = mca.setStickers(sticker);
-                        else{
-                            try {
-                                mca.addFiles(FileUpload.fromData(
-                                        JavaUtils.getInputStreamFromUrl(stickerData.imageUrl()).readAllBytes(),
-                                        getStickerFileName(stickerData.imageUrl())
-                                ));
-                            } catch (Exception ignored) {}
-                        }
-                    }
-
-                    sendDiscordMessage(mca, channel, false);
-                })
-        );
-    }
-
-    private static void sendDiscordWebhookMessage(
-            String webhookUrl,
-            @Nullable Player player,
-            DiscordMessageComponents components,
-            @Nullable ImageData imageData
-    ) {
-        WebhookPayload payload = components.hasContentAndEmbed()
-                ? new WebhookPayload(components.getContent(), components.getEmbed())
-                : components.hasNoEmbed()
-                ? new WebhookPayload(components.getContent())
-                : new WebhookPayload(components.getEmbed());
-
-        payload.withUsername(player != null
-                ? player.getDisplayName().getString()
-                : getWebhookServerName()
-        );
-
-        if (player != null)
-            payload.withAvatarUrl(MinecraftUtils.getPlayerAvatarUrl(player));
-
-        if (imageData != null)
-            sendWebhookWithImage(webhookUrl, payload, new WebhookPayload.WebhookAttachment(imageData.data, imageData.fileName));
-        else
-            sendWebhook(webhookUrl, () -> payload);
-    }
-
-    public static Optional<MessageCreateAction> prepareDiscordMessage(GuildMessageChannel channel, DiscordMessageComponents messageComponents) {
         if (!isDiscordConnected())
             return Optional.empty();
         try {
-            MessageCreateAction mca = messageComponents.hasContentAndEmbed()
-                    ? channel.sendMessage(messageComponents.getContent()).addEmbeds(messageComponents.getEmbed())
-                    : messageComponents.hasNoEmbed()
-                    ? channel.sendMessage(messageComponents.getContent())
-                    : channel.sendMessageEmbeds(messageComponents.getEmbed());
-
-            return Optional.of(mca);
-        } catch (InsufficientPermissionException e) {
-            logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMessage()));
-            LOGGER.error("", e);
-        } catch (ErrorResponseException e) {
-            logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMeaning()));
-            LOGGER.error("", e);
+            return new DiscordMessageSender.WebhookBuilder(webhook)
+                    .withThread(channel)
+                    .withAvatarUrl(avatarUrl)
+                    .withUserName(userName)
+                    .withContent(messageComponents.getContent())
+                    .withEmbeds(messageComponents.getEmbed())
+                    .withSticker(stickerData)
+                    .withFiles(files)
+                    .send(complete);
         } catch (Exception e) {
-            logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessage(channel.getName()));
-            LOGGER.error("", e);
+            LOGGER.error("SendWebhookError", e);
         }
 
         return Optional.empty();
     }
 
-    public static Optional<Message> sendDiscordMessage(MessageCreateAction mca, GuildMessageChannel channel, boolean complete) {
+    public static Optional<Message> sendChannelMessage(
+            GuildMessageChannel channel,
+            boolean complete,
+            DiscordMessageComponents messageComponents,
+            @Nullable StickersProvider.StickerData stickerData,
+            @Nullable FileUpload... files
+    ) {
+        if (!isDiscordConnected())
+            return Optional.empty();
         try {
-            if (complete)
-                return Optional.of(mca.complete());
-            else
-                mca.queue();
+            return new DiscordMessageSender.ChannelBuilder(channel)
+                    .withContent(messageComponents.getContent())
+                    .withEmbeds(messageComponents.getEmbed())
+                    .withSticker(stickerData)
+                    .withFiles(files)
+                    .send(complete);
         } catch (InsufficientPermissionException e) {
             logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMessage()));
             LOGGER.error("", e);
@@ -287,13 +192,86 @@ public final class DiscordMessageUtils {
         try {
             if (components.hasContentAndEmbed())
                 message.editMessage(components.getContent()).setEmbeds(components.getEmbed()).queue();
-            else if (components.hasNoEmbed())
+            else if (components.hasOnlyContent())
                 message.editMessage(components.getContent()).queue();
             else
                 message.editMessageEmbeds(components.getEmbed()).queue();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("EditMessageError", e);
         }
+    }
+
+    private static void sendMessageToGuilds(
+            ChannelCategory channelCategory,
+            List<DiscordGuildContext> guildContexts,
+            @Nullable Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            @Nullable StickersProvider.StickerData stickerData,
+            @Nullable FileUpload imageData
+    ) {
+        for (DiscordGuildContext guildContext : guildContexts) {
+            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
+
+            if (isChannelCategoryDisabled(channel))
+                continue;
+
+            duplicateMessageToDefaultChannel(guildContext, channelCategory,
+                    () -> sendMessage(guildContext, guildContext.defaultChannel, player, messageComponentsWebhook, messageComponents, stickerData, imageData)
+            );
+
+            sendMessage(guildContext, channel, player, messageComponentsWebhook, messageComponents, stickerData, imageData);
+        }
+    }
+
+    private static Optional<String> sendImageFromPlayer(
+            DiscordGuildContext guildContext,
+            GuildMessageChannel channel,
+            Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            FileUpload imageData
+    ) {
+        return guildContext.getWebhook(channel)
+                .map(webhook -> sendWebhookMessage(
+                        channel,
+                        webhook,
+                        true,
+                        MinecraftUtils.getPlayerAvatarUrl(player),
+                        player.getDisplayName().getString(),
+                        messageComponentsWebhook,
+                        null,
+                        imageData
+                ))
+                .orElseGet(() -> sendChannelMessage(
+                        channel,
+                        true,
+                        messageComponents,
+                        null,
+                        imageData
+                ))
+                .flatMap(message -> message.getAttachments().stream()
+                        .findFirst()
+                        .map(Message.Attachment::getUrl)
+                );
+    }
+
+    private static void sendMessage(
+            DiscordGuildContext guildContext,
+            GuildMessageChannel channel,
+            @Nullable Player player,
+            DiscordMessageComponents messageComponentsWebhook,
+            DiscordMessageComponents messageComponents,
+            @Nullable StickersProvider.StickerData stickerData,
+            @Nullable FileUpload imageData
+    ) {
+        guildContext.getWebhook(channel).ifPresentOrElse(webhook -> {
+                    String avatarUrl = player == null ? null : MinecraftUtils.getPlayerAvatarUrl(player);
+                    String userName = player == null ? getWebhookServerName() : player.getDisplayName().getString();
+                    sendWebhookMessage(channel, webhook, false, avatarUrl, userName, messageComponentsWebhook, stickerData, imageData);
+                },
+                () -> sendChannelMessage(channel, false, messageComponents, stickerData, imageData)
+        );
     }
 
     private static void duplicateMessageToDefaultChannel(DiscordGuildContext context, ChannelCategory category, Runnable sendMessageFunction) {
@@ -304,8 +282,13 @@ public final class DiscordMessageUtils {
         }
     }
 
-    public static String getStickerFileName(String stickerUrl){
+    private static String getWebhookServerName() {
+        String configValue = ConfigProvider.getConfig().webhookServerName();
+        return configValue.isBlank() ? null : configValue.replaceAll("(?i)discord", "DC");
+    }
+
+    private static String getStickerFileName(String stickerUrl) {
         String[] parts = stickerUrl.split("\\.");
-        return "sticker" + "." + parts[parts.length - 1];
+        return "sticker." + parts[parts.length - 1];
     }
 }

@@ -10,7 +10,6 @@ import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.requests.restaction.pagination.PinnedMessagePaginationAction;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -173,9 +172,7 @@ public final class ServerStatusController {
         if (!guildContext.enablePinnedStatusMessage)
             return Optional.empty();
 
-        GuildMessageChannel channel = guildContext.getChannel(ChannelCategory.PINNED_STATUS);
-        return prepareDiscordMessage(channel, messageComponents)
-                .flatMap(mca -> sendDiscordMessage(mca, channel, true));
+        return sendChannelMessage(guildContext.getChannel(ChannelCategory.PINNED_STATUS), true, messageComponents, null);
     }
 
     private static Map<DiscordGuildContext, Optional<Message>> findPinnedStatusMessages() {

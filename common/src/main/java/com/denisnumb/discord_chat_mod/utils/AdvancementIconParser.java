@@ -2,11 +2,11 @@ package com.denisnumb.discord_chat_mod.utils;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
-import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -61,7 +61,7 @@ public final class AdvancementIconParser {
         return defaultName;
     }
 
-    public static Optional<DiscordMessageUtils.ImageData> parseAdvancementIcon(DisplayInfo displayInfo) {
+    public static Optional<FileUpload> parseAdvancementIcon(DisplayInfo displayInfo) {
         try {
             ItemStack stack = displayInfo.getIcon();
             Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
@@ -78,12 +78,12 @@ public final class AdvancementIconParser {
 
             try (InputStream input = getResourceAsStream(String.format("/assets/%s/textures/item/%s.png", namespace, textureName))) {
                 if (input != null)
-                    return Optional.of(new DiscordMessageUtils.ImageData("icon.png", ImageUtils.scaleImage(input.readAllBytes(), 3)));
+                    return Optional.of(FileUpload.fromData(ImageUtils.scaleImage(input.readAllBytes(), 3), "icon.png"));
             }
 
             try (InputStream input = getResourceAsStream(String.format("/assets/%s/textures/block/%s.png", namespace, textureName))) {
                 if (input != null)
-                    return Optional.of(new DiscordMessageUtils.ImageData("icon.png", ImageUtils.scaleImage(input.readAllBytes(), 3)));
+                    return Optional.of(FileUpload.fromData(ImageUtils.scaleImage(input.readAllBytes(), 3), "icon.png"));
             }
 
         } catch (Exception e) {

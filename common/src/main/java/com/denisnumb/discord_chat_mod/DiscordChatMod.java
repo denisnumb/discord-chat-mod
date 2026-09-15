@@ -40,8 +40,6 @@ import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.initServerStatusController;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusMessageToUnavailable;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordWebhookUtils.initWebhookSendExecutor;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordWebhookUtils.stopWebhookSendExecutor;
 import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 import com.denisnumb.discord_chat_mod.discord.slash_commands.DiscordSlashCommands;
 
@@ -161,7 +159,6 @@ public final class DiscordChatMod {
                     .build();
 
             jda.awaitReady();
-            initWebhookSendExecutor();
             initDiscordSendExecutor();
             DiscordChannelRegistry.initDiscordChannels(config.discordGuildConfigs());
             initServerStatusController();
@@ -185,7 +182,6 @@ public final class DiscordChatMod {
             DiscordSlashCommands.unregister(jda);
             updateServerStatusMessageToUnavailable();
             ServerLogsRetranslator.stop();
-            stopWebhookSendExecutor();
             stopDiscordSendExecutor();
             AvatarUrlStorage.unload();
             LOGGER.info("Disconnecting from discord...");

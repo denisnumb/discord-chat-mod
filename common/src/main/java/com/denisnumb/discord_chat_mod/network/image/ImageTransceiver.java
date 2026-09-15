@@ -14,6 +14,7 @@ import com.denisnumb.discord_chat_mod.network.image.model.SendTarget;
 import com.denisnumb.discord_chat_mod.network.image.model.SendTargetAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -202,8 +203,8 @@ public final class ImageTransceiver {
         Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.IMAGE_WEBHOOK, parameters);
 
         if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent()) {
-            DiscordMessageUtils.ImageData dsImageData = new DiscordMessageUtils.ImageData(payload.fileName(), payload.imageData());
-            DiscordMessageUtils.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, webhookComponentsOpt.get(), chatComponentsOpt.get(), dsImageData)
+            FileUpload imageFile = FileUpload.fromData(payload.imageData(), payload.fileName());
+            DiscordMessageUtils.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, webhookComponentsOpt.get(), chatComponentsOpt.get(), imageFile)
                     .ifPresentOrElse(
                             discordUrl -> handleSuccessfulDiscordSend(payload.displayName(), discordUrl, fromPlayer),
                             () -> sendImageToAllPlayers(payload, fromPlayer)

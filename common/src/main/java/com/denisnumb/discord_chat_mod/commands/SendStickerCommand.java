@@ -62,7 +62,7 @@ public final class SendStickerCommand {
                                                     mergeMaps(Map.of(MESSAGE, stickerMessageContent), buildPlayerParameters(player))
                                             );
                                             DiscordChatStyleProvider.DiscordMessageComponents webhookComponents
-                                                    = new DiscordChatStyleProvider.DiscordMessageComponents(Optional.of(stickerData.imageUrl()), Optional.empty());
+                                                    = new DiscordChatStyleProvider.DiscordMessageComponents(Optional.empty(), Optional.empty());
 
                                             chatComponentsOpt.ifPresent(discordMessageComponents ->
                                                     sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponents, discordMessageComponents, stickerData)

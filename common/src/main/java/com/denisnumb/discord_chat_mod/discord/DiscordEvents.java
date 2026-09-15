@@ -1,9 +1,8 @@
 package com.denisnumb.discord_chat_mod.discord;
 
-import com.denisnumb.discord_chat_mod.discord.model.WebhookPayload;
+import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
-import com.denisnumb.discord_chat_mod.utils.JavaUtils;
 import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
@@ -40,7 +39,6 @@ import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConf
 import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordUrlsUtils.retrieveMessageEmbedUrls;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordWebhookUtils.sendWebhookWithFiles;
 
 public final class DiscordEvents extends ListenerAdapter {
     @Override
@@ -67,61 +65,49 @@ public final class DiscordEvents extends ListenerAdapter {
     }
 
     private static void retranslateGuildMessage(DiscordGuildContext guildContext, MessageReceivedEvent event) {
-        List<MessageEmbed> embeds = event.getMessage().getEmbeds();
-        MessageEmbed embed = embeds.isEmpty() ? null : event.getMessage().getEmbeds().getFirst();
-
-        List<WebhookPayload.WebhookAttachment> attachments = new ArrayList<>();
-
-        for (Message.Attachment attachment : event.getMessage().getAttachments()) {
-            try {
-                attachments.add(new WebhookPayload.WebhookAttachment(JavaUtils.getInputStreamFromUrl(attachment.getUrl()).readAllBytes(), attachment.getFileName()));
-            } catch (Exception ignored) {}
-        }
-
-        if (attachments.size() < 10 && !event.getMessage().getStickers().isEmpty()){
-            StickerItem sticker = event.getMessage().getStickers().getFirst();
-            try {
-                attachments.add(new WebhookPayload.WebhookAttachment(
-                        JavaUtils.getInputStreamFromUrl(sticker.getIconUrl()).readAllBytes(),
-                        getStickerFileName(sticker.getIconUrl())
-                ));
-            } catch (Exception ignored) {}
-        }
-
-        String userName = ConfigProvider.getConfig()
-                .discordGuildForwardedMessageUserNameStyle()
-                .replace(USER, event.getAuthor().getEffectiveName())
-                .replace(MEMBER, event.getMember().getEffectiveName())
-                .replace(GUILD, event.getGuild().getName());
         String messageContent = event.getMessage().getContentRaw();
+        List<MessageEmbed> embeds = event.getMessage().getEmbeds();
+        FileUpload[] attachments = collectAttachments(event.getMessage());
 
-        guildContext.getWebhook(guildContext.defaultChannel).ifPresentOrElse(
-                webhook -> {
-                    sendWebhookWithFiles(
-                            webhook.getUrl(),
-                            new WebhookPayload(messageContent, embed)
-                                    .withAvatarUrl(event.getAuthor().getAvatarUrl())
-                                    .withUsername(userName),
-                            attachments
-                    );
-                },
-                () -> {
-                    String message = DiscordLocaleProvider.Discord.forwardedGuildMessage(event.getMember().getEffectiveName(), event.getGuild().getName()) + "\n" + messageContent;
-                    prepareDiscordMessage(
-                            guildContext.defaultChannel,
-                            new DiscordChatStyleProvider.DiscordMessageComponents(
-                                    Optional.of(message),
-                                    embed == null
-                                        ? Optional.empty()
-                                        : Optional.of(embed)
-                            )
-                    ).ifPresent(mca -> {
-                        for (WebhookPayload.WebhookAttachment attachment : attachments)
-                            mca.addFiles(FileUpload.fromData(attachment.data(), attachment.fileName()));
-                        sendDiscordMessage(mca, guildContext.defaultChannel, false);
-                    });
-                }
+        Optional<Webhook> webhookOpt = guildContext.getWebhook(guildContext.defaultChannel);
+        if (webhookOpt.isEmpty()){
+            messageContent = DiscordLocaleProvider.Discord.forwardedGuildMessage(
+                    event.getMember().getEffectiveName(),
+                    event.getGuild().getName()
+            ) + "\n" + messageContent;
+        }
+
+        DiscordChatStyleProvider.DiscordMessageComponents messageComponents = new DiscordChatStyleProvider.DiscordMessageComponents(
+                Optional.of(messageContent),
+                embeds.isEmpty() ? Optional.empty() : Optional.of(embeds.getFirst())
         );
+
+        if (webhookOpt.isPresent()){
+            String userName = ConfigProvider.getConfig()
+                    .discordGuildForwardedMessageUserNameStyle()
+                    .replace(USER, event.getAuthor().getEffectiveName())
+                    .replace(MEMBER, event.getMember().getEffectiveName())
+                    .replace(GUILD, event.getGuild().getName());
+
+            sendWebhookMessage(guildContext.defaultChannel, webhookOpt.get(), false,
+                    event.getAuthor().getAvatarUrl(), userName, messageComponents, null, attachments);
+        } else {
+            sendChannelMessage(guildContext.defaultChannel, false, messageComponents, null, attachments);
+        }
+    }
+
+    private static FileUpload[] collectAttachments(Message message) {
+        List<FileUpload> attachments = new ArrayList<>();
+        for (Message.Attachment attachment : message.getAttachments()) {
+            attachments.add(attachment.getProxy().downloadAsFileUpload(attachment.getFileName()));
+        }
+        if (attachments.size() < 10 && !message.getStickers().isEmpty()) {
+            StickerItem sticker = message.getStickers().getFirst();
+            attachments.add(downloadStickerFile(
+                    new StickersProvider.StickerData(sticker.getIconUrl(), sticker.getId(), sticker.getName())
+            ));
+        }
+        return attachments.toArray(FileUpload[]::new);
     }
 
     private static CompletableFuture<List<Component>> prepareComponents(Message message) {
