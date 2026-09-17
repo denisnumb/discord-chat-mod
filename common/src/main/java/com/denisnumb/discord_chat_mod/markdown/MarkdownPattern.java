@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
 public class MarkdownPattern{
+    public static final Pattern ESCAPED = Pattern.compile("\\\\([*_~|@><])");
     public static final Pattern LINK = Pattern.compile("(?<!\\\\)\\[(.+?)\\]\\((https?://\\S+)\\)");
     public static final Pattern UNDERLINED_ITALIC = Pattern.compile("►(?<!\\\\)_(.+?)(?<!\\\\)_►");
     public static final Pattern UNDERLINED = Pattern.compile("(?<!\\\\)►(.+?)(?<!\\\\)►");
@@ -20,8 +21,18 @@ public class MarkdownPattern{
     public static final Pattern COLOR_RANGE = Pattern.compile("(?<!\\\\)<([a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?<!\\\\)>(.+?)(?<!\\\\)<\\1(?<!\\\\)/(?<!\\\\)>");
     public static final Pattern COLOR_SINGLE = Pattern.compile("(?<!\\\\)<([a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?<!\\\\)/(?<!\\\\)>(\\S+)");
     public static final Pattern COLOR_OPEN = Pattern.compile("(?<!\\\\)<([a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?<!\\\\)>(.*?)(?=(?:<|$))");
+    public static final Pattern GRADIENT_RANGE = Pattern.compile(
+            "(?<!\\\\)<((?:[a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?:;(?:[a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})){1,9})(?<!\\\\)>(.+?)(?<!\\\\)</(?<!\\\\)>"
+    );
+    public static final Pattern GRADIENT_SINGLE = Pattern.compile(
+            "(?<!\\\\)<((?:[a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?:;(?:[a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})){1,9})(?<!\\\\)/(?<!\\\\)>(\\S+)"
+    );
+    public static final Pattern GRADIENT_OPEN = Pattern.compile(
+            "(?<!\\\\)<((?:[a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?:;(?:[a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})){1,9})(?<!\\\\)>(.*?)(?=(?:<|$))"
+    );
 
     public static final HashMap<Pattern, MarkdownStyle> withStyle = new LinkedHashMap<>() {{
+        put(ESCAPED, MarkdownStyle.ESCAPED);
         put(LINK, MarkdownStyle.LINK);
         put(UNDERLINED_ITALIC, MarkdownStyle.UNDERLINED_ITALIC);
         put(UNDERLINED, MarkdownStyle.UNDERLINED);
@@ -37,9 +48,19 @@ public class MarkdownPattern{
         put(COLOR_RANGE, MarkdownStyle.COLOR_RANGE);
         put(COLOR_SINGLE, MarkdownStyle.COLOR_SINGLE);
         put(COLOR_OPEN, MarkdownStyle.COLOR_OPEN);
+        put(GRADIENT_RANGE, MarkdownStyle.GRADIENT_RANGE);
+        put(GRADIENT_SINGLE, MarkdownStyle.GRADIENT_SINGLE);
+        put(GRADIENT_OPEN, MarkdownStyle.GRADIENT_OPEN);
     }};
 
     public static boolean isStyleExceptAnother(MarkdownStyle style, MarkdownStyle another){
+        if (style == MarkdownStyle.GRADIENT_RANGE){
+            return another == MarkdownStyle.GRADIENT_SINGLE
+                    || another == MarkdownStyle.GRADIENT_OPEN
+                    || another == MarkdownStyle.COLOR_RANGE
+                    || another == MarkdownStyle.COLOR_OPEN
+                    || another == MarkdownStyle.COLOR_SINGLE;
+        }
         if (style == MarkdownStyle.COLOR_RANGE)
             return another == MarkdownStyle.COLOR_OPEN || another == MarkdownStyle.COLOR_SINGLE;
         if (style == MarkdownStyle.UNDERLINED_ITALIC)

@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
 public enum MarkdownStyle{
+    ESCAPED,
     LINK,
     UNDERLINED_ITALIC,
     UNDERLINED,
@@ -15,5 +16,8 @@ public enum MarkdownStyle{
     EMOJI,
     COLOR_RANGE,
     COLOR_SINGLE,
-    COLOR_OPEN
+    COLOR_OPEN,
+    GRADIENT_RANGE,
+    GRADIENT_SINGLE,
+    GRADIENT_OPEN
 }

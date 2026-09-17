@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
+import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -8,11 +9,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.denisnumb.discord_chat_mod.utils.ColorUtils.parseColor;
-
 public class MarkdownEditBoxParser extends MarkdownParser {
     public static List<MarkdownToken> parseMarkdown(String rawText){
-        ArrayList<MarkdownToken> tokens = new ArrayList<>();
+        List<MarkdownToken> tokens = new ArrayList<>();
         int currentPos = 0;
 
         rawText = replaceDoubleSpecialCharacters(rawText);
@@ -45,6 +44,13 @@ public class MarkdownEditBoxParser extends MarkdownParser {
 
             addTextPart(tokens, rawText.substring(currentPos, currentPos + matcher.start()));
 
+            if (style == MarkdownStyle.ESCAPED) {
+                addSpecialCharactersToken(tokens, style, null, null, false);
+                addToken(tokens, new MarkdownToken(matcher.group(1)));
+                currentPos += matcher.end();
+                continue;
+            }
+
             String matchedText = matcher.group(0);
             String innerText = matcher.groupCount() > 0 ? matcher.group(1) : null;
 
@@ -67,10 +73,22 @@ public class MarkdownEditBoxParser extends MarkdownParser {
                     token.isMention = true;
                 }
                 case MarkdownStyle.EMOJI -> token = new MarkdownToken(matchedText);
+                case MarkdownStyle.GRADIENT_RANGE,
+                     MarkdownStyle.GRADIENT_SINGLE,
+                     MarkdownStyle.GRADIENT_OPEN -> {
+                    int[] gradientColors = ColorUtils.parseGradientColors(matcher.group(1));
+                    String coloredText = matcher.group(2);
+                    if (gradientColors != null && !coloredText.isBlank()){
+                        token = new MarkdownToken(matchedText, coloredText);
+                        token.gradientColors = gradientColors;
+                        colorString = matcher.group(1);
+                    } else
+                        token = new MarkdownToken(matchedText);
+                }
                 case MarkdownStyle.COLOR_RANGE,
                      MarkdownStyle.COLOR_SINGLE,
                      MarkdownStyle.COLOR_OPEN -> {
-                    Integer parsedColor = parseColor(matcher.group(1));
+                    Integer parsedColor = ColorUtils.parseColor(matcher.group(1));
                     String coloredText = matcher.group(2);
                     if (parsedColor != null && !coloredText.isBlank()){
                         token = new MarkdownToken(matchedText, coloredText);
@@ -86,26 +104,26 @@ public class MarkdownEditBoxParser extends MarkdownParser {
             }
 
             if (!token.rawText.equals(token.text)){
-                List<MarkdownToken> innerTokens = parseInnerTokens(token);
-                if (!innerTokens.isEmpty())
-                    token.setInnerTokens(innerTokens);
+                addSpecialCharactersToken(tokens, style, colorString, linkString, false);
+                for (MarkdownToken innerToken : parseMarkdown(token.text)){
+                    innerToken.combineStyles(token);
+                    addToken(tokens, innerToken);
+                }
+                addSpecialCharactersToken(tokens, style, colorString, linkString, true);
+            } else {
+                addSpecialCharactersToken(tokens, style, colorString, linkString, false);
+                addToken(tokens, token);
+                addSpecialCharactersToken(tokens, style, colorString, linkString, true);
             }
 
-            addSpecialCharactersToken(tokens, style, colorString, linkString, false);
-            addToken(tokens, token);
-            addSpecialCharactersToken(tokens, style, colorString, linkString, true);
             currentPos += matcher.end();
         }
 
-        return tokens.stream().toList();
-    }
-
-    protected static List<MarkdownToken> parseInnerTokens(MarkdownToken token){
-        return parseMarkdown(token.text).stream().filter(t -> !t.hasNoMarkdown()).toList();
+        return tokens;
     }
 
     private static void addSpecialCharactersToken(
-            ArrayList<MarkdownToken> tokens,
+            List<MarkdownToken> tokens,
             MarkdownStyle style,
             @Nullable String colorString,
             String linkString,
@@ -113,6 +131,10 @@ public class MarkdownEditBoxParser extends MarkdownParser {
     ) {
         MarkdownToken token = null;
         switch (style) {
+            case ESCAPED -> {
+                if (!isClosing)
+                    token = new MarkdownToken("\\");
+            }
             case UNDERLINED_ITALIC -> token = new MarkdownToken("___");
             case BOLD_ITALIC -> token = new MarkdownToken("***");
             case ITALIC_underline -> token = new MarkdownToken("_");
@@ -130,11 +152,17 @@ public class MarkdownEditBoxParser extends MarkdownParser {
                             ? new MarkdownToken(String.format("<%s/>", colorString))
                             : new MarkdownToken(String.format("<%s>", colorString));
             }
-            case COLOR_SINGLE -> {
+            case GRADIENT_RANGE -> {
+                if (colorString != null)
+                    token = isClosing
+                            ? new MarkdownToken("</>")
+                            : new MarkdownToken(String.format("<%s>", colorString));
+            }
+            case COLOR_SINGLE, GRADIENT_SINGLE -> {
                 if (!isClosing && colorString != null)
                     token = new MarkdownToken(String.format("<%s/>", colorString));
             }
-            case COLOR_OPEN -> {
+            case COLOR_OPEN, GRADIENT_OPEN -> {
                 if (!isClosing && colorString != null)
                     token = new MarkdownToken(String.format("<%s>", colorString));
             }
@@ -145,16 +173,5 @@ public class MarkdownEditBoxParser extends MarkdownParser {
             token.isSpecialCharacters = true;
             addToken(tokens, token);
         }
-    }
-
-    protected static void addTextPart(ArrayList<MarkdownToken> tokens, String textPart) {
-        if (!textPart.isEmpty())
-            addToken(tokens, new MarkdownToken(textPart));
-    }
-
-    protected static void addToken(ArrayList<MarkdownToken> tokens, MarkdownToken token){
-        token.text = replaceDoubleSpecialCharactersBack(token.text);
-        token.rawText = replaceDoubleSpecialCharactersBack(token.rawText);
-        tokens.add(token);
     }
 }

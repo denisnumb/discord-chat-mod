@@ -48,7 +48,7 @@ public abstract class EditBoxMixin {
                 discord_chat_mod$lastInput = string;
                 Component markdown = new MarkdownToComponentConverter(
                         MarkdownEditBoxParser.parseMarkdown(string)
-                ).convertMarkdownTokensWithSpecialCharsToComponent();
+                ).convertMarkdownTokensToComponent();
 
                 this.discord_chat_mod$markdownValid = markdown.getString().equals(string);
                 this.discord_chat_mod$cachedMarkdown = this.discord_chat_mod$markdownValid ? markdown.getVisualOrderText() : null;

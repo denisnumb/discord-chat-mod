@@ -1,12 +1,12 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
+import com.denisnumb.discord_chat_mod.utils.ColorUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.denisnumb.discord_chat_mod.utils.ColorUtils.parseColor;
 
 public abstract class MarkdownParser {
     private static final Pattern[] colorTagPatterns = {
@@ -15,12 +15,27 @@ public abstract class MarkdownParser {
             MarkdownPattern.COLOR_OPEN
     };
 
+    private static final Pattern[] gradientTagPatterns = {
+            MarkdownPattern.GRADIENT_RANGE,
+            MarkdownPattern.GRADIENT_SINGLE,
+            MarkdownPattern.GRADIENT_OPEN
+    };
+
     public static String removeColorTags(String text){
         for (Pattern pattern : colorTagPatterns){
             Matcher matcher = pattern.matcher(text);
             while (matcher.find()){
                 String coloredText = matcher.group(2);
-                if (parseColor(matcher.group(1)) != null && !coloredText.isBlank())
+                if (ColorUtils.parseColor(matcher.group(1)) != null && !coloredText.isBlank())
+                    text = text.replace(matcher.group(0), coloredText);
+            }
+        }
+
+        for (Pattern pattern : gradientTagPatterns) {
+            Matcher matcher = pattern.matcher(text);
+            while (matcher.find()){
+                String coloredText = matcher.group(2);
+                if (ColorUtils.parseGradientColors(matcher.group(1)) != null && !coloredText.isBlank())
                     text = text.replace(matcher.group(0), coloredText);
             }
         }
@@ -33,7 +48,7 @@ public abstract class MarkdownParser {
     }
 
     public static List<MarkdownToken> parseMarkdown(String rawText, Map<String, String> urlMapping) {
-        ArrayList<MarkdownToken> tokens = new ArrayList<>();
+        List<MarkdownToken> tokens = new ArrayList<>();
         int currentPos = 0;
 
         rawText = replaceDoubleSpecialCharacters(rawText);
@@ -86,10 +101,21 @@ public abstract class MarkdownParser {
                     token.isMention = true;
                 }
                 case MarkdownStyle.EMOJI -> token = new MarkdownToken(matchedText);
+                case MarkdownStyle.GRADIENT_RANGE,
+                     MarkdownStyle.GRADIENT_SINGLE,
+                     MarkdownStyle.GRADIENT_OPEN -> {
+                    int[] gradientColors = ColorUtils.parseGradientColors(matcher.group(1));
+                    String coloredText = matcher.group(2);
+                    if (gradientColors != null && !coloredText.isBlank()){
+                        token = new MarkdownToken(matchedText, coloredText);
+                        token.gradientColors = gradientColors;
+                    } else
+                        token = new MarkdownToken(matchedText);
+                }
                 case MarkdownStyle.COLOR_RANGE,
                      MarkdownStyle.COLOR_SINGLE,
                      MarkdownStyle.COLOR_OPEN -> {
-                    Integer parsedColor = parseColor(matcher.group(1));
+                    Integer parsedColor = ColorUtils.parseColor(matcher.group(1));
                     String coloredText = matcher.group(2);
                     if (parsedColor != null && !coloredText.isBlank()){
                         token = new MarkdownToken(matchedText, coloredText);
@@ -104,20 +130,18 @@ public abstract class MarkdownParser {
             }
 
             if (!token.rawText.equals(token.text)){
-                List<MarkdownToken> innerTokens = parseInnerTokens(token);
-                if (!innerTokens.isEmpty())
-                    token.setInnerTokens(innerTokens);
+                for (MarkdownToken innerToken : parseMarkdown(token.text, urlMapping)){
+                    innerToken.combineStyles(token);
+                    addToken(tokens, innerToken);
+                }
+            } else {
+                addToken(tokens, token);
             }
 
-            addToken(tokens, token);
             currentPos += matcher.end();
         }
 
-        return tokens.stream().toList();
-    }
-
-    protected static List<MarkdownToken> parseInnerTokens(MarkdownToken token){
-        return parseMarkdown(token.text).stream().filter(t -> !t.hasNoMarkdown()).toList();
+        return tokens;
     }
 
     protected static void setTokenStyles(MarkdownToken token, MarkdownStyle style){
@@ -138,13 +162,13 @@ public abstract class MarkdownParser {
         }
     }
 
-    protected static void addToken(ArrayList<MarkdownToken> tokens, MarkdownToken token){
+    protected static void addToken(List<MarkdownToken> tokens, MarkdownToken token) {
         token.text = replaceDoubleSpecialCharactersBack(unescapeSpecialCharacters(token.text));
         token.rawText = replaceDoubleSpecialCharactersBack(unescapeSpecialCharacters(token.rawText));
         tokens.add(token);
     }
 
-    protected static void addTextPart(ArrayList<MarkdownToken> tokens, String textPart){
+    protected static void addTextPart(List<MarkdownToken> tokens, String textPart) {
         if (!textPart.isEmpty())
             addToken(tokens, new MarkdownToken(textPart));
     }

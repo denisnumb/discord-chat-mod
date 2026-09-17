@@ -7,8 +7,6 @@ import net.minecraft.network.chat.*;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.CHAT_LINK_COLOR;
 
@@ -28,21 +26,15 @@ public class MarkdownToComponentConverter{
     }
 
     public MutableComponent convertMarkdownTokensToComponent() {
-        for (MarkdownToken token : tokens)
-            convertToken(token, false);
-
-        return result;
-    }
-
-    public MutableComponent convertMarkdownTokensWithSpecialCharsToComponent() {
-        for (MarkdownToken token : tokens)
-            convertToken(token, true);
+        for (MarkdownToken token : tokens){
+            addPart(token, token.text);
+        }
 
         return result;
     }
 
     private void addPart(MarkdownToken token, String textPart){
-        MutableComponent component = Component.literal(textPart);
+        MutableComponent component;
 
         if (mentions.containsKey(textPart)){
             DiscordMentionData mentionData = mentions.get(textPart);
@@ -50,16 +42,22 @@ public class MarkdownToComponentConverter{
             component = MinecraftUtils.buildGradientComponent(textPart, mentionData.colors);
 
             if (mentionData.memberData != null){
-                component = component.withStyle(style -> style
+                component.withStyle(style -> style
                         .withInsertion(mentionData.prettyMention)
                         .withHoverEvent(new HoverEvent.ShowText(Component.literal(mentionData.memberData.discordName)))
                 );
             }
+        } else if (token.isGradient()){
+            component = MinecraftUtils.buildGradientComponent(textPart, token.gradientColors);
+        } else if (token.isColored()){
+            component = Component.literal(textPart).withStyle(style -> style.withColor(token.color));
+        } else {
+            component = Component.literal(textPart);
         }
 
         if (!textPart.isBlank()){
             String finalTextPart = textPart;
-            component = component.withStyle(style -> {
+            component.withStyle(style -> {
                 style = style.withBold(token.bold)
                         .withItalic(token.italic)
                         .withStrikethrough(token.strikethrough)
@@ -68,9 +66,6 @@ public class MarkdownToComponentConverter{
 
                 if (token.obfuscated)
                     style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal(finalTextPart)));
-
-                if (token.isColored())
-                    style = style.withColor(token.color);
 
                 if (token.isUrl()){
                     String hoverValue = token.obfuscated ? String.format("%s (%s)", finalTextPart, token.url) : token.url;
@@ -86,37 +81,5 @@ public class MarkdownToComponentConverter{
         }
 
         result.append(component);
-    }
-
-    private void convertToken(MarkdownToken token, boolean handleSpecialChars){
-        if (token.getInnerTokens().isEmpty() || (handleSpecialChars && token.isSpecialCharacters))
-            addPart(token, token.text);
-        else {
-            int currentPos = 0;
-
-            for (MarkdownToken innerToken : token.getInnerTokens()){
-                Matcher match = Pattern.compile(Pattern.quote(innerToken.rawText)).matcher(token.text.substring(currentPos));
-                int startIndex = (match.find() ? match.start() : 0) + currentPos;
-
-                if (startIndex > currentPos){
-                    String textPart = token.text.substring(currentPos, startIndex);
-                    addPart(token, textPart);
-                }
-
-                if (handleSpecialChars && innerToken.isSpecialCharacters){
-                    addPart(innerToken, innerToken.rawText);
-                    currentPos = startIndex;
-                } else {
-                    convertToken(innerToken, handleSpecialChars);
-                    currentPos = startIndex + innerToken.rawText.length();
-                }
-            }
-
-            if (currentPos < token.text.length()){
-                String textPart = token.text.substring(currentPos);
-                if (!textPart.isBlank())
-                    addPart(token, textPart);
-            }
-        }
     }
 }

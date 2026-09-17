@@ -1,6 +1,9 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
-import java.util.List;
+import com.denisnumb.discord_chat_mod.utils.ColorUtils;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.getHexColor;
 
@@ -15,8 +18,8 @@ public final class MarkdownToken {
     public boolean obfuscated = false;
     public boolean isMention = false;
     public Integer color = null;
+    public int[] gradientColors = null;
     public boolean isSpecialCharacters = false;
-    private List<MarkdownToken> innerTokens;
 
     public MarkdownToken(String rawText){
         this(rawText, rawText);
@@ -35,8 +38,12 @@ public final class MarkdownToken {
         return color != null;
     }
 
-    public boolean hasNoMarkdown(){
-        return !(isUrl()
+    public boolean isGradient(){
+        return gradientColors != null && gradientColors.length > 0;
+    }
+
+    public boolean hasMarkdown(){
+        return (isUrl()
                 || bold
                 || italic
                 || underlined
@@ -44,24 +51,9 @@ public final class MarkdownToken {
                 || obfuscated
                 || isMention
                 || isColored()
+                || isGradient()
                 || isSpecialCharacters
         );
-    }
-
-    public List<MarkdownToken> getInnerTokens(){
-        return innerTokens != null ? innerTokens : List.of();
-    }
-
-    public void setInnerTokens(List<MarkdownToken> tokens){
-        innerTokens = tokens;
-        updateStyles();
-    }
-
-    public void updateStyles(){
-        for (MarkdownToken innerToken : getInnerTokens()){
-            innerToken.combineStyles(this);
-            innerToken.updateStyles();
-        }
     }
 
     public void combineStyles(MarkdownToken another){
@@ -74,7 +66,11 @@ public final class MarkdownToken {
         underlined |= another.underlined;
         strikethrough |= another.strikethrough;
         obfuscated |= another.obfuscated;
-        color = isColored() ? color : another.color;
+
+        if (!isColored() && !isGradient()) {
+            color = another.color;
+            gradientColors = another.gradientColors;
+        }
     }
 
     public String toString(){
@@ -92,12 +88,12 @@ public final class MarkdownToken {
         if (obfuscated) result.append(", obfuscated");
         if (isMention) result.append(", isMention");
         if (isColored()) result.append(String.format(", color=\"%s\"", getHexColor(color)));
+        if (isGradient()) result.append(String.format(", gradient=[%s]",
+                Arrays.stream(gradientColors)
+                        .mapToObj(ColorUtils::getHexColor)
+                        .collect(Collectors.joining(", "))
+        ));
         result.append("]");
-
-        if (!getInnerTokens().isEmpty()){
-            for (MarkdownToken innerToken : getInnerTokens())
-                result.append("\n\t").append(innerToken.toString());
-        }
 
         return result.toString();
     }

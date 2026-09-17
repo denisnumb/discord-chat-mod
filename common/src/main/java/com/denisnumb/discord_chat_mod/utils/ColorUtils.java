@@ -45,6 +45,10 @@ public final class ColorUtils {
             return colorNameToInt.get(colorNameOrHex);
 
         try {
+            if (!colorNameOrHexLower.startsWith("#")){
+                return null;
+            }
+
             return Integer.parseInt(colorNameOrHexLower.substring(1), 16);
         } catch (NumberFormatException ignored){
             return null;
@@ -72,6 +76,20 @@ public final class ColorUtils {
         return colors.isHolographic() || colors.getTertiary() != null
                 ? new int[] { colors.getPrimaryRaw(), colors.getSecondaryRaw(), colors.getTertiaryRaw() }
                 : new int[] { colors.getPrimaryRaw(), colors.getSecondaryRaw() };
+    }
+
+    public static int[] parseGradientColors(String colorList){
+        String[] parts = colorList.split(";");
+        int[] colors = new int[parts.length];
+        for (int i = 0; i < parts.length; i++){
+            Integer c = parseColor(parts[i]);
+            if (c == null)
+                return null;
+
+            colors[i] = c;
+        }
+
+        return colors;
     }
 
     public static int interpolateGradient(int[] gradientColors, int segments, double t) {
