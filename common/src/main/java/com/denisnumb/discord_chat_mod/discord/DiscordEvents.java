@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender;
+import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
@@ -235,9 +236,13 @@ public final class DiscordEvents extends ListenerAdapter {
         for (int i = 0; i < attachments.size(); i++) {
             var file = attachments.get(i);
             boolean isLast = i == attachments.size() - 1;
+            String fileUrl = file.isSpoiler()
+                    ? ImageUtils.addSpoilerQueryParam(file.getUrl())
+                    : file.getUrl();
+
             part.append(ComponentUtils.buildUrlComponent(
                     file.getFileName() + (isLast ? "" : "\n"),
-                    file.getUrl(),
+                    fileUrl,
                     true
             ));
         }

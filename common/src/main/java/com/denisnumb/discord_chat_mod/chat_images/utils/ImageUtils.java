@@ -21,6 +21,7 @@ public final class ImageUtils {
     private ImageUtils() {}
 
     public static final String SPOILER_PREFIX = "/SPOILER_";
+    public static final String SPOILER_QUERY_PARAM = "spoiler=1";
     public static final String LOCAL_RESOURCE_PREFIX = "https://localResource/";
 
     public static boolean isGifPlatformUrl(String url) {
@@ -126,8 +127,27 @@ public final class ImageUtils {
         return imageUrl.startsWith(LOCAL_RESOURCE_PREFIX);
     }
 
-    public static boolean isSpoilerImageUrl(String imageUrl){
-        return imageUrl.contains(SPOILER_PREFIX);
+    public static boolean isSpoilerImageUrl(String imageUrl) {
+        return imageUrl.contains(SPOILER_PREFIX) || hasSpoilerQueryParam(imageUrl);
+    }
+
+    private static boolean hasSpoilerQueryParam(String imageUrl) {
+        int queryStart = imageUrl.indexOf('?');
+        if (queryStart == -1) {
+            return false;
+        }
+
+        String query = imageUrl.substring(queryStart + 1);
+        for (String param : query.split("&")) {
+            if (param.equals(SPOILER_QUERY_PARAM)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String addSpoilerQueryParam(String imageUrl) {
+        return imageUrl + (imageUrl.contains("?") ? "&" : "?") + SPOILER_QUERY_PARAM;
     }
 
     public static ImageSize getImageScaledSize(int width, int height){

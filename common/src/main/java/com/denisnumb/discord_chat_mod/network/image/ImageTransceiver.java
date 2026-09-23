@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.network.image;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
@@ -164,6 +165,9 @@ public final class ImageTransceiver {
     ) {
         long currentTime = System.currentTimeMillis();
         String localResourceUrl = LOCAL_RESOURCE_PREFIX + currentTime + "/" + payload.fileName();
+        String imageUrl = payload.isSpoiler()
+                ? ImageUtils.addSpoilerQueryParam(localResourceUrl)
+                : localResourceUrl;
 
         List<ServerPlayer> allRecipients = new ArrayList<>(recipients);
         if (!allRecipients.contains(fromPlayer)) {
@@ -172,7 +176,7 @@ public final class ImageTransceiver {
 
         networkPool.execute(() -> {
             try {
-                byte[] data = gson.toJson(payload.withUrl(localResourceUrl)).getBytes();
+                byte[] data = gson.toJson(payload.withUrl(imageUrl)).getBytes();
                 for (ServerPlayer player : allRecipients) {
                     try {
                         BigPacketsTransceiver.send(data, (partIndex, totalParts, part) ->
@@ -181,7 +185,7 @@ public final class ImageTransceiver {
                     } catch (Exception ignored) {}
                 }
 
-                onSent.accept(localResourceUrl);
+                onSent.accept(imageUrl);
             } catch (Exception e) {
                 DiscordChatMod.LOGGER.error("ImageSendError: ", e);
                 sendErrorMessageToPlayer(fromPlayer, e.getMessage());
@@ -199,7 +203,10 @@ public final class ImageTransceiver {
         Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.IMAGE_WEBHOOK, parameters);
 
         if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent()) {
-            FileUpload imageFile = FileUpload.fromData(payload.imageData(), payload.fileName());
+            FileUpload imageFile = payload.isSpoiler()
+                    ? FileUpload.fromData(payload.imageData(), ImageUtils.SPOILER_PREFIX + payload.fileName()).asSpoiler()
+                    : FileUpload.fromData(payload.imageData(), payload.fileName());
+
             DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, webhookComponentsOpt.get(), chatComponentsOpt.get(), imageFile)
                     .ifPresentOrElse(
                             discordUrl -> handleSuccessfulDiscordSend(payload.displayName(), discordUrl, fromPlayer),

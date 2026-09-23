@@ -224,14 +224,12 @@ public class ImageSendScreen extends Screen {
 
     private ImagePartPacketPayload buildPayload(SendTarget sendTarget) {
         String fileName = System.currentTimeMillis() + ImageUtils.mimeTypeToFileExt(imageMimeType);
-        if (spoilerCheckbox.selected())
-            fileName = ImageUtils.SPOILER_PREFIX + fileName;
 
         String displayName = imageNameBox.getValue();
         if (displayName.isBlank())
             displayName = MinecraftLocaleProvider.image().getString();
 
-        return new ImagePartPacketPayload(null, fileName, imageMimeType, displayName, sendTarget, imageBytes);
+        return new ImagePartPacketPayload(null, fileName, imageMimeType, displayName, spoilerCheckbox.selected(), sendTarget, imageBytes);
     }
 
     private void sendPublic() {

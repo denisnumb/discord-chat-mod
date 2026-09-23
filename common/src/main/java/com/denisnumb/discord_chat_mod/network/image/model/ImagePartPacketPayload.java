@@ -7,6 +7,7 @@ public record ImagePartPacketPayload(
         String fileName,
         String mimeType,
         String displayName,
+        boolean isSpoiler,
         SendTarget sendTarget,
         byte[] imageData
 ) {
@@ -16,6 +17,7 @@ public record ImagePartPacketPayload(
                 fileName,
                 mimeType,
                 displayName,
+                isSpoiler,
                 sendTarget,
                 imageData
         );
