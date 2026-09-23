@@ -7,16 +7,16 @@ import org.slf4j.Logger;
 
 import java.util.Objects;
 
-import static com.denisnumb.discord_chat_mod.utils.ColorUtils.parseColor;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
+import static com.denisnumb.discord_chat_mod.utils.ColorUtils.parseGradientColors;
 
 public final class MinecraftChatStyleConfig {
     private MinecraftChatStyleConfig() {}
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public static boolean enableMinecraftChatCustomization;
-    public static String minecraftChatLinkColor;
+    public static int[] minecraftChatLinkColors;
     public static String minecraftDiscordMessagesStyle;
     public static String minecraftPlayerMessageStyle;
     public static String minecraftPlayerJoinedStyle;
@@ -43,9 +43,9 @@ public final class MinecraftChatStyleConfig {
         minecraftChatStyle.set("enableMinecraftChatCustomization", enableMinecraftChatCustomization);
         minecraftChatStyle.setComment("enableMinecraftChatCustomization", ENABLE_MINECRAFT_CHAT_CUSTOMIZATION_COMMENT);
 
-        minecraftChatLinkColor = existedMinecraftChatStyle.getOrElse("minecraftChatLinkColor", MINECRAFT_CHAT_LINK_COLOR_DEFAULT);
-        ColorUtils.Color.CHAT_LINK_COLOR = Objects.requireNonNullElse(parseColor(minecraftChatLinkColor), ColorUtils.Color.CHAT_LINK_COLOR);
-        minecraftChatStyle.set("minecraftChatLinkColor", minecraftChatLinkColor);
+        String rawColor = existedMinecraftChatStyle.getOrElse("minecraftChatLinkColor", MINECRAFT_CHAT_LINK_COLOR_DEFAULT);
+        minecraftChatLinkColors = Objects.requireNonNullElse(parseGradientColors(rawColor), new int[] { ColorUtils.Color.DEFAULT_CHAT_LINK_COLOR });
+        minecraftChatStyle.set("minecraftChatLinkColor", rawColor);
         minecraftChatStyle.setComment("minecraftChatLinkColor", MINECRAFT_CHAT_LINK_COLOR_COMMENT);
 
         minecraftDiscordMessagesStyle = existedMinecraftChatStyle.getOrElse("minecraftDiscordMessagesStyle", MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT);

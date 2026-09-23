@@ -138,6 +138,11 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
+    public int[] minecraftChatLinkColors() {
+        return MinecraftChatStyleConfig.minecraftChatLinkColors;
+    }
+
+    @Override
     public String minecraftDiscordMessagesStyle() {
         return MinecraftChatStyleConfig.minecraftDiscordMessagesStyle;
     }

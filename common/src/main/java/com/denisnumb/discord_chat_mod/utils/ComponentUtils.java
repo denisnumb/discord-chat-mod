@@ -1,10 +1,12 @@
 package com.denisnumb.discord_chat_mod.utils;
 
+import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
 import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
+import java.net.URI;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,8 +27,25 @@ public final class ComponentUtils {
                 ? applyGradientToComponent(value, placeholderToken.gradientColors)
                 : value.copy();
 
-        Style tokenStyle = buildStyleFromToken(placeholderToken, placeholderToken.isGradient());
-        return applyStyleRecursive(base, tokenStyle, true);
+        return applyStyleRecursive(base, buildStyleFromToken(placeholderToken), true);
+    }
+
+    public static MutableComponent buildUrlComponent(String text, String url, boolean addHoverEvent) {
+        return buildUrlComponent(Component.literal(text), url, addHoverEvent);
+    }
+
+    public static MutableComponent buildUrlComponent(Component component, String url, boolean addHoverEvent) {
+        return applyGradientToComponent(component, ConfigProvider.getConfig().minecraftChatLinkColors()).withStyle(style -> {
+            if (addHoverEvent){
+                style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal(url)));
+            }
+
+            try {
+                style = style.withClickEvent(new ClickEvent.OpenUrl(URI.create(url)));
+            } catch (IllegalArgumentException ignored) {}
+
+            return style;
+        });
     }
 
     public static MutableComponent buildGradientComponent(String text, int[] gradientColors) {

@@ -18,7 +18,7 @@ public final class ColorUtils {
         public static final int DISCORD_RED_COLOR = 0xE74C3C;
         public static final int DISCORD_GREEN_COLOR = 0x2ECC71;
         public static final int DISCORD_DEFAULT_COLOR = 0x3b3b41;
-        public static int CHAT_LINK_COLOR = 0x00b7ff;
+        public static final int DEFAULT_CHAT_LINK_COLOR = 0x00b7ff;
     }
 
     public static final Map<String, Integer> colorNameToInt;

@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getServerPlayerCount;
@@ -236,15 +235,11 @@ public final class DiscordEvents extends ListenerAdapter {
         for (int i = 0; i < attachments.size(); i++) {
             var file = attachments.get(i);
             boolean isLast = i == attachments.size() - 1;
-            part.append(
-                    Component.literal(file.getFileName() + (isLast ? "" : "\n"))
-                            .withColor(CHAT_LINK_COLOR)
-                            .withStyle(style -> style
-                                    .withItalic(true)
-                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(file.getUrl())))
-                                    .withHoverEvent(new HoverEvent.ShowText(Component.literal(file.getUrl())))
-                            )
-            );
+            part.append(ComponentUtils.buildUrlComponent(
+                    file.getFileName() + (isLast ? "" : "\n"),
+                    file.getUrl(),
+                    true
+            ));
         }
         return Optional.of(wrap(part, ctx));
     }

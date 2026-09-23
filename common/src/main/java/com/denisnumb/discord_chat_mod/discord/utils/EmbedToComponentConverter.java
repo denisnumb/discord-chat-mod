@@ -6,6 +6,7 @@ import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
+import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
@@ -23,7 +24,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.DISCORD_DEFAULT_COLOR;
 
 public final class EmbedToComponentConverter {
@@ -58,17 +58,14 @@ public final class EmbedToComponentConverter {
         }
 
         // Author
-        if (embed.getAuthor() != null) {
+        if (embed.getAuthor() != null && embed.getAuthor().getName() != null) {
             MessageEmbed.AuthorInfo author = embed.getAuthor();
-            MutableComponent authorComponent = Component.literal("\uD83D\uDC64 " + author.getName())
-                    .withColor(ChatFormatting.GRAY.getColor());
+            MutableComponent authorComponent = Component.literal("\uD83D\uDC64 ").append(
+                    author.getUrl() != null
+                            ? ComponentUtils.buildUrlComponent(author.getName(), author.getUrl(), true)
+                            : Component.literal(author.getName()).withColor(ChatFormatting.GRAY.getColor())
+            );
 
-            if (author.getUrl() != null) {
-                authorComponent = authorComponent.withStyle(style -> style
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(author.getUrl())))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(author.getUrl())))
-                );
-            }
             appendComponentLines(result, sideColor, authorComponent, EMBED_LINE_MAX_LENGTH);
         }
 
@@ -288,23 +285,11 @@ public final class EmbedToComponentConverter {
     private static void appendTitleLines(MutableComponent result, boolean[] firstLine, int sideColor, String title, @Nullable String url, Map<String, DiscordMentionData> mentions, int maxLineLength) {
         Component titleMarkdown = convertMarkdown(title, mentions);
 
-        int baseColor = url != null ? CHAT_LINK_COLOR : sideColor;
-        UnaryOperator<Style> baseStyle = style -> {
-            Style styled = style;
-            if (styled.getColor() == null)
-                styled = styled.withColor(baseColor);
-            if (!styled.isBold())
-                styled = styled.withBold(true);
-            if (url != null && styled.getClickEvent() == null) {
-                styled = styled
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(url)));
-            }
-            return styled;
-        };
+        MutableComponent coloredTitle = url != null
+                ? ComponentUtils.buildUrlComponent(titleMarkdown, url, true)
+                : applyBaseStyle(titleMarkdown, style -> style.getColor() == null ? style.withColor(sideColor) : style);
 
-        MutableComponent styledTitle = applyBaseStyle(titleMarkdown, baseStyle);
-
+        MutableComponent styledTitle = applyBaseStyle(coloredTitle, style -> style.withBold(true));
         List<MutableComponent> lines = wrapStyledComponent(styledTitle, Math.max(1, maxLineLength - BORDER_TOP_PREFIX.length()));
         for (int idx = 0; idx < lines.size(); idx++) {
             MutableComponent line = lines.get(idx);

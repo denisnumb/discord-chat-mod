@@ -37,6 +37,7 @@ public interface IConfigProvider {
     String proxyPassword();
 
     boolean isMinecraftChatCustomizationEnabled();
+    int[] minecraftChatLinkColors();
     String minecraftDiscordMessagesStyle();
     String minecraftPlayerMessageStyle();
     String minecraftPlayerJoinedStyle();

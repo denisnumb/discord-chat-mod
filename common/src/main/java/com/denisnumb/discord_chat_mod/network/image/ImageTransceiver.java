@@ -2,6 +2,7 @@ package com.denisnumb.discord_chat_mod.network.image;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
@@ -17,14 +18,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.PlayerTeam;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -34,7 +32,6 @@ import java.util.function.Consumer;
 import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.*;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
@@ -156,10 +153,7 @@ public final class ImageTransceiver {
     }
 
     private static Component makeImageComponent(String displayName, String localResourceUrl) {
-        return Component.literal(displayName).withStyle(style ->
-                style.withColor(CHAT_LINK_COLOR)
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(localResourceUrl)))
-        );
+        return ComponentUtils.buildUrlComponent(displayName, localResourceUrl, false);
     }
 
     private static void sendImageDataToPlayers(
@@ -215,12 +209,7 @@ public final class ImageTransceiver {
     }
 
     private static void handleSuccessfulDiscordSend(String displayName, String imageUrl, ServerPlayer fromPlayer) {
-        Component imageComponent = Component.literal(displayName)
-                .withStyle(style -> style.withColor(CHAT_LINK_COLOR)
-                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(imageUrl)))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(imageUrl)))
-                );
-
+        Component imageComponent = ComponentUtils.buildUrlComponent(displayName, imageUrl, true);
         sendMessageToAllPlayersFromPlayer(fromPlayer, imageComponent);
     }
 
