@@ -19,7 +19,7 @@ public final class JavaUtils {
     private JavaUtils() {}
 
     @SafeVarargs
-    public static <T> Map<String, T> mergeMaps(Map<String, T>... parameterMaps){
+    public static <K, V> Map<K, V> mergeMaps(Map<K, V>... parameterMaps){
         return Arrays.stream(parameterMaps)
                 .flatMap(m -> m.entrySet().stream())
                 .filter(e -> e.getValue() != null)

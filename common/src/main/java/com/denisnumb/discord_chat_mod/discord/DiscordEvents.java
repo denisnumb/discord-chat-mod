@@ -39,7 +39,7 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getServerPlayerCount;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.parseConfigTemplateMarkdown;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordUrlsUtils.retrieveMessageEmbedUrls;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 
@@ -81,9 +81,9 @@ public final class DiscordEvents extends ListenerAdapter {
         if (webhookOpt.isPresent()){
             String userName = ConfigProvider.getConfig()
                     .discordGuildForwardedMessageWebhookUsernameStyle()
-                    .replace(USER, event.getAuthor().getEffectiveName())
-                    .replace(MEMBER, event.getMember().getEffectiveName())
-                    .replace(GUILD, event.getGuild().getName());
+                    .replace(USER.getPlaceholder(), event.getAuthor().getEffectiveName())
+                    .replace(MEMBER.getPlaceholder(), event.getMember().getEffectiveName())
+                    .replace(GUILD.getPlaceholder(), event.getGuild().getName());
 
             sendWebhookMessage(guildContext.defaultChannel, webhookOpt.get(), false,
                     event.getAuthor().getAvatarUrl(), userName, messageComponents, null, attachments);

@@ -17,10 +17,10 @@ import java.util.Map;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.applyParametersToTemplate;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.parseConfigTemplateMarkdown;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.COMMANDS_MESSAGE_DISPLAY_INCOMING;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.COMMANDS_MESSAGE_DISPLAY_OUTGOING;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.COMMANDS_MESSAGE_DISPLAY_INCOMING;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.COMMANDS_MESSAGE_DISPLAY_OUTGOING;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.newLinkedHashMapOf;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getPlayerListBySelector;
 

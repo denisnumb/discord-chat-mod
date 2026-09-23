@@ -7,7 +7,7 @@ import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.*;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
-import com.denisnumb.discord_chat_mod.chat.template.TemplateParameters;
+import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
@@ -98,8 +98,8 @@ public final class DiscordChatMod {
             initJDA();
             getDiscordMessageComponents(MessageType.LOCAL_SERVER_START,
                     Map.of(
-                            TemplateParameters.Translatable.LOCAL_SERVER_STARTED, DiscordLocaleProvider.Server.localStarted(server.getPort()),
-                            TemplateParameters.SERVER_PORT, String.valueOf(server.getPort())
+                            TemplateParameter.Translatable.LOCAL_SERVER_STARTED, DiscordLocaleProvider.Server.localStarted(server.getPort()),
+                            TemplateParameter.SERVER_PORT, String.valueOf(server.getPort())
                     )
             ).ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
 

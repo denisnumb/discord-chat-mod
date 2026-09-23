@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.commands.vanilla;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
@@ -26,7 +27,7 @@ import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 
 public final class EmoteCommand {
     private EmoteCommand() {}
@@ -40,7 +41,7 @@ public final class EmoteCommand {
                         = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.ME_COMMAND);
 
                 handleDiscord(() -> {
-                    Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(source));
+                    Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(source));
                     Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.ME_COMMAND, parameters);
                     Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.ME_COMMAND_WEBHOOK, parameters);
 

@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands;
 
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
@@ -32,7 +33,7 @@ import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFact
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 
 public final class MentionCommand {
     private MentionCommand() {}
@@ -71,7 +72,7 @@ public final class MentionCommand {
 
                                         sendMessageToAllPlayersFromPlayer(player, mentionComponent);
 
-                                        Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, member.mentionString), buildPlayerParameters(player));
+                                        Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, member.mentionString), buildPlayerParameters(player));
                                         Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
                                         Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
 

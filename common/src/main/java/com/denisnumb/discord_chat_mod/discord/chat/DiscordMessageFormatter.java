@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord.chat;
 
+import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
@@ -22,8 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.*;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
 public final class DiscordMessageFormatter {
@@ -53,9 +55,9 @@ public final class DiscordMessageFormatter {
                 .replace("\"", "\\\"");
     }
 
-    private static DiscordMessageComponents parseDiscordConfigTemplate(String jsonTemplate, Map<String, String> parameterMap) {
-        for (Map.Entry<String, String> param : parameterMap.entrySet())
-            jsonTemplate = jsonTemplate.replace(param.getKey(), escapeSpecialCharacters(param.getValue()));
+    private static DiscordMessageComponents parseDiscordConfigTemplate(String jsonTemplate, Map<TemplatePlaceholder, String> parameterMap) {
+        for (Map.Entry<TemplatePlaceholder, String> param : parameterMap.entrySet())
+            jsonTemplate = jsonTemplate.replace(param.getKey().getPlaceholder(), escapeSpecialCharacters(param.getValue()));
 
         JsonObject parsedTemplate = GSON.fromJson(jsonTemplate, JsonObject.class);
 
@@ -71,16 +73,16 @@ public final class DiscordMessageFormatter {
     public static String formatDeathMessageComponents(DeathMessageUtils.DeathMessageComponents components){
         IConfigProvider config = ConfigProvider.getConfig();
 
-        String playerTemplate = config.discordPlayerDeathNameStyle().replace(PLAYER, getTranslatedComponent(components.diedEntity()));
-        String killerTemplate = config.discordPlayerDeathSecondEntityStyle().replace(SECOND_ENTITY,
+        String playerTemplate = config.discordPlayerDeathNameStyle().replace(PLAYER.getPlaceholder(), getTranslatedComponent(components.diedEntity()));
+        String killerTemplate = config.discordPlayerDeathSecondEntityStyle().replace(SECOND_ENTITY.getPlaceholder(),
                 components.killerEntity() == null ? "" : getTranslatedComponent(components.killerEntity())
         );
-        String weaponTemplate = config.discordPlayerDeathWeaponStyle().replace(ITEM,
+        String weaponTemplate = config.discordPlayerDeathWeaponStyle().replace(ITEM.getPlaceholder(),
                 components.item() == null ? "" : components.item().getString()
         );
 
         return String.format(
-                config.discordPlayerDeathCauseStyle().replace(DEATH_CAUSE, DiscordLocaleProvider.getTranslate(components.deathCauseLocaleKey())),
+                config.discordPlayerDeathCauseStyle().replace(DEATH_CAUSE.getPlaceholder(), DiscordLocaleProvider.getTranslate(components.deathCauseLocaleKey())),
                 playerTemplate,
                 killerTemplate,
                 weaponTemplate
@@ -94,7 +96,7 @@ public final class DiscordMessageFormatter {
     }
 
 
-    public static Optional<DiscordMessageComponents> getDiscordMessageComponents(MessageType messageType, Map<String, String> parameterMap){
+    public static Optional<DiscordMessageComponents> getDiscordMessageComponents(MessageType messageType, Map<TemplatePlaceholder, String> parameterMap){
         IConfigProvider config = ConfigProvider.getConfig();
         OffsetDateTime now = JavaUtils.getDateTimeWithUtcOffset(ConfigProvider.getConfig().utcOffsetHours());
 
@@ -165,9 +167,9 @@ public final class DiscordMessageFormatter {
         return Optional.empty();
     }
 
-    private static String setConfigTemplateTranslatableParameters(String configTemplate, String... translatableParameters) {
-        for (String param : translatableParameters)
-            configTemplate = configTemplate.replace(param, clearTranslatedString(DiscordLocaleProvider.getTranslate(unwrapBraces(param))));
+    private static String setConfigTemplateTranslatableParameters(String configTemplate, TemplateParameter.Translatable... translatableParameters) {
+        for (TemplateParameter.Translatable param : translatableParameters)
+            configTemplate = configTemplate.replace(param.getPlaceholder(), clearTranslatedString(DiscordLocaleProvider.getTranslate(param.unwrapBraces())));
 
         return configTemplate;
     }

@@ -4,7 +4,7 @@ import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
-import com.denisnumb.discord_chat_mod.chat.template.TemplateParameters;
+import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
@@ -27,8 +27,8 @@ import java.util.stream.IntStream;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.COUNTER;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.PLAYER;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.COUNTER;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.PLAYER;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 
 public final class ServerStatusController {
@@ -95,10 +95,10 @@ public final class ServerStatusController {
                 : getDiscordMessageComponents(
                 MessageType.PINNED_STATUS_PLAYERS,
                 Map.of(
-                        TemplateParameters.Translatable.ONLINE_PLAYERS, getOnlineCountString(),
-                        TemplateParameters.PLAYER_LIST, buildPlayerList(),
-                        TemplateParameters.PLAYER_COUNT, String.valueOf(getServerPlayerCount(server)),
-                        TemplateParameters.MAX_PLAYERS, String.valueOf(getServerMaxPlayers(server))
+                        TemplateParameter.Translatable.ONLINE_PLAYERS, getOnlineCountString(),
+                        TemplateParameter.PLAYER_LIST, buildPlayerList(),
+                        TemplateParameter.PLAYER_COUNT, String.valueOf(getServerPlayerCount(server)),
+                        TemplateParameter.MAX_PLAYERS, String.valueOf(getServerMaxPlayers(server))
                 )
         ).orElseThrow();
     }
@@ -120,8 +120,8 @@ public final class ServerStatusController {
                     }
 
                     return nicknameStyle
-                            .replace(PLAYER, player)
-                            .replace(COUNTER, String.valueOf(i + 1));
+                            .replace(PLAYER.getPlaceholder(), player)
+                            .replace(COUNTER.getPlaceholder(), String.valueOf(i + 1));
                 })
                 .collect(Collectors.joining(delimiter));
 
@@ -132,7 +132,7 @@ public final class ServerStatusController {
     }
 
     private static boolean shouldEscape(String style) {
-        int playerIndex = style.indexOf(PLAYER);
+        int playerIndex = style.indexOf(PLAYER.getPlaceholder());
         if (playerIndex == -1)
             return true;
 

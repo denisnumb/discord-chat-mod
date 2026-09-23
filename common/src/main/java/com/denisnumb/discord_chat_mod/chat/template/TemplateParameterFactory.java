@@ -19,28 +19,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.DIMENSION;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.X;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Y;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Z;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.DIMENSION;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.X;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Y;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Z;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
 public final class TemplateParameterFactory {
     private TemplateParameterFactory() {}
 
-    public static Map<String, String> buildPlayerParameters(CommandSourceStack source){
+    public static Map<TemplatePlaceholder, String> buildPlayerParameters(CommandSourceStack source){
         return source.getPlayer() == null
                 ? buildPlayerParameters(source.getDisplayName().getString(), null)
                 : buildPlayerParameters(source.getDisplayName().getString(), source.getEntity());
     }
 
-    public static Map<String, String> buildPlayerParameters(Entity entity){
+    public static Map<TemplatePlaceholder, String> buildPlayerParameters(Entity entity){
         return buildPlayerParameters(entity.getDisplayName().getString(), entity);
     }
 
-    public static Map<String, String> buildPlayerParameters(String displayName, Entity entity){
-        HashMap<String, String> result = new HashMap<>();
+    public static Map<TemplatePlaceholder, String> buildPlayerParameters(String displayName, Entity entity){
+        Map<TemplatePlaceholder, String> result = new HashMap<>();
         result.put(PLAYER, displayName);
         if (entity instanceof Player player)
             result.put(PLAYER_AVATAR_URL, PlayerAvatarProvider.getPlayerAvatarUrl(player));
@@ -50,8 +50,8 @@ public final class TemplateParameterFactory {
         return mergeMaps(result, buildPositionParameters(entity));
     }
 
-    public static Map<String, Component> buildTimestampParameters(){
-        HashMap<String, Component> result = new HashMap<>();
+    public static Map<TemplatePlaceholder, Component> buildTimestampParameters(){
+        Map<TemplatePlaceholder, Component> result = new HashMap<>();
         OffsetDateTime now = JavaUtils.getDateTimeWithUtcOffset(ConfigProvider.getConfig().utcOffsetHours());
         result.put(HH, Component.literal(String.format("%02d", now.getHour())));
         result.put(MM, Component.literal(String.format("%02d", now.getMinute())));
@@ -60,13 +60,13 @@ public final class TemplateParameterFactory {
         return result;
     }
 
-    public static Map<String, Component> buildPositionComponentParameters(@Nullable Entity entity){
+    public static Map<TemplatePlaceholder, Component> buildPositionComponentParameters(@Nullable Entity entity){
         return buildPositionParameters(entity).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Component.literal(e.getValue())));
     }
 
-    public static Map<String, String> buildPositionParameters(@Nullable Entity entity){
-        HashMap<String, String> result = new HashMap<>();
+    public static Map<TemplatePlaceholder, String> buildPositionParameters(@Nullable Entity entity){
+        HashMap<TemplatePlaceholder, String> result = new HashMap<>();
 
         if (entity == null){
             result.put(X, "");

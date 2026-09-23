@@ -2,8 +2,8 @@ package com.denisnumb.discord_chat_mod.config;
 
 import java.util.List;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.*;
 
 public final class ConfigDefaults {
     private ConfigDefaults() {}
@@ -101,10 +101,10 @@ public final class ConfigDefaults {
             PLAYER_LEFT
     );
 
-    public static final String MINECRAFT_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = DEATH_CAUSE;
-    public static final String MINECRAFT_PLAYER_DEATH_NAME_STYLE_DEFAULT = PLAYER;
-    public static final String MINECRAFT_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = SECOND_ENTITY;
-    public static final String MINECRAFT_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = ITEM;
+    public static final String MINECRAFT_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = DEATH_CAUSE.getPlaceholder();
+    public static final String MINECRAFT_PLAYER_DEATH_NAME_STYLE_DEFAULT = PLAYER.getPlaceholder();
+    public static final String MINECRAFT_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = SECOND_ENTITY.getPlaceholder();
+    public static final String MINECRAFT_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = ITEM.getPlaceholder();
 
     public static final String MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT = String.format(
             "%s %s <green>%s<green/>",
@@ -224,10 +224,10 @@ public final class ConfigDefaults {
             PLAYER_AVATAR_URL
     );
 
-    public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = DEATH_CAUSE;
-    public static final String DISCORD_PLAYER_DEATH_NAME_STYLE_DEFAULT = PLAYER;
-    public static final String DISCORD_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = SECOND_ENTITY;
-    public static final String DISCORD_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = ITEM;
+    public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_DEFAULT = DEATH_CAUSE.getPlaceholder();
+    public static final String DISCORD_PLAYER_DEATH_NAME_STYLE_DEFAULT = PLAYER.getPlaceholder();
+    public static final String DISCORD_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT = SECOND_ENTITY.getPlaceholder();
+    public static final String DISCORD_PLAYER_DEATH_WEAPON_STYLE_DEFAULT = ITEM.getPlaceholder();
     public static final String DISCORD_PLAYER_DEATH_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {
@@ -457,7 +457,7 @@ public final class ConfigDefaults {
 
     public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_DEFAULT = "\n";
 
-    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_DEFAULT = PLAYER;
+    public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_DEFAULT = PLAYER.getPlaceholder();
 
     public static final String DISCORD_PINNED_STATUS_MESSAGE_STYLE_DEFAULT = String.format(
             """

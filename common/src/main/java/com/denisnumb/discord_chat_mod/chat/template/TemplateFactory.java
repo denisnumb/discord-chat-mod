@@ -12,7 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.unwrapBraces;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildTimestampParameters;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
@@ -21,15 +20,15 @@ public final class TemplateFactory {
 
     public static Component getStyledTranslatableMessage(
             List<MarkdownToken> template,
-            String translatableParam,
-            LinkedHashMap<String, Component> placeholderComponents,
-            Map<String, Component> extraParams
+            TemplateParameter.Translatable translatableParam,
+            LinkedHashMap<TemplatePlaceholder, Component> placeholderComponents,
+            Map<TemplatePlaceholder, Component> extraParams
     ) {
         if (!templateContains(template, translatableParam))
             return applyParametersToTemplate(template, mergeMaps(placeholderComponents, extraParams));
 
-        String[] placeholderNames = placeholderComponents.keySet().toArray(new String[0]);
-        Map<String, MarkdownToken> paramTokens = parseTemplateParameterTokens(template, placeholderNames);
+        TemplatePlaceholder[] placeholderNames = placeholderComponents.keySet().toArray(new TemplatePlaceholder[0]);
+        Map<TemplatePlaceholder, MarkdownToken> paramTokens = parseTemplateParameterTokens(template, placeholderNames);
 
         Object[] translatableArgs = placeholderComponents.entrySet().stream()
                 .map(entry -> {
@@ -41,21 +40,21 @@ public final class TemplateFactory {
                 })
                 .toArray();
 
-        Component translatableContent = Component.translatable(unwrapBraces(translatableParam), translatableArgs);
+        Component translatableContent = Component.translatable(translatableParam.unwrapBraces(), translatableArgs);
         List<MarkdownToken> cleanedTemplate = removeParametersFromTemplate(template, placeholderNames);
-        Map<String, Component> allParams = mergeMaps(Map.of(translatableParam, translatableContent), extraParams);
+        Map<TemplatePlaceholder, Component> allParams = mergeMaps(Map.of(translatableParam, translatableContent), extraParams);
 
         return applyParametersToTemplate(cleanedTemplate, allParams);
     }
 
-    public static Map<String, MarkdownToken> parseTemplateParameterTokens(List<MarkdownToken> template, String... parameters) {
-        Map<String, MarkdownToken> result = new HashMap<>();
+    public static Map<TemplatePlaceholder, MarkdownToken> parseTemplateParameterTokens(List<MarkdownToken> template, TemplatePlaceholder... parameters) {
+        Map<TemplatePlaceholder, MarkdownToken> result = new HashMap<>();
         Pattern pattern = buildOrPattern(parameters);
 
         for (MarkdownToken token : template) {
             Matcher matcher = pattern.matcher(token.text);
             while (matcher.find())
-                result.put(matcher.group(), token);
+                result.put(TemplateParameter.fromString(matcher.group()), token);
         }
         return result;
     }
@@ -66,12 +65,12 @@ public final class TemplateFactory {
 
     public static MutableComponent applyParametersToTemplate(
             List<MarkdownToken> template,
-            Map<String, Component> parameterToComponent
+            Map<TemplatePlaceholder, Component> parameterToComponent
     ) {
         parameterToComponent = mergeMaps(parameterToComponent, buildTimestampParameters());
 
         MutableComponent result = Component.empty();
-        Pattern pattern = buildOrPattern(parameterToComponent.keySet().toArray(new String[0]));
+        Pattern pattern = buildOrPattern(parameterToComponent.keySet().toArray(new TemplatePlaceholder[0]));
 
         for (MarkdownToken token : template) {
             String text = token.text;
@@ -88,7 +87,7 @@ public final class TemplateFactory {
                 if (!before.isEmpty())
                     result.append(MarkdownToComponentConverter.convertToken(token.copyWithText(before)));
 
-                Component value = parameterToComponent.get(matcher.group());
+                Component value = parameterToComponent.get(TemplateParameter.fromString(matcher.group()));
                 if (value != null)
                     result.append(ComponentUtils.applyTokenStyleToComponent(token, value));
 
@@ -102,7 +101,7 @@ public final class TemplateFactory {
         return result;
     }
 
-    private static List<MarkdownToken> removeParametersFromTemplate(List<MarkdownToken> template, String... parameters) {
+    private static List<MarkdownToken> removeParametersFromTemplate(List<MarkdownToken> template, TemplatePlaceholder... parameters) {
         Pattern pattern = buildOrPattern(parameters);
         List<MarkdownToken> result = new ArrayList<>();
         boolean pendingSpaceTrim = false;
@@ -125,13 +124,13 @@ public final class TemplateFactory {
         return result;
     }
 
-    private static boolean templateContains(List<MarkdownToken> template, String param) {
-        return template.stream().anyMatch(t -> t.text.contains(param));
+    private static boolean templateContains(List<MarkdownToken> template, TemplatePlaceholder param) {
+        return template.stream().anyMatch(t -> t.text.contains(param.getPlaceholder()));
     }
 
-    private static Pattern buildOrPattern(String... parameters) {
+    private static Pattern buildOrPattern(TemplatePlaceholder... parameters) {
         return Pattern.compile(Arrays.stream(parameters)
-                .map(Pattern::quote)
+                .map(parameter -> Pattern.quote(parameter.getPlaceholder()))
                 .collect(Collectors.joining("|")));
     }
 }

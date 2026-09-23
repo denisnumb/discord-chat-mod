@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.network.image;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
@@ -37,7 +38,7 @@ import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 
 public final class ImageTransceiver {
     private ImageTransceiver() {}
@@ -194,7 +195,7 @@ public final class ImageTransceiver {
     }
 
     private static void sendImageToDiscord(ImagePartPacketPayload payload, ServerPlayer fromPlayer) {
-        Map<String, String> parameters = mergeMaps(
+        Map<TemplatePlaceholder, String> parameters = mergeMaps(
                 Map.of(IMAGE_URL, String.format("attachment://%s", payload.fileName())),
                 buildPlayerParameters(fromPlayer)
         );

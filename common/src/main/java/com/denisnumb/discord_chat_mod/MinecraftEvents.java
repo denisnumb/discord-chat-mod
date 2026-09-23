@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.commands.*;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.SetAvatarCommand;
 import com.denisnumb.discord_chat_mod.commands.vanilla.*;
@@ -37,7 +38,7 @@ import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getA
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
 import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageFormatter.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
 public final class MinecraftEvents {
@@ -72,7 +73,7 @@ public final class MinecraftEvents {
 
         if (entity instanceof Player){
             handleDiscord(() -> {
-                Map<String, String> parameters = mergeMaps(
+                Map<TemplatePlaceholder, String> parameters = mergeMaps(
                         Map.of(DEATH_MESSAGE, formatDeathMessageComponents(components)),
                         buildPlayerParameters(components.diedEntity().getString(), entity)
                 );
@@ -104,7 +105,7 @@ public final class MinecraftEvents {
                 case GOAL -> MessageType.ADVANCEMENT_GOAL;
             };
 
-            Map<String, String> parameters = mergeMaps(
+            Map<TemplatePlaceholder, String> parameters = mergeMaps(
                     Map.of(ADVANCEMENT, formattedTitle, DESCRIPTION, formattedDescription, ICON_URL, "attachment://icon.png"),
                     buildPlayerParameters(player)
             );
@@ -151,7 +152,7 @@ public final class MinecraftEvents {
         String displayCommand = "/" + trimmed;
 
         handleDiscord(() -> {
-            Map<String, String> parameters = mergeMaps(
+            Map<TemplatePlaceholder, String> parameters = mergeMaps(
                     Map.of(COMMAND, displayCommand),
                     buildPlayerParameters(player)
             );

@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.mixin.chat_style;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
@@ -28,7 +29,7 @@ import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFact
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromPlayer;
@@ -67,7 +68,7 @@ public class PlayerListMixin {
         CommonMessageFormatter.FormattedMessage chatMessage = formatMessage(originalContent.getString(), ChannelCategory.PLAYER_CHAT);
 
         handleDiscord(() -> {
-            Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(player));
+            Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(player));
             Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
             Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
 

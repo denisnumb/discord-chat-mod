@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.fabric.compat;
 
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.compat.IVanishCompat;
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
@@ -58,7 +59,7 @@ public class VanishCompat implements IVanishCompat {
         VanishEvents.VANISH_EVENT.register((player, vanish) -> {
             handleDiscord(() -> {
                 MessageType messageType = vanish ? MessageType.LEFT : MessageType.JOIN;
-                Map<String, String> parameters = buildPlayerParameters(player);
+                Map<TemplatePlaceholder, String> parameters = buildPlayerParameters(player);
                 getDiscordMessageComponents(messageType, parameters)
                         .ifPresent(components -> sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), components));
                 updateServerStatusWithDelay();

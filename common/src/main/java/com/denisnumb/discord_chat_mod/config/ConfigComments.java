@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.config;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
 public final class ConfigComments {

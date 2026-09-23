@@ -25,7 +25,7 @@ import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatte
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getPlayerListBySelector;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 
 public final class TellrawCommand {
     private TellrawCommand() {}

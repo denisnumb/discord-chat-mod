@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
-import com.denisnumb.discord_chat_mod.chat.template.TemplateParameters;
+import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -218,7 +218,7 @@ public final class DiscordChatStyleConfig {
     private static void migrateScreenshotMessageStyle(CommentedConfig existedDiscordChatStyle, CommentedConfig newDiscordChatStyle){
         if (existedDiscordChatStyle.contains("discordScreenshotMessageStyle")){
             String existedOldStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT)
-                    .replace("{screenshot_url}", TemplateParameters.IMAGE_URL);
+                    .replace("{screenshot_url}", TemplateParameter.IMAGE_URL.getPlaceholder());
             newDiscordChatStyle.set("discordImageMessageStyle", existedOldStyle.replace("\r", ""));
             discordImageMessageStyle = validateJsonValue(existedOldStyle, DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT);
             LOGGER.info("[discordChatStyle] Migrating \"discordScreenshotMessageStyle\" → \"discordImageMessageStyle\"");
@@ -226,7 +226,7 @@ public final class DiscordChatStyleConfig {
 
         if (existedDiscordChatStyle.contains("discordScreenshotMessageWebhookStyle")){
             String existedOldStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT)
-                    .replace("{screenshot_url}", TemplateParameters.IMAGE_URL);
+                    .replace("{screenshot_url}", TemplateParameter.IMAGE_URL.getPlaceholder());
             newDiscordChatStyle.set("discordImageMessageWebhookStyle", existedOldStyle.replace("\r", ""));
             discordImageMessageWebhookStyle = validateJsonValue(existedOldStyle, DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
             LOGGER.info("[discordChatStyle] Migrating \"discordScreenshotMessageWebhookStyle\" → \"discordImageMessageWebhookStyle\"");

@@ -4,6 +4,7 @@ import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.brigadier.CommandDispatcher;
@@ -22,7 +23,7 @@ import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 
 public final class SayCommand {
     private SayCommand() {}
@@ -39,7 +40,7 @@ public final class SayCommand {
                                                 = formatMessage(resolvedMessage.decoratedContent().getString(), ChannelCategory.SAY_COMMAND);
 
                                         handleDiscord(() -> {
-                                            Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(source));
+                                            Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(source));
                                             getDiscordMessageComponents(MessageType.SAY_COMMAND, parameters)
                                                     .ifPresent(components -> sendMessageFromServer(ChannelCategory.SAY_COMMAND, getAllContexts(), components));
                                         });

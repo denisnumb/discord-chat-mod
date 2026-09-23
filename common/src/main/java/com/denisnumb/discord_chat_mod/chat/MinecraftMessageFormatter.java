@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat;
 
+import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
@@ -19,8 +21,8 @@ import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFact
 import static com.denisnumb.discord_chat_mod.utils.DeathMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.*;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.*;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.newLinkedHashMapOf;
 
@@ -56,7 +58,7 @@ public final class MinecraftMessageFormatter {
                 ? config.minecraftPlayerAdvancementGoalStyle()
                 : config.minecraftPlayerAdvancementChallengeStyle();
 
-        String translationKey = displayInfo.getType() == AdvancementType.TASK
+        TemplateParameter.Translatable translationKey = displayInfo.getType() == AdvancementType.TASK
                 ? ADVANCEMENT_TASK
                 : displayInfo.getType() == AdvancementType.GOAL
                 ? ADVANCEMENT_GOAL
@@ -64,7 +66,7 @@ public final class MinecraftMessageFormatter {
 
         List<MarkdownToken> template = parseConfigTemplateMarkdown(messageStringTemplate);
         MarkdownToken advancementStyle = parseTemplateParameterTokens(template, ADVANCEMENT).get(ADVANCEMENT);
-        LinkedHashMap<String, Component> placeholders = newLinkedHashMapOf(
+        LinkedHashMap<TemplatePlaceholder, Component> placeholders = newLinkedHashMapOf(
                 Map.entry(PLAYER, player.getDisplayName()),
                 Map.entry(ADVANCEMENT, buildAdvancementComponent(
                         displayInfo.getTitle(),
@@ -88,7 +90,7 @@ public final class MinecraftMessageFormatter {
                 ? config.minecraftPlayerJoinedStyle()
                 : config.minecraftPlayerLeftStyle();
 
-        String translationKey = isJoin
+        TemplateParameter.Translatable translationKey = isJoin
                 ? PLAYER_JOINED
                 : PLAYER_LEFT;
 
@@ -102,7 +104,7 @@ public final class MinecraftMessageFormatter {
 
     public static Optional<Component> getStyledChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components){
         IConfigProvider config = ConfigProvider.getConfig();
-        String translationKey = null;
+        TemplateParameter.Translatable translationKey = null;
 
         String configTemplate = switch (chatType.identifier().getPath()) {
             case CHAT_PATH -> config.minecraftPlayerMessageStyle();
@@ -124,13 +126,13 @@ public final class MinecraftMessageFormatter {
         if (configTemplate == null)
             return Optional.empty();
 
-        String[] params = getParametersByChatType(chatType);
+        TemplatePlaceholder[] params = getParametersByChatType(chatType);
         Component[] values = params.length == 3
                 ? new Component[] { components.team(), components.player(), components.content() }
                 : new Component[] { components.player(), components.content() };
 
         List<MarkdownToken> template = parseConfigTemplateMarkdown(configTemplate);
-        LinkedHashMap<String, Component> parameterToComponent = new LinkedHashMap<>();
+        LinkedHashMap<TemplatePlaceholder, Component> parameterToComponent = new LinkedHashMap<>();
         for (int i = 0; i < params.length; i++) {
             parameterToComponent.put(params[i], values[i]);
         }
@@ -150,24 +152,21 @@ public final class MinecraftMessageFormatter {
         )));
     }
 
-    private static final String DEATH_CAUSE_REPLACEMENT_TAG = "{death.cause}";
-    private static final String DIED_ENTITY_REPLACEMENT_TAG = "{died.entity}";
-    private static final String KILLER_ENTITY_REPLACEMENT_TAG = "{second.entity}";
 
     public static Component getStyledDeathMessage(DeathMessageComponents components, Entity entity) {
         IConfigProvider config = ConfigProvider.getConfig();
 
-        String causeStyle = config.minecraftPlayerDeathCauseStyle().replace(DEATH_CAUSE, DEATH_CAUSE_REPLACEMENT_TAG);
-        String diedEntityStyle = config.minecraftPlayerDeathNameStyle().replace(PLAYER, DIED_ENTITY_REPLACEMENT_TAG);
-        String killerEntityStyle = config.minecraftPlayerDeathSecondEntityNameStyle().replace(SECOND_ENTITY, KILLER_ENTITY_REPLACEMENT_TAG);
+        String causeStyle = config.minecraftPlayerDeathCauseStyle().replace(DEATH_CAUSE.getPlaceholder(), DEATH_CAUSE_MARKDOWNSAFE.getPlaceholder());
+        String diedEntityStyle = config.minecraftPlayerDeathNameStyle();
+        String killerEntityStyle = config.minecraftPlayerDeathSecondEntityNameStyle().replace(SECOND_ENTITY.getPlaceholder(), SECOND_ENTITY_MARKDOWN_SAFE.getPlaceholder());
         String itemStyle = config.minecraftPlayerDeathWeaponStyle();
 
-        Component diedEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(diedEntityStyle), Map.of(DIED_ENTITY_REPLACEMENT_TAG, components.diedEntity()));
+        Component diedEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(diedEntityStyle), Map.of(PLAYER, components.diedEntity()));
         Component killerEntity = null;
         Component item = null;
 
         if (components.killerEntity() != null)
-            killerEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(killerEntityStyle), Map.of(KILLER_ENTITY_REPLACEMENT_TAG, components.killerEntity()));
+            killerEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(killerEntityStyle), Map.of(SECOND_ENTITY_MARKDOWN_SAFE, components.killerEntity()));
         if (components.item() != null)
             item = applyParametersToTemplate(parseConfigTemplateMarkdown(itemStyle), Map.of(ITEM, components.item()));
 
@@ -180,8 +179,8 @@ public final class MinecraftMessageFormatter {
 
         Component deathCause = Component.translatable(components.deathCauseLocaleKey(), args.toArray());
 
-        Map<String, Component> parameters = new HashMap<>();
-        parameters.put(DEATH_CAUSE_REPLACEMENT_TAG, deathCause);
+        Map<TemplatePlaceholder, Component> parameters = new HashMap<>();
+        parameters.put(DEATH_CAUSE_MARKDOWNSAFE, deathCause);
         parameters.putAll(buildPositionComponentParameters(entity));
 
         return applyParametersToTemplate(parseConfigTemplateMarkdown(causeStyle), parameters);
