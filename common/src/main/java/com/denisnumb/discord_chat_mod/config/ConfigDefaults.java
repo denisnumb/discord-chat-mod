@@ -2,8 +2,8 @@ package com.denisnumb.discord_chat_mod.config;
 
 import java.util.List;
 
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.*;
 
 public final class ConfigDefaults {
     private ConfigDefaults() {}

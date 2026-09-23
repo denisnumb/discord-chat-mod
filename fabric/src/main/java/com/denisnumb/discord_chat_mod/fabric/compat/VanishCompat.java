@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod.fabric.compat;
 
 import com.denisnumb.discord_chat_mod.compat.IVanishCompat;
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import me.drex.vanish.api.VanishAPI;
 import me.drex.vanish.api.VanishEvents;
@@ -14,12 +14,12 @@ import net.minecraft.world.entity.player.Player;
 import java.util.Arrays;
 import java.util.Map;
 
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.sendMessageFromServer;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromServer;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 
 public class VanishCompat implements IVanishCompat {
 

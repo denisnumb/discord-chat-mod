@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.subFormattedCharSequence;
+import static com.denisnumb.discord_chat_mod.utils.FormattedCharSequenceUtils.subFormattedCharSequence;
 
 
 @Mixin(EditBox.class)
@@ -46,9 +46,7 @@ public abstract class EditBoxMixin {
         if (!string.isEmpty() && !value.startsWith("/")) {
             if (!string.equals(discord_chat_mod$lastInput)){
                 discord_chat_mod$lastInput = string;
-                Component markdown = new MarkdownToComponentConverter(
-                        MarkdownEditBoxParser.parseMarkdown(string)
-                ).convertMarkdownTokensToComponent();
+                Component markdown = MarkdownToComponentConverter.convertTokens(MarkdownEditBoxParser.parseMarkdown(string));
 
                 this.discord_chat_mod$markdownValid = markdown.getString().equals(string);
                 this.discord_chat_mod$cachedMarkdown = this.discord_chat_mod$markdownValid ? markdown.getVisualOrderText() : null;

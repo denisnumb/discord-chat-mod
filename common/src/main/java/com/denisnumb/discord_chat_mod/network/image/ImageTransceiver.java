@@ -1,11 +1,12 @@
 package com.denisnumb.discord_chat_mod.network.image;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
-import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.BigPacketsTransceiver;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
@@ -30,14 +31,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
 
 public final class ImageTransceiver {
     private ImageTransceiver() {}
@@ -204,7 +206,7 @@ public final class ImageTransceiver {
 
         if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent()) {
             FileUpload imageFile = FileUpload.fromData(payload.imageData(), payload.fileName());
-            DiscordMessageUtils.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, webhookComponentsOpt.get(), chatComponentsOpt.get(), imageFile)
+            DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, webhookComponentsOpt.get(), chatComponentsOpt.get(), imageFile)
                     .ifPresentOrElse(
                             discordUrl -> handleSuccessfulDiscordSend(payload.displayName(), discordUrl, fromPlayer),
                             () -> sendImageToAllPlayers(payload, fromPlayer)

@@ -19,17 +19,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.downloadStickerFile;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.downloadStickerFile;
 
 
-public abstract class DiscordMessageSender<T extends MessageCreateRequest<T> & RestAction<Message>> {
+public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & RestAction<Message>> {
     protected T request;
 
     private final Function<String, T> contentStarter;
     private final Function<MessageEmbed[], T> embedsStarter;
     private final Function<FileUpload[], T> filesStarter;
 
-    protected DiscordMessageSender(
+    protected DiscordRequestSender(
             Function<String, T> contentStarter,
             Function<MessageEmbed[], T> embedsStarter,
             Function<FileUpload[], T> filesStarter
@@ -39,7 +39,7 @@ public abstract class DiscordMessageSender<T extends MessageCreateRequest<T> & R
         this.filesStarter = filesStarter;
     }
 
-    public final DiscordMessageSender<T> withContent(@Nullable String content) {
+    public final DiscordRequestSender<T> withContent(@Nullable String content) {
         if (content != null) {
             if (request != null) {
                 request.setContent(content);
@@ -50,7 +50,7 @@ public abstract class DiscordMessageSender<T extends MessageCreateRequest<T> & R
         return this;
     }
 
-    public final DiscordMessageSender<T> withEmbeds(MessageEmbed... embeds) {
+    public final DiscordRequestSender<T> withEmbeds(MessageEmbed... embeds) {
         if (Arrays.stream(embeds).allMatch(Objects::nonNull)) {
             if (request != null) {
                 request.addEmbeds(embeds);
@@ -61,7 +61,7 @@ public abstract class DiscordMessageSender<T extends MessageCreateRequest<T> & R
         return this;
     }
 
-    public final DiscordMessageSender<T> withFiles(FileUpload... files) {
+    public final DiscordRequestSender<T> withFiles(FileUpload... files) {
         if (Arrays.stream(files).allMatch(Objects::nonNull)) {
             if (request != null) {
                 request.addFiles(files);
@@ -72,7 +72,7 @@ public abstract class DiscordMessageSender<T extends MessageCreateRequest<T> & R
         return this;
     }
 
-    public abstract DiscordMessageSender<T> withSticker(@Nullable StickersProvider.StickerData stickerData);
+    public abstract DiscordRequestSender<T> withSticker(@Nullable StickersProvider.StickerData stickerData);
 
     public abstract void beforeSend();
 
@@ -86,7 +86,7 @@ public abstract class DiscordMessageSender<T extends MessageCreateRequest<T> & R
         return Optional.empty();
     }
 
-    public static class WebhookBuilder extends DiscordMessageSender<WebhookMessageCreateAction<Message>> {
+    public static class WebhookBuilder extends DiscordRequestSender<WebhookMessageCreateAction<Message>> {
         private String avatarUrl;
         private String userName;
         private ThreadChannel thread;
@@ -136,7 +136,7 @@ public abstract class DiscordMessageSender<T extends MessageCreateRequest<T> & R
         }
     }
 
-    public static class ChannelBuilder extends DiscordMessageSender<MessageCreateAction> {
+    public static class ChannelBuilder extends DiscordRequestSender<MessageCreateAction> {
         private final GuildMessageChannel channel;
 
         public ChannelBuilder(GuildMessageChannel channel) {

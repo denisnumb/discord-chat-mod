@@ -1,8 +1,8 @@
 package com.denisnumb.discord_chat_mod.chat_images;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.utils.FormattedCharSequenceUtils;
 import com.denisnumb.discord_chat_mod.utils.JavaUtils;
-import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.chat_images.model.*;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
@@ -356,10 +356,10 @@ public final class ImageStorage {
             String command = OPEN_IMAGE_COMMAND + image.url;
 
             accessor.getTrimmedMessages().removeIf(line ->
-                    MinecraftUtils.hasRunCommandClickEvent(line.content(), command)
+                    FormattedCharSequenceUtils.hasRunCommandClickEvent(line.content(), command)
             );
             accessor.getAllMessages().removeIf(msg ->
-                    MinecraftUtils.hasRunCommandClickEvent(msg.content().getVisualOrderText(), command)
+                    FormattedCharSequenceUtils.hasRunCommandClickEvent(msg.content().getVisualOrderText(), command)
             );
 
             TextureManager tm = Minecraft.getInstance().getTextureManager();

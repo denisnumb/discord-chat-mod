@@ -1,9 +1,9 @@
 package com.denisnumb.discord_chat_mod.commands.vanilla;
 
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
-import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
-import com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry;
-import com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider;
+import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
+import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -20,8 +20,8 @@ import net.minecraft.world.scores.PlayerTeam;
 import java.util.List;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.processChatMessage;
-import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.buildBound;
+import static com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter.formatMessage;
+import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
 
 public final class TeamMsgCommand {
     private TeamMsgCommand() {}
@@ -49,13 +49,13 @@ public final class TeamMsgCommand {
     }
 
     private static void sendMessage(CommandSourceStack commandSourceStack, Entity entity, PlayerTeam playerTeam, List<ServerPlayer> list, PlayerChatMessage playerChatMessage) {
-        MinecraftUtils.ProcessChatMessageResult chatMessage
-                = processChatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.PLAYER_CHAT);
+        CommonMessageFormatter.FormattedMessage chatMessage
+                = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.PLAYER_CHAT);
 
         PlayerChatMessage playerChatMessageStyled = playerChatMessage.withUnsignedContent(chatMessage.forMinecraft());
         MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING,
-                new MinecraftChatStyleProvider.ChatMessageComponents(
+                new MinecraftMessageContext(
                         commandSourceStack.getDisplayName(),
                         playerChatMessageStyled.decoratedContent(),
                         playerTeam.getFormattedDisplayName().withStyle(SUGGEST_STYLE),
@@ -77,7 +77,7 @@ public final class TeamMsgCommand {
     ) {
         Optional<Component> styledOutgoungContentOptional = MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING,
-                new MinecraftChatStyleProvider.ChatMessageComponents(
+                new MinecraftMessageContext(
                         commandSourceStack.getDisplayName(),
                         playerChatMessage.decoratedContent(),
                         playerTeam.getFormattedDisplayName().withStyle(SUGGEST_STYLE),

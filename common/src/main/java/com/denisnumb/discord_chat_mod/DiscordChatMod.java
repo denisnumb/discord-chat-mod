@@ -1,13 +1,13 @@
 package com.denisnumb.discord_chat_mod;
 
-import com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry;
+import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.commands.ReloadConfigCommand;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.AvatarUrlStorage;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.*;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
-import com.denisnumb.discord_chat_mod.chat_style.Parameters;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
+import com.denisnumb.discord_chat_mod.chat.template.TemplateParameters;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
@@ -36,11 +36,12 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.initServerStatusController;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusMessageToUnavailable;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
+
 import com.denisnumb.discord_chat_mod.discord.slash_commands.DiscordSlashCommands;
 
 public final class DiscordChatMod {
@@ -97,8 +98,8 @@ public final class DiscordChatMod {
             initJDA();
             getDiscordMessageComponents(MessageType.LOCAL_SERVER_START,
                     Map.of(
-                            Parameters.Translatable.LOCAL_SERVER_STARTED, DiscordLocaleProvider.Server.localStarted(server.getPort()),
-                            Parameters.SERVER_PORT, String.valueOf(server.getPort())
+                            TemplateParameters.Translatable.LOCAL_SERVER_STARTED, DiscordLocaleProvider.Server.localStarted(server.getPort()),
+                            TemplateParameters.SERVER_PORT, String.valueOf(server.getPort())
                     )
             ).ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
 

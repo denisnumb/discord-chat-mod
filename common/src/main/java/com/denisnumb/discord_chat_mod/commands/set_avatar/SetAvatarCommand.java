@@ -33,9 +33,7 @@ public final class SetAvatarCommand {
                             AvatarUrlStorage.setUrl(player.getUUID(), url, context.getSource().getServer());
 
                             player.sendSystemMessage(MinecraftLocaleProvider.Command.SetAvatarUrl.success(
-                                    new MarkdownToComponentConverter(
-                                            MarkdownParser.parseMarkdown(url)
-                                    ).convertMarkdownTokensToComponent()
+                                    MarkdownToComponentConverter.convertTokens(MarkdownParser.parseMarkdown(url))
                             ));
                             return 1;
                         })

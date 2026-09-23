@@ -145,10 +145,10 @@ public final class EmbedToComponentConverter {
     }
 
     private static Component convertMarkdown(String text, Map<String, DiscordMentionData> mentions) {
-        return new MarkdownToComponentConverter(
+        return MarkdownToComponentConverter.convertTokens(
                 MarkdownParser.parseMarkdown(EmojiUtils.replaceDiscordEmojiMentionsToEmojiNames(text)),
                 mentions
-        ).convertMarkdownTokensToComponent();
+        );
     }
 
     private record TextRun(String text, Style style) {}

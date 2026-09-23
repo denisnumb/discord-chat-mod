@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 
 import static com.denisnumb.discord_chat_mod.utils.EmojiUtils.EMOJI_PATTERN;
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.subFormattedCharSequence;
+import static com.denisnumb.discord_chat_mod.utils.FormattedCharSequenceUtils.subFormattedCharSequence;
 
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsMixin {

@@ -5,7 +5,9 @@ import net.dv8tion.jda.api.entities.RoleColors;
 import net.minecraft.ChatFormatting;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public final class ColorUtils {
     private ColorUtils() {}
@@ -19,24 +21,28 @@ public final class ColorUtils {
         public static int CHAT_LINK_COLOR = 0x00b7ff;
     }
 
-    public static final HashMap<String, Integer> colorNameToInt = new HashMap<>() {{
-        put("black", ChatFormatting.BLACK.getColor());
-        put("darkblue", ChatFormatting.DARK_BLUE.getColor());
-        put("darkgreen", ChatFormatting.DARK_GREEN.getColor());
-        put("darkaqua", ChatFormatting.DARK_AQUA.getColor());
-        put("darkred", ChatFormatting.DARK_RED.getColor());
-        put("darkpurple", ChatFormatting.DARK_PURPLE.getColor());
-        put("gold", ChatFormatting.GOLD.getColor());
-        put("grey", ChatFormatting.GRAY.getColor());
-        put("darkgrey", ChatFormatting.DARK_GRAY.getColor());
-        put("blue", ChatFormatting.BLUE.getColor());
-        put("green", ChatFormatting.GREEN.getColor());
-        put("aqua", ChatFormatting.AQUA.getColor());
-        put("red", ChatFormatting.RED.getColor());
-        put("lightpurple", ChatFormatting.LIGHT_PURPLE.getColor());
-        put("yellow", ChatFormatting.YELLOW.getColor());
-        put("white", ChatFormatting.WHITE.getColor());
-    }};
+    public static final Map<String, Integer> colorNameToInt;
+
+    static {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("black", ChatFormatting.BLACK.getColor());
+        map.put("darkblue", ChatFormatting.DARK_BLUE.getColor());
+        map.put("darkgreen", ChatFormatting.DARK_GREEN.getColor());
+        map.put("darkaqua", ChatFormatting.DARK_AQUA.getColor());
+        map.put("darkred", ChatFormatting.DARK_RED.getColor());
+        map.put("darkpurple", ChatFormatting.DARK_PURPLE.getColor());
+        map.put("gold", ChatFormatting.GOLD.getColor());
+        map.put("grey", ChatFormatting.GRAY.getColor());
+        map.put("darkgrey", ChatFormatting.DARK_GRAY.getColor());
+        map.put("blue", ChatFormatting.BLUE.getColor());
+        map.put("green", ChatFormatting.GREEN.getColor());
+        map.put("aqua", ChatFormatting.AQUA.getColor());
+        map.put("red", ChatFormatting.RED.getColor());
+        map.put("lightpurple", ChatFormatting.LIGHT_PURPLE.getColor());
+        map.put("yellow", ChatFormatting.YELLOW.getColor());
+        map.put("white", ChatFormatting.WHITE.getColor());
+        colorNameToInt = Collections.unmodifiableMap(map);
+    }
 
     public static @Nullable Integer parseColor(String colorNameOrHex){
         String colorNameOrHexLower = colorNameOrHex.toLowerCase();

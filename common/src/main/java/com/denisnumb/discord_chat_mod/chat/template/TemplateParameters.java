@@ -1,7 +1,7 @@
-package com.denisnumb.discord_chat_mod.chat_style;
+package com.denisnumb.discord_chat_mod.chat.template;
 
-public final class Parameters {
-    private Parameters() {}
+public final class TemplateParameters {
+    private TemplateParameters() {}
     public static final String MESSAGE = "{message}";
     public static final String PLAYER = "{player}";
     public static final String SENDER = "{sender}";

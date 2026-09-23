@@ -56,6 +56,25 @@ public final class MarkdownToken {
         );
     }
 
+    public MarkdownToken copyWithText(String newRawText, String newText) {
+        MarkdownToken copy = new MarkdownToken(newRawText, newText);
+        copy.url = url;
+        copy.bold = bold;
+        copy.italic = italic;
+        copy.underlined = underlined;
+        copy.strikethrough = strikethrough;
+        copy.obfuscated = obfuscated;
+        copy.isMention = isMention;
+        copy.color = color;
+        copy.gradientColors = gradientColors;
+        copy.isSpecialCharacters = isSpecialCharacters;
+        return copy;
+    }
+
+    public MarkdownToken copyWithText(String newText) {
+        return copyWithText(newText, newText);
+    }
+
     public void combineStyles(MarkdownToken another){
         if (isSpecialCharacters)
             return;

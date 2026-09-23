@@ -1,37 +1,50 @@
-package com.denisnumb.discord_chat_mod.chat_style;
+package com.denisnumb.discord_chat_mod.chat;
 
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
+import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPositionComponentParameters;
 import static com.denisnumb.discord_chat_mod.utils.DeathMessageUtils.*;
-import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.*;
-import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
+import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.*;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.newLinkedHashMapOf;
 
-public final class MinecraftChatStyleProvider {
-    private MinecraftChatStyleProvider() {}
+public final class MinecraftMessageFormatter {
+    private MinecraftMessageFormatter() {}
 
-    private static Component applyStyleToAdvancement(Component translatableTitle, Component translatableDescription, Style advancementStyle) {
-        Component description = ComponentUtils.mergeStyles(translatableTitle.copy(), Style.EMPTY.withColor(advancementStyle.getColor()))
+    private static Component buildAdvancementComponent(
+            Component translatableTitle,
+            Component translatableDescription,
+            @Nullable MarkdownToken advancementStyle
+    ) {
+        Component hoverTitle = advancementStyle != null
+                ? ComponentUtils.applyTokenStyleToComponent(advancementStyle, translatableTitle)
+                : translatableTitle.copy();
+
+        Component hoverContent = Component.empty()
+                .append(hoverTitle)
                 .append("\n")
                 .append(translatableDescription);
 
         Component title = translatableTitle.copy()
-                .withStyle((style) -> style.withHoverEvent(new HoverEvent.ShowText(description)));
+                .withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(hoverContent)));
 
-        return ComponentUtils.wrapInSquareBrackets(title).withStyle(advancementStyle);
+        return ComponentUtils.wrapInSquareBrackets(title);
     }
 
     public static Component getStyledAdvancementMessage(Player player, DisplayInfo displayInfo){
@@ -49,11 +62,15 @@ public final class MinecraftChatStyleProvider {
                 ? ADVANCEMENT_GOAL
                 : ADVANCEMENT_CHALLENGE;
 
-        MutableComponent template = parseConfigTemplateMarkdown(messageStringTemplate);
-        Style advancementStyle = parseTemplateParameterStyles(template, ADVANCEMENT).get(ADVANCEMENT);
+        List<MarkdownToken> template = parseConfigTemplateMarkdown(messageStringTemplate);
+        MarkdownToken advancementStyle = parseTemplateParameterTokens(template, ADVANCEMENT).get(ADVANCEMENT);
         LinkedHashMap<String, Component> placeholders = newLinkedHashMapOf(
                 Map.entry(PLAYER, player.getDisplayName()),
-                Map.entry(ADVANCEMENT, applyStyleToAdvancement(displayInfo.getTitle(), displayInfo.getDescription(), advancementStyle))
+                Map.entry(ADVANCEMENT, buildAdvancementComponent(
+                        displayInfo.getTitle(),
+                        displayInfo.getDescription(),
+                        advancementStyle
+                ))
         );
 
         return getStyledTranslatableMessage(
@@ -83,9 +100,7 @@ public final class MinecraftChatStyleProvider {
         );
     }
 
-    public record ChatMessageComponents(Component player, Component content, @Nullable Component team, @Nullable Entity sender) {}
-
-    public static Optional<Component> getStyledChatMessage(ResourceKey<ChatType> chatType, ChatMessageComponents components){
+    public static Optional<Component> getStyledChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components){
         IConfigProvider config = ConfigProvider.getConfig();
         String translationKey = null;
 
@@ -111,10 +126,10 @@ public final class MinecraftChatStyleProvider {
 
         String[] params = getParametersByChatType(chatType);
         Component[] values = params.length == 3
-                ? new Component[] { components.team, components.player, components.content }
-                : new Component[] { components.player, components.content };
+                ? new Component[] { components.team(), components.player(), components.content() }
+                : new Component[] { components.player(), components.content() };
 
-        MutableComponent template = parseConfigTemplateMarkdown(configTemplate);
+        List<MarkdownToken> template = parseConfigTemplateMarkdown(configTemplate);
         LinkedHashMap<String, Component> parameterToComponent = new LinkedHashMap<>();
         for (int i = 0; i < params.length; i++) {
             parameterToComponent.put(params[i], values[i]);

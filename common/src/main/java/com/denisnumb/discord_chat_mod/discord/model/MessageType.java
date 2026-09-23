@@ -1,4 +1,4 @@
-package com.denisnumb.discord_chat_mod.discord.chat_style;
+package com.denisnumb.discord_chat_mod.discord.model;
 
 public enum MessageType {
     PINNED_STATUS_AVAILABLE,

@@ -2,8 +2,8 @@ package com.denisnumb.discord_chat_mod.discord.slash_commands;
 
 import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.ServerStatusController;
-import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissions;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
@@ -26,11 +26,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.DISCORD_GREEN_COLOR;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.DISCORD_RED_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.LOGGER;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissionUtils.getMemberPermissions;
 import static com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissionUtils.hasCommandPermission;
 
@@ -96,7 +96,7 @@ public final class SlashCommandListener extends ListenerAdapter {
     }
     private void replyWithDiscordMessageComponents(
             SlashCommandInteractionEvent event,
-            DiscordChatStyleProvider.DiscordMessageComponents components
+            DiscordMessageComponents components
     ){
         if (components.hasContentAndEmbed())
             event.reply(components.getContent()).addEmbeds(components.getEmbed()).setEphemeral(true).queue();

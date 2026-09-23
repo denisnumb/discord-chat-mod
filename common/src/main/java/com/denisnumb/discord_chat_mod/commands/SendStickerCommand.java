@@ -1,8 +1,8 @@
 package com.denisnumb.discord_chat_mod.commands;
 
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
@@ -20,14 +20,14 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.sendMessageToAllPlayersFromPlayer;
+import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.sendMessageToAllPlayersFromPlayer;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.sendMessageFromPlayer;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromPlayer;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
 
 public final class SendStickerCommand {
     private SendStickerCommand() {}
@@ -57,12 +57,12 @@ public final class SendStickerCommand {
                                         sendMessageToAllPlayersFromPlayer(player, messageWithStickerComponent);
 
                                         handleDiscord(() -> {
-                                            Optional<DiscordChatStyleProvider.DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(
+                                            Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(
                                                     MessageType.CHAT,
                                                     mergeMaps(Map.of(MESSAGE, stickerMessageContent), buildPlayerParameters(player))
                                             );
-                                            DiscordChatStyleProvider.DiscordMessageComponents webhookComponents
-                                                    = new DiscordChatStyleProvider.DiscordMessageComponents(Optional.empty(), Optional.empty());
+                                            DiscordMessageComponents webhookComponents
+                                                    = new DiscordMessageComponents(Optional.empty(), Optional.empty());
 
                                             chatComponentsOpt.ifPresent(discordMessageComponents ->
                                                     sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponents, discordMessageComponents, stickerData)

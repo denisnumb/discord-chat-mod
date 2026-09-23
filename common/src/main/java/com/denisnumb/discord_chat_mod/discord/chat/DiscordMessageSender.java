@@ -1,12 +1,13 @@
-package com.denisnumb.discord_chat_mod.discord.utils;
+package com.denisnumb.discord_chat_mod.discord.chat;
 
+import com.denisnumb.discord_chat_mod.utils.PlayerAvatarProvider;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
+import com.denisnumb.discord_chat_mod.discord.utils.DiscordRequestSender;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.utils.JavaUtils;
-import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Webhook;
@@ -25,11 +26,10 @@ import java.util.concurrent.Executors;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.logErrorToServer;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
 
 
-public final class DiscordMessageUtils {
-    private DiscordMessageUtils() {
+public final class DiscordMessageSender {
+    private DiscordMessageSender() {
     }
 
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -142,7 +142,7 @@ public final class DiscordMessageUtils {
         if (!isDiscordConnected())
             return Optional.empty();
         try {
-            return new DiscordMessageSender.WebhookBuilder(webhook)
+            return new DiscordRequestSender.WebhookBuilder(webhook)
                     .withThread(channel)
                     .withAvatarUrl(avatarUrl)
                     .withUserName(userName)
@@ -168,7 +168,7 @@ public final class DiscordMessageUtils {
         if (!isDiscordConnected())
             return Optional.empty();
         try {
-            return new DiscordMessageSender.ChannelBuilder(channel)
+            return new DiscordRequestSender.ChannelBuilder(channel)
                     .withContent(messageComponents.getContent())
                     .withEmbeds(messageComponents.getEmbed())
                     .withSticker(stickerData)
@@ -237,7 +237,7 @@ public final class DiscordMessageUtils {
                         channel,
                         webhook,
                         true,
-                        MinecraftUtils.getPlayerAvatarUrl(player),
+                        PlayerAvatarProvider.getPlayerAvatarUrl(player),
                         player.getDisplayName().getString(),
                         messageComponentsWebhook,
                         null,
@@ -266,7 +266,7 @@ public final class DiscordMessageUtils {
             @Nullable FileUpload imageData
     ) {
         guildContext.getWebhook(channel).ifPresentOrElse(webhook -> {
-                    String avatarUrl = player == null ? null : MinecraftUtils.getPlayerAvatarUrl(player);
+                    String avatarUrl = player == null ? null : PlayerAvatarProvider.getPlayerAvatarUrl(player);
                     String userName = player == null ? getWebhookServerName() : player.getDisplayName().getString();
                     sendWebhookMessage(channel, webhook, false, avatarUrl, userName, messageComponentsWebhook, stickerData, imageData);
                 },

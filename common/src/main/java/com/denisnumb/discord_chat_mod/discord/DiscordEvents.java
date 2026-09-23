@@ -1,12 +1,13 @@
 package com.denisnumb.discord_chat_mod.discord;
 
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
+import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
-import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
@@ -31,15 +32,16 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.CHAT_LINK_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getServerPlayerCount;
-import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.applyParametersToTemplate;
-import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.parseConfigTemplateMarkdown;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.applyParametersToTemplate;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.parseConfigTemplateMarkdown;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordUrlsUtils.retrieveMessageEmbedUrls;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 
 public final class DiscordEvents extends ListenerAdapter {
     @Override
@@ -57,7 +59,7 @@ public final class DiscordEvents extends ListenerAdapter {
 
         if (getServerPlayerCount(server) > 0){
             prepareComponents(event.getMessage())
-                    .thenAccept(components -> components.forEach(MinecraftUtils::sendSystemMessageToAllPlayers));
+                    .thenAccept(components -> components.forEach(MinecraftMessageSender::sendSystemMessageToAllPlayers));
         }
 
         DiscordChannelRegistry.getAllContexts().stream()
@@ -71,7 +73,7 @@ public final class DiscordEvents extends ListenerAdapter {
         FileUpload[] attachments = collectAttachments(event.getMessage());
 
         Optional<Webhook> webhookOpt = guildContext.getWebhook(guildContext.defaultChannel);
-        DiscordChatStyleProvider.DiscordMessageComponents messageComponents = new DiscordChatStyleProvider.DiscordMessageComponents(
+        DiscordMessageComponents messageComponents = new DiscordMessageComponents(
                 Optional.of(messageContent),
                 embeds.isEmpty() ? Optional.empty() : Optional.of(embeds.getFirst())
         );
@@ -86,7 +88,7 @@ public final class DiscordEvents extends ListenerAdapter {
             sendWebhookMessage(guildContext.defaultChannel, webhookOpt.get(), false,
                     event.getAuthor().getAvatarUrl(), userName, messageComponents, null, attachments);
         } else {
-            messageComponents = DiscordChatStyleProvider.getDiscordMessageComponents(MessageType.GUILD_FORWARDED_MESSAGE, Map.of(
+            messageComponents = getDiscordMessageComponents(MessageType.GUILD_FORWARDED_MESSAGE, Map.of(
                     Translatable.FORWARDED_MESSAGE, DiscordLocaleProvider.Discord.forwardedGuildMessage(
                             event.getMember().getEffectiveName(),
                             event.getGuild().getName()
@@ -165,7 +167,7 @@ public final class DiscordEvents extends ListenerAdapter {
         );
 
         int[] colors = ColorUtils.parseRoleColors(member.getColors());
-        return root.append(MinecraftUtils.buildGradientComponent(member.getEffectiveName(), colors));
+        return root.append(ComponentUtils.buildGradientComponent(member.getEffectiveName(), colors));
     }
 
     private static Component buildReplyPrefix(Message referencedMessage) {
@@ -203,10 +205,10 @@ public final class DiscordEvents extends ListenerAdapter {
 
         return retrieveMessageEmbedUrls(message)
                 .thenApply(embedUrls ->
-                        new MarkdownToComponentConverter(
+                        MarkdownToComponentConverter.convertTokens(
                                 MarkdownParser.parseMarkdown(rawContent, embedUrls),
                                 mentions
-                        ).convertMarkdownTokensToComponent()
+                        )
                 )
                 .exceptionally(ignored -> fallbackTextComponent(message, mentions))
                 .thenApply(textPart -> {

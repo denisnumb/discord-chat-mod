@@ -1,11 +1,12 @@
 package com.denisnumb.discord_chat_mod;
 
+import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.commands.*;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.SetAvatarCommand;
 import com.denisnumb.discord_chat_mod.commands.vanilla.*;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.markdown.ComponentToMarkdownConverter;
 import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
@@ -28,13 +29,15 @@ import java.util.Optional;
 
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.formatDeathMessageComponents;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.AdvancementIconParser.parseAdvancementIcon;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.*;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
-import static com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider.*;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
+import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageFormatter.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
 public final class MinecraftEvents {
@@ -55,7 +58,7 @@ public final class MinecraftEvents {
             SetAvatarCommand.register(dispatcher);
     }
 
-    public static Optional<Component> handleChatMessage(ResourceKey<ChatType> chatType, ChatMessageComponents components) {
+    public static Optional<Component> handleChatMessage(ResourceKey<ChatType> chatType, MinecraftMessageContext components) {
         if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
             return getStyledChatMessage(chatType, components);
         return Optional.empty();

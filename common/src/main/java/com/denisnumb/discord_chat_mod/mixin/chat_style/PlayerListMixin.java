@@ -1,11 +1,11 @@
 package com.denisnumb.discord_chat_mod.mixin.chat_style;
 
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
-import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
-import com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry;
-import com.denisnumb.discord_chat_mod.chat_style.MinecraftChatStyleProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
+import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.chat.ChatType;
@@ -23,15 +23,15 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.processChatMessage;
+import static com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter.formatMessage;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
-import static com.denisnumb.discord_chat_mod.chat_style.CustomChatTypeRegistry.buildBound;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils.sendMessageFromPlayer;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromPlayer;
 
 @Mixin(PlayerList.class)
 public class PlayerListMixin {
@@ -64,12 +64,12 @@ public class PlayerListMixin {
         Component playerComponent = player.getDisplayName();
         Component originalContent = originalMessage.decoratedContent();
 
-        MinecraftUtils.ProcessChatMessageResult chatMessage = processChatMessage(originalContent.getString(), ChannelCategory.PLAYER_CHAT);
+        CommonMessageFormatter.FormattedMessage chatMessage = formatMessage(originalContent.getString(), ChannelCategory.PLAYER_CHAT);
 
         handleDiscord(() -> {
             Map<String, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(player));
-            Optional<DiscordChatStyleProvider.DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
-            Optional<DiscordChatStyleProvider.DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
+            Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
+            Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
 
             if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
                 sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
@@ -80,7 +80,7 @@ public class PlayerListMixin {
 
         MinecraftEvents.handleChatMessage(
                 CustomChatTypeRegistry.CHAT,
-                new MinecraftChatStyleProvider.ChatMessageComponents(playerComponent, withMarkdown, null, player)
+                new MinecraftMessageContext(playerComponent, withMarkdown, null, player)
         ).ifPresent(styledContent -> {
             ChatType.Bound styledBound = buildBound(CustomChatTypeRegistry.CHAT, player.level().registryAccess(), playerComponent, withMarkdown);
             args.set(0, originalMessage.withUnsignedContent(styledContent));

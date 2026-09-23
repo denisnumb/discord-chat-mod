@@ -1,9 +1,10 @@
 package com.denisnumb.discord_chat_mod.commands;
 
-import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.utils.DiscordMessageUtils;
-import com.denisnumb.discord_chat_mod.discord.chat_style.MessageType;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
@@ -26,11 +27,12 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.sendMessageToAllPlayersFromPlayer;
+import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.sendMessageToAllPlayersFromPlayer;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
+import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.discord.chat_style.DiscordChatStyleProvider.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.MESSAGE;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.MESSAGE;
 
 public final class MentionCommand {
     private MentionCommand() {}
@@ -61,7 +63,7 @@ public final class MentionCommand {
                                     if (context.getSource().getEntity() instanceof ServerPlayer player) {
                                         DiscordUserData member = optionalMemberData.get();
 
-                                        Component mentionComponent = MinecraftUtils.buildGradientComponent(member.prettyMention, member.colors)
+                                        Component mentionComponent = ComponentUtils.buildGradientComponent(member.prettyMention, member.colors)
                                                 .withStyle(style -> style
                                                         .withInsertion(member.prettyMention)
                                                         .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.discordName)))
@@ -74,7 +76,7 @@ public final class MentionCommand {
                                         Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
 
                                         if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
-                                            DiscordMessageUtils.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
+                                            DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
                                     }
                                     return 1;
                                 })

@@ -1,59 +1,35 @@
-package com.denisnumb.discord_chat_mod.discord.chat_style;
+package com.denisnumb.discord_chat_mod.discord.chat;
 
+import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import com.denisnumb.discord_chat_mod.utils.JavaUtils;
-import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.chat_style.ChatStyleUtils.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.*;
-import static com.denisnumb.discord_chat_mod.chat_style.Parameters.Translatable.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.*;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameters.Translatable.*;
 import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
-public final class DiscordChatStyleProvider {
-    private DiscordChatStyleProvider() {}
+public final class DiscordMessageFormatter {
+    private DiscordMessageFormatter() {}
     private static final Gson GSON = new Gson();
     private static final Logger LOGGER = LogUtils.getLogger();
-
-    public record DiscordMessageComponents(Optional<String> content, Optional<MessageEmbed> embed) {
-        public boolean hasContentAndEmbed(){
-            return content.isPresent() && embed.isPresent();
-        }
-
-        public boolean hasOnlyContent(){
-            return content.isPresent() && embed.isEmpty();
-        }
-
-        public @Nullable String getContent(){
-            return content.orElse(null);
-        }
-
-        public @Nullable MessageEmbed getEmbed(){
-            return embed.orElse(null);
-        }
-    }
 
     private static Optional<MessageEmbed> parseEmbedJson(JsonObject jsonTemplate){
         if (!jsonTemplate.has("embed"))
@@ -117,26 +93,6 @@ public final class DiscordChatStyleProvider {
                 : component.getString();
     }
 
-    public static Map<String, String> buildPlayerParameters(CommandSourceStack source){
-        return source.getPlayer() == null
-                ? buildPlayerParameters(source.getDisplayName().getString(), null)
-                : buildPlayerParameters(source.getDisplayName().getString(), source.getEntity());
-    }
-
-    public static Map<String, String> buildPlayerParameters(Entity entity){
-        return buildPlayerParameters(entity.getDisplayName().getString(), entity);
-    }
-
-    public static Map<String, String> buildPlayerParameters(String displayName, Entity entity){
-        HashMap<String, String> result = new HashMap<>();
-        result.put(PLAYER, displayName);
-        if (entity instanceof Player player)
-            result.put(PLAYER_AVATAR_URL, MinecraftUtils.getPlayerAvatarUrl(player));
-        else
-            result.put(PLAYER_AVATAR_URL, ConfigProvider.getConfig().webhookServerAvatarUrl());
-
-        return mergeMaps(result, buildPositionParameters(entity));
-    }
 
     public static Optional<DiscordMessageComponents> getDiscordMessageComponents(MessageType messageType, Map<String, String> parameterMap){
         IConfigProvider config = ConfigProvider.getConfig();

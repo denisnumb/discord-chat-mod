@@ -39,8 +39,12 @@ public final class JavaUtils {
         return map;
     }
 
-    public static <T> T nullSafeElse(T first, T second) {
-        return first != null ? first : second;
+    public static Boolean orNull(boolean a, boolean b) {
+        return (a || b) ? Boolean.TRUE : null;
+    }
+
+    public static int codePointLength(String s) {
+        return s.codePointCount(0, s.length());
     }
 
     public static OffsetDateTime getDateTimeWithUtcOffset(int offsetHours){
