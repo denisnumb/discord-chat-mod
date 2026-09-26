@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.config;
 
+import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
+import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.config.configs.*;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig.DiscordGuildConfig;
 
@@ -143,87 +145,87 @@ public class ConfigProviderImpl implements IConfigProvider {
     }
 
     @Override
-    public String minecraftDiscordMessagesStyle() {
+    public MessageTemplate<MessageTypes.DiscordMessage> minecraftDiscordMessagesStyle() {
         return MinecraftChatStyleConfig.minecraftDiscordMessagesStyle;
     }
 
     @Override
-    public String minecraftPlayerMessageStyle() {
+    public MessageTemplate<MessageTypes.PlayerMessage> minecraftPlayerMessageStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerMessageStyle;
     }
 
     @Override
-    public String minecraftPlayerJoinedStyle() {
+    public MessageTemplate<MessageTypes.PlayerJoined> minecraftPlayerJoinedStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerJoinedStyle;
     }
 
     @Override
-    public String minecraftPlayerLeftStyle() {
+    public MessageTemplate<MessageTypes.PlayerLeft> minecraftPlayerLeftStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerLeftStyle;
     }
 
     @Override
-    public String minecraftPlayerDeathNameStyle() {
+    public MessageTemplate<MessageTypes.DiedEntity> minecraftPlayerDeathNameStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerDeathNameStyle;
     }
 
     @Override
-    public String minecraftPlayerDeathCauseStyle() {
+    public MessageTemplate<MessageTypes.DeathCause> minecraftPlayerDeathCauseStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerDeathCauseStyle;
     }
 
     @Override
-    public String minecraftPlayerDeathSecondEntityNameStyle() {
+    public MessageTemplate<MessageTypes.KillerEntity> minecraftPlayerDeathSecondEntityNameStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerDeathSecondEntityNameStyle;
     }
 
     @Override
-    public String minecraftPlayerDeathWeaponStyle() {
+    public MessageTemplate<MessageTypes.KillerWeapon> minecraftPlayerDeathWeaponStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerDeathWeaponStyle;
     }
 
     @Override
-    public String minecraftPlayerAdvancementTaskStyle() {
+    public MessageTemplate<MessageTypes.AdvancementMessageType> minecraftPlayerAdvancementTaskStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerAdvancementTaskStyle;
     }
 
     @Override
-    public String minecraftPlayerAdvancementGoalStyle() {
+    public MessageTemplate<MessageTypes.AdvancementMessageType> minecraftPlayerAdvancementGoalStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerAdvancementGoalStyle;
     }
 
     @Override
-    public String minecraftPlayerAdvancementChallengeStyle() {
+    public MessageTemplate<MessageTypes.AdvancementMessageType> minecraftPlayerAdvancementChallengeStyle() {
         return MinecraftChatStyleConfig.minecraftPlayerAdvancementChallengeStyle;
     }
 
     @Override
-    public String minecraftTeamMessageSentStyle() {
+    public MessageTemplate<MessageTypes.TeamMessage> minecraftTeamMessageSentStyle() {
         return MinecraftChatStyleConfig.minecraftTeamMessageSentStyle;
     }
 
     @Override
-    public String minecraftTeamMessageReceivedStyle() {
+    public MessageTemplate<MessageTypes.TeamMessage> minecraftTeamMessageReceivedStyle() {
         return MinecraftChatStyleConfig.minecraftTeamMessageReceivedStyle;
     }
 
     @Override
-    public String minecraftTellMessageSentStyle() {
+    public MessageTemplate<MessageTypes.TellOutgoingMessage> minecraftTellMessageSentStyle() {
         return MinecraftChatStyleConfig.minecraftTellMessageSentStyle;
     }
 
     @Override
-    public String minecraftTellMessageReceivedStyle() {
+    public MessageTemplate<MessageTypes.TellIncomingMessage> minecraftTellMessageReceivedStyle() {
         return MinecraftChatStyleConfig.minecraftTellMessageReceivedStyle;
     }
 
     @Override
-    public String minecraftSayCommandStyle() {
+    public MessageTemplate<MessageTypes.PlayerMessage> minecraftSayCommandStyle() {
         return MinecraftChatStyleConfig.minecraftSayCommandStyle;
     }
 
     @Override
-    public String minecraftMeCommandStyle() {
+    public MessageTemplate<MessageTypes.PlayerMessage> minecraftMeCommandStyle() {
         return MinecraftChatStyleConfig.minecraftMeCommandStyle;
     }
 

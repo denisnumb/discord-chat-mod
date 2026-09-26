@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
+import org.jetbrains.annotations.NotNull;
 
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.formatDeathMessageComponents;
@@ -59,9 +60,9 @@ public final class MinecraftEvents {
             SetAvatarCommand.register(dispatcher);
     }
 
-    public static Optional<Component> handleChatMessage(ResourceKey<ChatType> chatType, MinecraftMessageContext components) {
+    public static Optional<Component> handleChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components) {
         if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
-            return getStyledChatMessage(chatType, components);
+            return Optional.ofNullable(getStyledChatMessage(chatType, components));
         return Optional.empty();
     }
 

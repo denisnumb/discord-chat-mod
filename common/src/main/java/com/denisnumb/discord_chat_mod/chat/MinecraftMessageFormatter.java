@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat;
 
-import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
+import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
+import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
@@ -17,14 +17,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPositionComponentParameters;
 import static com.denisnumb.discord_chat_mod.utils.DeathMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.*;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.*;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.newLinkedHashMapOf;
 
 public final class MinecraftMessageFormatter {
     private MinecraftMessageFormatter() {}
@@ -49,140 +44,67 @@ public final class MinecraftMessageFormatter {
         return ComponentUtils.wrapInSquareBrackets(title);
     }
 
-    public static Component getStyledAdvancementMessage(Player player, DisplayInfo displayInfo){
+    public static Component getStyledAdvancementMessage(Player player, DisplayInfo displayInfo) {
         IConfigProvider config = ConfigProvider.getConfig();
 
-        String messageStringTemplate = displayInfo.getType() == AdvancementType.TASK
-                ? config.minecraftPlayerAdvancementTaskStyle()
-                : displayInfo.getType() == AdvancementType.GOAL
-                ? config.minecraftPlayerAdvancementGoalStyle()
-                : config.minecraftPlayerAdvancementChallengeStyle();
+        MessageTemplate<MessageTypes.AdvancementMessageType> template = switch (displayInfo.getType()) {
+            case AdvancementType.TASK -> config.minecraftPlayerAdvancementTaskStyle();
+            case AdvancementType.GOAL -> config.minecraftPlayerAdvancementGoalStyle();
+            case AdvancementType.CHALLENGE -> config.minecraftPlayerAdvancementChallengeStyle();
+        };
 
-        TemplateParameter.Translatable translationKey = displayInfo.getType() == AdvancementType.TASK
-                ? ADVANCEMENT_TASK
-                : displayInfo.getType() == AdvancementType.GOAL
-                ? ADVANCEMENT_GOAL
-                : ADVANCEMENT_CHALLENGE;
+        MarkdownToken style = template.parseParameterStyles(Set.of(ADVANCEMENT)).get(ADVANCEMENT);
+        Component advancement = buildAdvancementComponent(displayInfo.getTitle(), displayInfo.getDescription(), style);
 
-        List<MarkdownToken> template = parseConfigTemplateMarkdown(messageStringTemplate);
-        MarkdownToken advancementStyle = parseTemplateParameterTokens(template, ADVANCEMENT).get(ADVANCEMENT);
-        LinkedHashMap<TemplatePlaceholder, Component> placeholders = newLinkedHashMapOf(
-                Map.entry(PLAYER, player.getDisplayName()),
-                Map.entry(ADVANCEMENT, buildAdvancementComponent(
-                        displayInfo.getTitle(),
-                        displayInfo.getDescription(),
-                        advancementStyle
-                ))
-        );
-
-        return getStyledTranslatableMessage(
-                template,
-                translationKey,
-                placeholders,
-                buildPositionComponentParameters(player)
-        );
+        return template.applyParameters(new MessageTypes.AdvancementMessageType.Params(player, advancement));
     }
 
     public static Component getStyledJoinedLeftMessage(Player player, boolean isJoin) {
         IConfigProvider config = ConfigProvider.getConfig();
 
-        String messageStringTemplate = isJoin
-                ? config.minecraftPlayerJoinedStyle()
-                : config.minecraftPlayerLeftStyle();
-
-        TemplateParameter.Translatable translationKey = isJoin
-                ? PLAYER_JOINED
-                : PLAYER_LEFT;
-
-        return getStyledTranslatableMessage(
-                parseConfigTemplateMarkdown(messageStringTemplate),
-                translationKey,
-                newLinkedHashMapOf(Map.entry(PLAYER, player.getDisplayName())),
-                buildPositionComponentParameters(player)
-        );
+        return isJoin
+                ? config.minecraftPlayerJoinedStyle().applyParameters(new MessageTypes.PlayerJoined.Params(player))
+                : config.minecraftPlayerLeftStyle().applyParameters(new MessageTypes.PlayerLeft.Params(player));
     }
 
-    public static Optional<Component> getStyledChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components){
+    @Nullable
+    public static Component getStyledChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext ctx){
         IConfigProvider config = ConfigProvider.getConfig();
-        TemplateParameter.Translatable translationKey = null;
 
-        String configTemplate = switch (chatType.identifier().getPath()) {
-            case CHAT_PATH -> config.minecraftPlayerMessageStyle();
-            case SAY_COMMAND_PATH -> config.minecraftSayCommandStyle();
-            case TEAM_MSG_COMMAND_INCOMING_PATH -> config.minecraftTeamMessageReceivedStyle();
-            case TEAM_MSG_COMMAND_OUTGOING_PATH -> config.minecraftTeamMessageSentStyle();
-            case EMOTE_COMMAND_PATH -> config.minecraftMeCommandStyle();
-            case MSG_COMMAND_INCOMING_PATH -> {
-                translationKey = COMMANDS_MESSAGE_DISPLAY_INCOMING;
-                yield config.minecraftTellMessageReceivedStyle();
-            }
-            case MSG_COMMAND_OUTGOING_PATH -> {
-                translationKey = COMMANDS_MESSAGE_DISPLAY_OUTGOING;
-                yield config.minecraftTellMessageSentStyle();
-            }
+        final MessageTypes.PlayerMessage.Params playerMessageParams = new MessageTypes.PlayerMessage.Params(ctx);
+        final MessageTypes.TeamMessage.Params teamMessageParams = new MessageTypes.TeamMessage.Params(ctx);
+
+        return switch (chatType.identifier().getPath()) {
+            case CHAT_PATH ->
+                    config.minecraftPlayerMessageStyle().applyParameters(playerMessageParams);
+            case SAY_COMMAND_PATH ->
+                    config.minecraftSayCommandStyle().applyParameters(playerMessageParams);
+            case EMOTE_COMMAND_PATH ->
+                    config.minecraftMeCommandStyle().applyParameters(playerMessageParams);
+            case TEAM_MSG_COMMAND_INCOMING_PATH ->
+                    config.minecraftTeamMessageReceivedStyle().applyParameters(teamMessageParams);
+            case TEAM_MSG_COMMAND_OUTGOING_PATH ->
+                    config.minecraftTeamMessageSentStyle().applyParameters(teamMessageParams);
+            case MSG_COMMAND_INCOMING_PATH ->
+                    config.minecraftTellMessageReceivedStyle().applyParameters(new MessageTypes.TellIncomingMessage.Params(ctx));
+            case MSG_COMMAND_OUTGOING_PATH ->
+                    config.minecraftTellMessageSentStyle().applyParameters(new MessageTypes.TellOutgoingMessage.Params(ctx));
             default -> null;
         };
-
-        if (configTemplate == null)
-            return Optional.empty();
-
-        TemplatePlaceholder[] params = getParametersByChatType(chatType);
-        Component[] values = params.length == 3
-                ? new Component[] { components.team(), components.player(), components.content() }
-                : new Component[] { components.player(), components.content() };
-
-        List<MarkdownToken> template = parseConfigTemplateMarkdown(configTemplate);
-        LinkedHashMap<TemplatePlaceholder, Component> parameterToComponent = new LinkedHashMap<>();
-        for (int i = 0; i < params.length; i++) {
-            parameterToComponent.put(params[i], values[i]);
-        }
-
-        if (translationKey != null) {
-            return Optional.of(getStyledTranslatableMessage(
-                    template,
-                    translationKey,
-                    parameterToComponent,
-                    buildPositionComponentParameters(components.sender())
-            ));
-        }
-
-        return Optional.of(applyParametersToTemplate(template, mergeMaps(
-                parameterToComponent,
-                buildPositionComponentParameters(components.sender())
-        )));
     }
 
 
     public static Component getStyledDeathMessage(DeathMessageComponents components, Entity entity) {
         IConfigProvider config = ConfigProvider.getConfig();
 
-        String causeStyle = config.minecraftPlayerDeathCauseStyle().replace(DEATH_CAUSE.getPlaceholder(), DEATH_CAUSE_MARKDOWNSAFE.getPlaceholder());
-        String diedEntityStyle = config.minecraftPlayerDeathNameStyle();
-        String killerEntityStyle = config.minecraftPlayerDeathSecondEntityNameStyle().replace(SECOND_ENTITY.getPlaceholder(), SECOND_ENTITY_MARKDOWN_SAFE.getPlaceholder());
-        String itemStyle = config.minecraftPlayerDeathWeaponStyle();
-
-        Component diedEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(diedEntityStyle), Map.of(PLAYER, components.diedEntity()));
-        Component killerEntity = null;
-        Component item = null;
-
+        List<Component> args = new ArrayList<>();
+        args.add(config.minecraftPlayerDeathNameStyle().applyParameters(new MessageTypes.DiedEntity.Params(entity, components.diedEntity())));
         if (components.killerEntity() != null)
-            killerEntity = applyParametersToTemplate(parseConfigTemplateMarkdown(killerEntityStyle), Map.of(SECOND_ENTITY_MARKDOWN_SAFE, components.killerEntity()));
-        if (components.item() != null)
-            item = applyParametersToTemplate(parseConfigTemplateMarkdown(itemStyle), Map.of(ITEM, components.item()));
-
-        List<Object> args = new ArrayList<>();
-        args.add(diedEntity);
-        if (killerEntity != null)
-            args.add(killerEntity);
-        if (item != null)
-            args.add(item);
+            args.add(config.minecraftPlayerDeathSecondEntityNameStyle().applyParameters(new MessageTypes.KillerEntity.Params(components.killerEntity())));
+        if (components.killerWeapon() != null)
+            args.add(config.minecraftPlayerDeathWeaponStyle().applyParameters(new MessageTypes.KillerWeapon.Params(components.killerWeapon())));
 
         Component deathCause = Component.translatable(components.deathCauseLocaleKey(), args.toArray());
-
-        Map<TemplatePlaceholder, Component> parameters = new HashMap<>();
-        parameters.put(DEATH_CAUSE_MARKDOWNSAFE, deathCause);
-        parameters.putAll(buildPositionComponentParameters(entity));
-
-        return applyParametersToTemplate(parseConfigTemplateMarkdown(causeStyle), parameters);
+        return config.minecraftPlayerDeathCauseStyle().applyParameters(new MessageTypes.DeathCause.Params(entity, deathCause));
     }
 }

@@ -11,7 +11,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -27,16 +26,6 @@ public final class JavaUtils {
                         Map.Entry::getKey,
                         Map.Entry::getValue
                 ));
-    }
-
-    @SafeVarargs
-    public static <K, V> LinkedHashMap<K, V> newLinkedHashMapOf(Map.Entry<? extends K, ? extends V>... entries) {
-        LinkedHashMap<K, V> map = new LinkedHashMap<>(entries.length);
-        for (Map.Entry<? extends K, ? extends V> entry : entries) {
-            map.put(entry.getKey(), entry.getValue());
-        }
-
-        return map;
     }
 
     public static Boolean orNull(boolean a, boolean b) {

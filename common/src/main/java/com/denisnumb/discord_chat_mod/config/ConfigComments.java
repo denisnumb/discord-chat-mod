@@ -1,11 +1,23 @@
 package com.denisnumb.discord_chat_mod.config;
 
+import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
+import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
 public final class ConfigComments {
     private ConfigComments() {}
+
+    public static String joinParameters(Set<TemplatePlaceholder> parameters) {
+        return parameters.stream()
+                .map(TemplatePlaceholder::toString)
+                .collect(Collectors.joining(", "));
+    }
 
     public static final String DISCORD_BOT_TOKEN_COMMENT = """
                      Read more about configuration here: https://github.com/denisnumb/discord-chat-mod/wiki\
@@ -336,13 +348,11 @@ public final class ConfigComments {
             """
             Style for displaying Discord messages in game chat\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            GUILD,
-            MEMBER,
-            MESSAGE,
+            joinParameters(MessageTypes.DiscordMessage.BASE_PARAMETERS),
             MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT
     );
 
@@ -350,12 +360,11 @@ public final class ConfigComments {
             """
             Chat message from player\
            
-            Parameters: %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            MESSAGE,
+            joinParameters(MessageTypes.PlayerMessage.BASE_PARAMETERS),
             MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT
     );
 
@@ -363,12 +372,11 @@ public final class ConfigComments {
             """
             Player joined the game\
            
-            Parameters: %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            PLAYER_JOINED,
+            joinParameters(MessageTypes.PlayerJoined.BASE_PARAMETERS),
             MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT
     );
 
@@ -376,12 +384,11 @@ public final class ConfigComments {
             """
             Player left the game\
            
-            Parameters: %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            PLAYER_LEFT,
+            joinParameters(MessageTypes.PlayerLeft.BASE_PARAMETERS),
             MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT
     );
 
@@ -405,13 +412,11 @@ public final class ConfigComments {
             """
             Player has made the advancement\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            ADVANCEMENT_TASK,
-            ADVANCEMENT,
+            joinParameters(MessageTypes.AdvancementTask.BASE_PARAMETERS),
             MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT
     );
 
@@ -419,13 +424,11 @@ public final class ConfigComments {
             """
             Player has reached the goal\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            ADVANCEMENT_GOAL,
-            ADVANCEMENT,
+            joinParameters(MessageTypes.AdvancementGoal.BASE_PARAMETERS),
             MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT
     );
 
@@ -433,13 +436,11 @@ public final class ConfigComments {
             """
             Player has completed the challenge\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            ADVANCEMENT_CHALLENGE,
-            ADVANCEMENT,
+            joinParameters(MessageTypes.AdvancementChallenge.BASE_PARAMETERS),
             MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT
     );
 
@@ -447,13 +448,11 @@ public final class ConfigComments {
             """
             Team message sent by the player\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            TEAM,
-            PLAYER,
-            MESSAGE,
+            joinParameters(MessageTypes.TeamMessage.BASE_PARAMETERS),
             MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT
     );
 
@@ -461,13 +460,11 @@ public final class ConfigComments {
             """
             Team message received from any player\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            TEAM,
-            PLAYER,
-            MESSAGE,
+            joinParameters(MessageTypes.TeamMessage.BASE_PARAMETERS),
             MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT
     );
 
@@ -475,13 +472,11 @@ public final class ConfigComments {
             """
             Private message sent by the player using /tell or /msg command\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            COMMANDS_MESSAGE_DISPLAY_OUTGOING,
-            RECEIVER,
-            MESSAGE,
+            joinParameters(MessageTypes.TellOutgoingMessage.BASE_PARAMETERS),
             MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT
     );
 
@@ -489,13 +484,11 @@ public final class ConfigComments {
             """
             Private message received from any player who used the /tell or /msg command\
            
-            Parameters: %s, %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            SENDER,
-            COMMANDS_MESSAGE_DISPLAY_INCOMING,
-            MESSAGE,
+            joinParameters(MessageTypes.TellIncomingMessage.BASE_PARAMETERS),
             MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT
     );
 
@@ -503,12 +496,11 @@ public final class ConfigComments {
             """
             Chat message from player sent using /say command\
            
-            Parameters: %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            MESSAGE,
+            joinParameters(MessageTypes.PlayerMessage.BASE_PARAMETERS),
             MINECRAFT_SAY_COMMAND_STYLE_DEFAULT
     );
 
@@ -516,12 +508,11 @@ public final class ConfigComments {
             """
             Chat message from player sent using /me command\
            
-            Parameters: %s, %s\
+            Parameters: %s\
            
             Default: "%s"\
            """,
-            PLAYER,
-            MESSAGE,
+            joinParameters(MessageTypes.PlayerMessage.BASE_PARAMETERS),
             MINECRAFT_ME_COMMAND_STYLE_DEFAULT
     );
 

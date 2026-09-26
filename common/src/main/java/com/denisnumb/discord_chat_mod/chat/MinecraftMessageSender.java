@@ -1,7 +1,8 @@
 package com.denisnumb.discord_chat_mod.chat;
 
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
-import com.denisnumb.discord_chat_mod.chat.template.TemplateFactory;
+import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
+import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.config.ConfigDefaults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
@@ -12,16 +13,8 @@ import net.minecraft.world.scores.PlayerTeam;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.applyParametersToTemplate;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.parseConfigTemplateMarkdown;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.COMMANDS_MESSAGE_DISPLAY_INCOMING;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.COMMANDS_MESSAGE_DISPLAY_OUTGOING;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.newLinkedHashMapOf;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getPlayerListBySelector;
 
 public final class MinecraftMessageSender {
@@ -32,6 +25,21 @@ public final class MinecraftMessageSender {
     private static final Style TEAMMSG_SUGGEST_STYLE = Style.EMPTY
             .withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.type.team.hover")))
             .withClickEvent(new ClickEvent.SuggestCommand("/teammsg "));
+
+    private static final MessageTemplate<MessageTypes.PlayerMessage> PLAYER_MESSAGE_TEMPLATE
+            = new MessageTemplate<>(ConfigDefaults.MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT, new MessageTypes.PlayerMessage());
+
+    private static final MessageTemplate<MessageTypes.TellOutgoingMessage> TELL_MESSAGE_OUTGOING_TEMPLATE
+            = new MessageTemplate<>(ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT, new MessageTypes.TellOutgoingMessage());
+
+    private static final MessageTemplate<MessageTypes.TellIncomingMessage> TELL_MESSAGE_INCOMING_TEMPLATE
+            = new MessageTemplate<>(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT, new MessageTypes.TellIncomingMessage());
+
+    private static final MessageTemplate<MessageTypes.TeamMessage> TEAM_MESSAGE_OUTGOING_TEMPLATE
+            = new MessageTemplate<>(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT, new MessageTypes.TeamMessage());
+
+    private static final MessageTemplate<MessageTypes.TeamMessage> TEAM_MESSAGE_INCOMING_TEMPLATE
+            = new MessageTemplate<>(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT, new MessageTypes.TeamMessage());
 
     public static void sendSystemMessageToPlayersBySelector(Component message, String selector) {
         try {
@@ -51,13 +59,9 @@ public final class MinecraftMessageSender {
         if (playerList == null)
             return;
 
-        Component preparedContent = MinecraftEvents.handleChatMessage(
-                CustomChatTypeRegistry.CHAT,
-                new MinecraftMessageContext(player.getDisplayName(), content, null, player)
-        ).orElseGet(() -> applyParametersToTemplate(
-                parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT),
-                Map.of(PLAYER, player.getDisplayName(), MESSAGE, content)
-        ));
+        MinecraftMessageContext ctx = new MinecraftMessageContext(player.getDisplayName(), content, null, player);
+        Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.CHAT, ctx)
+                .orElseGet(() -> PLAYER_MESSAGE_TEMPLATE.applyParameters(new MessageTypes.PlayerMessage.Params(ctx)));
 
         try {
             for (ServerPlayer serverPlayer : playerList.getPlayers())
@@ -74,18 +78,9 @@ public final class MinecraftMessageSender {
         if (targetPlayers.isEmpty())
             return;
 
-        Component preparedContent = MinecraftEvents.handleChatMessage(
-                CustomChatTypeRegistry.MSG_COMMAND_INCOMING,
-                new MinecraftMessageContext(player.getDisplayName(), content, null, player)
-        ).orElseGet(() -> TemplateFactory.getStyledTranslatableMessage(
-                parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
-                COMMANDS_MESSAGE_DISPLAY_INCOMING,
-                newLinkedHashMapOf(
-                        Map.entry(SENDER, player.getDisplayName()),
-                        Map.entry(MESSAGE, content)
-                ),
-                Map.of()
-        ));
+        MinecraftMessageContext incomingCtx = new MinecraftMessageContext(player.getDisplayName(), content, null, player);
+        Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.MSG_COMMAND_INCOMING, incomingCtx)
+                .orElseGet(() -> TELL_MESSAGE_INCOMING_TEMPLATE.applyParameters(new MessageTypes.TellIncomingMessage.Params(incomingCtx)));
 
         for (ServerPlayer serverPlayer : targetPlayers) {
             serverPlayer.sendSystemMessage(preparedContent);
@@ -97,34 +92,16 @@ public final class MinecraftMessageSender {
                     .reduce((a, b) -> Component.literal("").append(a).append(", ").append(b))
                     .orElse(Component.empty());
 
-            Component outgoingContent = MinecraftEvents.handleChatMessage(
-                    CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
-                    new MinecraftMessageContext(receivers, content, null, player)
-            ).orElseGet(() -> TemplateFactory.getStyledTranslatableMessage(
-                    parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT),
-                    COMMANDS_MESSAGE_DISPLAY_OUTGOING,
-                    newLinkedHashMapOf(
-                            Map.entry(RECEIVER, receivers),
-                            Map.entry(MESSAGE, content)
-                    ),
-                    Map.of()
-            ));
+            MinecraftMessageContext outgoingCtx = new MinecraftMessageContext(receivers, content, null, player);
+            Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.MSG_COMMAND_OUTGOING, outgoingCtx)
+                    .orElseGet(() -> TELL_MESSAGE_OUTGOING_TEMPLATE.applyParameters(new MessageTypes.TellOutgoingMessage.Params(outgoingCtx)));
 
             player.sendSystemMessage(outgoingContent);
         } else {
             for (ServerPlayer serverPlayer : targetPlayers) {
-                Component outgoingContent = MinecraftEvents.handleChatMessage(
-                        CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
-                        new MinecraftMessageContext(serverPlayer.getDisplayName(), content, null, player)
-                ).orElseGet(() -> TemplateFactory.getStyledTranslatableMessage(
-                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT),
-                        COMMANDS_MESSAGE_DISPLAY_OUTGOING,
-                        newLinkedHashMapOf(
-                                Map.entry(RECEIVER, serverPlayer.getDisplayName()),
-                                Map.entry(MESSAGE, content)
-                        ),
-                        Map.of()
-                ));
+                MinecraftMessageContext outgoingCtx = new MinecraftMessageContext(serverPlayer.getDisplayName(), content, null, player);
+                Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.MSG_COMMAND_OUTGOING, outgoingCtx)
+                        .orElseGet(() -> TELL_MESSAGE_OUTGOING_TEMPLATE.applyParameters(new MessageTypes.TellOutgoingMessage.Params(outgoingCtx)));
 
                 player.sendSystemMessage(outgoingContent);
             }
@@ -137,14 +114,10 @@ public final class MinecraftMessageSender {
             return;
 
         Component teamDisplayName = team.getFormattedDisplayName().withStyle(TEAMMSG_SUGGEST_STYLE);
-        MinecraftMessageContext chatMessageComponents
-                = new MinecraftMessageContext(player.getDisplayName(), content, teamDisplayName, player);
+        MinecraftMessageContext ctx = new MinecraftMessageContext(player.getDisplayName(), content, teamDisplayName, player);
 
-        Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING, chatMessageComponents).orElse(
-                applyParametersToTemplate(
-                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT),
-                        Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content)
-                )
+        Component preparedContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING, ctx).orElse(
+                TEAM_MESSAGE_INCOMING_TEMPLATE.applyParameters(new MessageTypes.TeamMessage.Params(ctx))
         );
 
         for (String playerName : team.getPlayers()){
@@ -155,11 +128,8 @@ public final class MinecraftMessageSender {
             serverPlayer.sendSystemMessage(preparedContent);
         }
 
-        Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING, chatMessageComponents).orElse(
-                applyParametersToTemplate(
-                        parseConfigTemplateMarkdown(ConfigDefaults.MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT),
-                        Map.of(TEAM, teamDisplayName, PLAYER, player.getDisplayName(), MESSAGE, content)
-                )
+        Component outgoingContent = MinecraftEvents.handleChatMessage(CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING, ctx).orElse(
+                TEAM_MESSAGE_OUTGOING_TEMPLATE.applyParameters(new MessageTypes.TeamMessage.Params(ctx))
         );
 
         player.sendSystemMessage(outgoingContent);

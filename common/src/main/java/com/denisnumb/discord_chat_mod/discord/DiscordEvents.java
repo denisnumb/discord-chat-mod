@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender;
+import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
@@ -37,8 +38,6 @@ import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatte
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getServerPlayerCount;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.applyParametersToTemplate;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateFactory.parseConfigTemplateMarkdown;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordUrlsUtils.retrieveMessageEmbedUrls;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
@@ -141,8 +140,7 @@ public final class DiscordEvents extends ListenerAdapter {
     private record MessageContext(
             Component guild,
             Component userName,
-            Component replyPrefix,
-            String configTemplate
+            Component replyPrefix
     ) {}
 
     private static MessageContext buildMessageContext(Member member, Message message) {
@@ -153,8 +151,7 @@ public final class DiscordEvents extends ListenerAdapter {
         return new MessageContext(
                 guild,
                 userName,
-                replyPrefix,
-                ConfigProvider.getConfig().minecraftDiscordMessagesStyle()
+                replyPrefix
         );
     }
 
@@ -281,10 +278,9 @@ public final class DiscordEvents extends ListenerAdapter {
     }
 
     private static Component wrap(Component messageComponent, MessageContext ctx) {
-        return applyParametersToTemplate(
-                parseConfigTemplateMarkdown(ctx.configTemplate()),
-                Map.of(GUILD, ctx.guild(), MEMBER, ctx.userName(), MESSAGE, messageComponent)
-        );
+        return ConfigProvider.getConfig()
+                .minecraftDiscordMessagesStyle()
+                .applyParameters(new MessageTypes.DiscordMessage.Params(ctx.guild, ctx.userName, messageComponent));
     }
 
     private static boolean isTrackedChannel(String channelId) {

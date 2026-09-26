@@ -39,7 +39,7 @@ public final class TemplateParameterFactory {
         return buildPlayerParameters(entity.getDisplayName().getString(), entity);
     }
 
-    public static Map<TemplatePlaceholder, String> buildPlayerParameters(String displayName, Entity entity){
+    public static Map<TemplatePlaceholder, String> buildPlayerParameters(String displayName, @Nullable Entity entity){
         Map<TemplatePlaceholder, String> result = new HashMap<>();
         result.put(PLAYER, displayName);
         if (entity instanceof Player player)

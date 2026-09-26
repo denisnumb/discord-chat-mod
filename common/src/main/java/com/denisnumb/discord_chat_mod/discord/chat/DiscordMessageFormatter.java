@@ -78,7 +78,7 @@ public final class DiscordMessageFormatter {
                 components.killerEntity() == null ? "" : getTranslatedComponent(components.killerEntity())
         );
         String weaponTemplate = config.discordPlayerDeathWeaponStyle().replace(ITEM.getPlaceholder(),
-                components.item() == null ? "" : components.item().getString()
+                components.killerWeapon() == null ? "" : components.killerWeapon().getString()
         );
 
         return String.format(

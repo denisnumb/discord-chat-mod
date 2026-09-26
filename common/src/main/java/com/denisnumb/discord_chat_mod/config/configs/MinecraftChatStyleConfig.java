@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
+import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
+import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.mojang.logging.LogUtils;
@@ -17,23 +19,23 @@ public final class MinecraftChatStyleConfig {
 
     public static boolean enableMinecraftChatCustomization;
     public static int[] minecraftChatLinkColors;
-    public static String minecraftDiscordMessagesStyle;
-    public static String minecraftPlayerMessageStyle;
-    public static String minecraftPlayerJoinedStyle;
-    public static String minecraftPlayerLeftStyle;
-    public static String minecraftPlayerDeathNameStyle;
-    public static String minecraftPlayerDeathCauseStyle;
-    public static String minecraftPlayerDeathSecondEntityNameStyle;
-    public static String minecraftPlayerDeathWeaponStyle;
-    public static String minecraftPlayerAdvancementTaskStyle;
-    public static String minecraftPlayerAdvancementGoalStyle;
-    public static String minecraftPlayerAdvancementChallengeStyle;
-    public static String minecraftTeamMessageSentStyle;
-    public static String minecraftTeamMessageReceivedStyle;
-    public static String minecraftTellMessageSentStyle;
-    public static String minecraftTellMessageReceivedStyle;
-    public static String minecraftSayCommandStyle;
-    public static String minecraftMeCommandStyle;
+    public static MessageTemplate<MessageTypes.DiscordMessage> minecraftDiscordMessagesStyle;
+    public static MessageTemplate<MessageTypes.PlayerMessage> minecraftPlayerMessageStyle;
+    public static MessageTemplate<MessageTypes.PlayerJoined> minecraftPlayerJoinedStyle;
+    public static MessageTemplate<MessageTypes.PlayerLeft> minecraftPlayerLeftStyle;
+    public static MessageTemplate<MessageTypes.DiedEntity> minecraftPlayerDeathNameStyle;
+    public static MessageTemplate<MessageTypes.DeathCause> minecraftPlayerDeathCauseStyle;
+    public static MessageTemplate<MessageTypes.KillerEntity> minecraftPlayerDeathSecondEntityNameStyle;
+    public static MessageTemplate<MessageTypes.KillerWeapon> minecraftPlayerDeathWeaponStyle;
+    public static MessageTemplate<MessageTypes.AdvancementMessageType> minecraftPlayerAdvancementTaskStyle;
+    public static MessageTemplate<MessageTypes.AdvancementMessageType> minecraftPlayerAdvancementGoalStyle;
+    public static MessageTemplate<MessageTypes.AdvancementMessageType> minecraftPlayerAdvancementChallengeStyle;
+    public static MessageTemplate<MessageTypes.TeamMessage> minecraftTeamMessageSentStyle;
+    public static MessageTemplate<MessageTypes.TeamMessage> minecraftTeamMessageReceivedStyle;
+    public static MessageTemplate<MessageTypes.TellOutgoingMessage> minecraftTellMessageSentStyle;
+    public static MessageTemplate<MessageTypes.TellIncomingMessage> minecraftTellMessageReceivedStyle;
+    public static MessageTemplate<MessageTypes.PlayerMessage> minecraftSayCommandStyle;
+    public static MessageTemplate<MessageTypes.PlayerMessage> minecraftMeCommandStyle;
 
     public static CommentedConfig loadMinecraftChatStyleConfig(CommentedConfig commonConfig){
         CommentedConfig existedMinecraftChatStyle = commonConfig.getOrElse("minecraftChatStyle", commonConfig.createSubConfig());
@@ -48,69 +50,120 @@ public final class MinecraftChatStyleConfig {
         minecraftChatStyle.set("minecraftChatLinkColor", rawColor);
         minecraftChatStyle.setComment("minecraftChatLinkColor", MINECRAFT_CHAT_LINK_COLOR_COMMENT);
 
-        minecraftDiscordMessagesStyle = existedMinecraftChatStyle.getOrElse("minecraftDiscordMessagesStyle", MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftDiscordMessagesStyle", minecraftDiscordMessagesStyle);
+        minecraftDiscordMessagesStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftDiscordMessagesStyle", MINECRAFT_DISCORD_MESSAGES_STYLE_DEFAULT),
+                new MessageTypes.DiscordMessage()
+        );
+        minecraftChatStyle.set("minecraftDiscordMessagesStyle", minecraftDiscordMessagesStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftDiscordMessagesStyle", MINECRAFT_DISCORD_MESSAGES_STYLE_COMMENT);
 
-        minecraftPlayerMessageStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerMessageStyle", MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerMessageStyle", minecraftPlayerMessageStyle);
+        minecraftPlayerMessageStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerMessageStyle", MINECRAFT_PLAYER_MESSAGE_STYLE_DEFAULT),
+                new MessageTypes.PlayerMessage()
+        );
+        minecraftChatStyle.set("minecraftPlayerMessageStyle", minecraftPlayerMessageStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftPlayerMessageStyle", MINECRAFT_PLAYER_MESSAGE_STYLE_COMMENT);
 
-        minecraftPlayerJoinedStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerJoinedStyle", MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerJoinedStyle", minecraftPlayerJoinedStyle);
+        minecraftPlayerJoinedStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerJoinedStyle", MINECRAFT_PLAYER_JOINED_STYLE_DEFAULT),
+                new MessageTypes.PlayerJoined()
+        );
+        minecraftChatStyle.set("minecraftPlayerJoinedStyle", minecraftPlayerJoinedStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftPlayerJoinedStyle", MINECRAFT_PLAYER_JOINED_STYLE_COMMENT);
 
-        minecraftPlayerLeftStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerLeftStyle", MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerLeftStyle", minecraftPlayerLeftStyle);
+        minecraftPlayerLeftStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerLeftStyle", MINECRAFT_PLAYER_LEFT_STYLE_DEFAULT),
+                new MessageTypes.PlayerLeft()
+        );
+        minecraftChatStyle.set("minecraftPlayerLeftStyle", minecraftPlayerLeftStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftPlayerLeftStyle", MINECRAFT_PLAYER_LEFT_STYLE_COMMENT);
 
-        minecraftPlayerDeathCauseStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathCauseStyle", MINECRAFT_PLAYER_DEATH_CAUSE_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerDeathCauseStyle", minecraftPlayerDeathCauseStyle);
+        minecraftPlayerDeathCauseStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathCauseStyle", MINECRAFT_PLAYER_DEATH_CAUSE_STYLE_DEFAULT),
+                new MessageTypes.DeathCause()
+        );
+        minecraftChatStyle.set("minecraftPlayerDeathCauseStyle", minecraftPlayerDeathCauseStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftPlayerDeathCauseStyle", MINECRAFT_PLAYER_DEATH_STYLE_COMMENT);
 
-        minecraftPlayerDeathNameStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathNameStyle", MINECRAFT_PLAYER_DEATH_NAME_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerDeathNameStyle", minecraftPlayerDeathNameStyle);
+        minecraftPlayerDeathNameStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathNameStyle", MINECRAFT_PLAYER_DEATH_NAME_STYLE_DEFAULT),
+                new MessageTypes.DiedEntity()
+        );
+        minecraftChatStyle.set("minecraftPlayerDeathNameStyle", minecraftPlayerDeathNameStyle.getRawTemplate());
 
-        minecraftPlayerDeathSecondEntityNameStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathSecondEntityNameStyle", MINECRAFT_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerDeathSecondEntityNameStyle", minecraftPlayerDeathSecondEntityNameStyle);
+        minecraftPlayerDeathSecondEntityNameStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathSecondEntityNameStyle", MINECRAFT_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT),
+                new MessageTypes.KillerEntity()
+        );
+        minecraftChatStyle.set("minecraftPlayerDeathSecondEntityNameStyle", minecraftPlayerDeathSecondEntityNameStyle.getRawTemplate());
 
-        minecraftPlayerDeathWeaponStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathWeaponStyle", MINECRAFT_PLAYER_DEATH_WEAPON_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerDeathWeaponStyle", minecraftPlayerDeathWeaponStyle);
+        minecraftPlayerDeathWeaponStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerDeathWeaponStyle", MINECRAFT_PLAYER_DEATH_WEAPON_STYLE_DEFAULT),
+                new MessageTypes.KillerWeapon()
+        );
+        minecraftChatStyle.set("minecraftPlayerDeathWeaponStyle", minecraftPlayerDeathWeaponStyle.getRawTemplate());
 
-        minecraftPlayerAdvancementTaskStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerAdvancementTaskStyle", MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerAdvancementTaskStyle", minecraftPlayerAdvancementTaskStyle);
+        minecraftPlayerAdvancementTaskStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerAdvancementTaskStyle", MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT),
+                new MessageTypes.AdvancementTask()
+        );
+        minecraftChatStyle.set("minecraftPlayerAdvancementTaskStyle", minecraftPlayerAdvancementTaskStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftPlayerAdvancementTaskStyle", MINECRAFT_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT);
 
-        minecraftPlayerAdvancementGoalStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerAdvancementGoalStyle", MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerAdvancementGoalStyle", minecraftPlayerAdvancementGoalStyle);
+        minecraftPlayerAdvancementGoalStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerAdvancementGoalStyle", MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT),
+                new MessageTypes.AdvancementGoal()
+        );
+        minecraftChatStyle.set("minecraftPlayerAdvancementGoalStyle", minecraftPlayerAdvancementGoalStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftPlayerAdvancementGoalStyle", MINECRAFT_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT);
 
-        minecraftPlayerAdvancementChallengeStyle = existedMinecraftChatStyle.getOrElse("minecraftPlayerAdvancementChallengeStyle", MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftPlayerAdvancementChallengeStyle", minecraftPlayerAdvancementChallengeStyle);
+        minecraftPlayerAdvancementChallengeStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftPlayerAdvancementChallengeStyle", MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT),
+                new MessageTypes.AdvancementChallenge()
+        );
+        minecraftChatStyle.set("minecraftPlayerAdvancementChallengeStyle", minecraftPlayerAdvancementChallengeStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftPlayerAdvancementChallengeStyle", MINECRAFT_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT);
 
-        minecraftTeamMessageSentStyle = existedMinecraftChatStyle.getOrElse("minecraftTeamMessageSentStyle", MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftTeamMessageSentStyle", minecraftTeamMessageSentStyle);
+        minecraftTeamMessageSentStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftTeamMessageSentStyle", MINECRAFT_TEAM_MESSAGE_SENT_STYLE_DEFAULT),
+                new MessageTypes.TeamMessage()
+        );
+        minecraftChatStyle.set("minecraftTeamMessageSentStyle", minecraftTeamMessageSentStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftTeamMessageSentStyle", MINECRAFT_TEAM_MESSAGE_SENT_STYLE_COMMENT);
 
-        minecraftTeamMessageReceivedStyle = existedMinecraftChatStyle.getOrElse("minecraftTeamMessageReceivedStyle", MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftTeamMessageReceivedStyle", minecraftTeamMessageReceivedStyle);
+        minecraftTeamMessageReceivedStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftTeamMessageReceivedStyle", MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                new MessageTypes.TeamMessage()
+        );
+        minecraftChatStyle.set("minecraftTeamMessageReceivedStyle", minecraftTeamMessageReceivedStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftTeamMessageReceivedStyle", MINECRAFT_TEAM_MESSAGE_RECEIVED_STYLE_COMMENT);
 
-        minecraftTellMessageSentStyle = existedMinecraftChatStyle.getOrElse("minecraftTellMessageSentStyle", MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftTellMessageSentStyle", minecraftTellMessageSentStyle);
+        minecraftTellMessageSentStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftTellMessageSentStyle", MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT),
+                new MessageTypes.TellOutgoingMessage()
+        );
+        minecraftChatStyle.set("minecraftTellMessageSentStyle", minecraftTellMessageSentStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftTellMessageSentStyle", MINECRAFT_TELL_MESSAGE_SENT_STYLE_COMMENT);
 
-        minecraftTellMessageReceivedStyle = existedMinecraftChatStyle.getOrElse("minecraftTellMessageReceivedStyle", MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftTellMessageReceivedStyle", minecraftTellMessageReceivedStyle);
+        minecraftTellMessageReceivedStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftTellMessageReceivedStyle", MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT),
+                new MessageTypes.TellIncomingMessage()
+        );
+        minecraftChatStyle.set("minecraftTellMessageReceivedStyle", minecraftTellMessageReceivedStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftTellMessageReceivedStyle", MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_COMMENT);
 
-        minecraftSayCommandStyle = existedMinecraftChatStyle.getOrElse("minecraftSayCommandStyle", MINECRAFT_SAY_COMMAND_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftSayCommandStyle", minecraftSayCommandStyle);
+        minecraftSayCommandStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftSayCommandStyle", MINECRAFT_SAY_COMMAND_STYLE_DEFAULT),
+                new MessageTypes.PlayerMessage()
+        );
+        minecraftChatStyle.set("minecraftSayCommandStyle", minecraftSayCommandStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftSayCommandStyle", MINECRAFT_SAY_COMMAND_STYLE_COMMENT);
 
-        minecraftMeCommandStyle = existedMinecraftChatStyle.getOrElse("minecraftMeCommandStyle", MINECRAFT_ME_COMMAND_STYLE_DEFAULT);
-        minecraftChatStyle.set("minecraftMeCommandStyle", minecraftMeCommandStyle);
+        minecraftMeCommandStyle = new MessageTemplate<>(
+                existedMinecraftChatStyle.getOrElse("minecraftMeCommandStyle", MINECRAFT_ME_COMMAND_STYLE_DEFAULT),
+                new MessageTypes.PlayerMessage()
+        );
+        minecraftChatStyle.set("minecraftMeCommandStyle", minecraftMeCommandStyle.getRawTemplate());
         minecraftChatStyle.setComment("minecraftMeCommandStyle", MINECRAFT_ME_COMMAND_STYLE_COMMENT);
 
         updateTellMessageExistedDefaultStyle(minecraftChatStyle);
@@ -126,15 +179,15 @@ public final class MinecraftChatStyleConfig {
         String oldSentStyle = "<grey>*{commands.message.display.outgoing} {receiver}: {message}*<grey/>";
         String oldReceivedStyle = "<grey>*{sender} {commands.message.display.incoming}: {message}*<grey/>";
 
-        if (minecraftTellMessageSentStyle.equals(oldSentStyle)) {
-            minecraftTellMessageSentStyle = MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT;
-            minecraftChatStyle.set("minecraftTellMessageSentStyle", minecraftTellMessageSentStyle);
+        if (minecraftTellMessageSentStyle.getRawTemplate().equals(oldSentStyle)) {
+            minecraftTellMessageSentStyle = new MessageTemplate<>(MINECRAFT_TELL_MESSAGE_SENT_STYLE_DEFAULT, new MessageTypes.TellOutgoingMessage());
+            minecraftChatStyle.set("minecraftTellMessageSentStyle", minecraftTellMessageSentStyle.getRawTemplate());
             LOGGER.info("[minecraftChatStyle] Updating the default style for messages sent via the /tell command.");
         }
 
-        if (minecraftTellMessageReceivedStyle.equals(oldReceivedStyle)) {
-            minecraftTellMessageReceivedStyle = MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT;
-            minecraftChatStyle.set("minecraftTellMessageReceivedStyle", minecraftTellMessageReceivedStyle);
+        if (minecraftTellMessageReceivedStyle.getRawTemplate().equals(oldReceivedStyle)) {
+            minecraftTellMessageReceivedStyle = new MessageTemplate<>(MINECRAFT_TELL_MESSAGE_RECEIVED_STYLE_DEFAULT, new MessageTypes.TellIncomingMessage());
+            minecraftChatStyle.set("minecraftTellMessageReceivedStyle", minecraftTellMessageReceivedStyle.getRawTemplate());
             LOGGER.info("[minecraftChatStyle] Updating the default style for messages received via the /tell command.");
         }
     }

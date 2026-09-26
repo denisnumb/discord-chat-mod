@@ -29,7 +29,7 @@ public final class DeathMessageUtils {
             Component diedEntity,
             String deathCauseLocaleKey,
             @Nullable Component killerEntity,
-            @Nullable Component item
+            @Nullable Component killerWeapon
     ) {}
 
     public static DeathMessageComponents getDeathMessageComponents(List<CombatEntry> entries, LivingEntity diedEntity) {

@@ -8,5 +8,5 @@ public record MinecraftMessageContext(
         Component player,
         Component content,
         @Nullable Component team,
-        @Nullable Entity sender
+        @Nullable Entity entity
 ) {}

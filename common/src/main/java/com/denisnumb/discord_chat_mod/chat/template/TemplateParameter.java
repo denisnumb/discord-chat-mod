@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat.template;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public enum TemplateParameter implements TemplatePlaceholder {
@@ -20,9 +21,7 @@ public enum TemplateParameter implements TemplatePlaceholder {
     SS("{SS}"),
     DIMENSION("{dimension}"),
     DEATH_CAUSE("{death_cause}"),
-    DEATH_CAUSE_MARKDOWNSAFE("{death.cause}"),
     SECOND_ENTITY("{second_entity}"),
-    SECOND_ENTITY_MARKDOWN_SAFE("{second.entity}"),
     ITEM("{item}"),
     DEATH_MESSAGE("{death_message}"),
     ADVANCEMENT("{advancement}"),
@@ -41,21 +40,29 @@ public enum TemplateParameter implements TemplatePlaceholder {
     COMMAND("{command}");
 
     private final String placeholder;
+    private final String markdownSafePlaceholder;
     private static final Map<String, TemplatePlaceholder> BY_PLACEHOLDER = new HashMap<>();
 
     static {
-        for (TemplatePlaceholder value : values()) {
-            BY_PLACEHOLDER.put(value.getPlaceholder(), value);
+        for (TemplateParameter value : values()) {
+            BY_PLACEHOLDER.put(value.placeholder, value);
+            BY_PLACEHOLDER.put(value.markdownSafePlaceholder, value);
         }
     }
 
     TemplateParameter(String placeholder) {
         this.placeholder = placeholder;
+        this.markdownSafePlaceholder = placeholder.replace("_", ".");
     }
 
     @Override
     public String getPlaceholder() {
         return placeholder;
+    }
+
+    @Override
+    public String getMarkdownSafePlaceholder() {
+        return markdownSafePlaceholder;
     }
 
     @Override
@@ -80,30 +87,35 @@ public enum TemplateParameter implements TemplatePlaceholder {
     public enum Translatable implements TemplatePlaceholder {
         SERVER_UNAVAILABLE("{discord_chat_mod.server.status.unavailable}"),
         SERVER_AVAILABLE("{discord_chat_mod.server.status.available}"),
-        ONLINE_PLAYERS("{discord_chat_mod.server.status.online_players}"),
+        ONLINE_PLAYERS("{discord_chat_mod.server.status.online_players}", TemplateParameter.PLAYER_COUNT, TemplateParameter.MAX_PLAYERS),
         SERVER_STARTED("{discord_chat_mod.server.started}"),
-        LOCAL_SERVER_STARTED("{discord_chat_mod.server.local_started}"),
+        LOCAL_SERVER_STARTED("{discord_chat_mod.server.local_started}", TemplateParameter.SERVER_PORT),
         SERVER_CLOSED("{discord_chat_mod.server.closed}"),
-        FORWARDED_MESSAGE("{discord_chat_mod.discord.forwarded_guild_message}"),
-        ADVANCEMENT_TASK("{chat.type.advancement.task}"),
-        ADVANCEMENT_GOAL("{chat.type.advancement.goal}"),
-        ADVANCEMENT_CHALLENGE("{chat.type.advancement.challenge}"),
-        COMMANDS_MESSAGE_DISPLAY_INCOMING("{commands.message.display.incoming}"),
-        COMMANDS_MESSAGE_DISPLAY_OUTGOING("{commands.message.display.outgoing}"),
-        PLAYER_JOINED("{multiplayer.player.joined}"),
-        PLAYER_LEFT("{multiplayer.player.left}");
+        FORWARDED_MESSAGE("{discord_chat_mod.discord.forwarded_guild_message}", TemplateParameter.MEMBER, TemplateParameter.GUILD),
+        ADVANCEMENT_TASK("{chat.type.advancement.task}", TemplateParameter.PLAYER, TemplateParameter.ADVANCEMENT),
+        ADVANCEMENT_GOAL("{chat.type.advancement.goal}", TemplateParameter.PLAYER, TemplateParameter.ADVANCEMENT),
+        ADVANCEMENT_CHALLENGE("{chat.type.advancement.challenge}", TemplateParameter.PLAYER, TemplateParameter.ADVANCEMENT),
+        COMMANDS_MESSAGE_DISPLAY_INCOMING("{commands.message.display.incoming}", TemplateParameter.SENDER, TemplateParameter.MESSAGE),
+        COMMANDS_MESSAGE_DISPLAY_OUTGOING("{commands.message.display.outgoing}", TemplateParameter.RECEIVER, TemplateParameter.MESSAGE),
+        PLAYER_JOINED("{multiplayer.player.joined}", TemplateParameter.PLAYER),
+        PLAYER_LEFT("{multiplayer.player.left}", TemplateParameter.PLAYER);
 
         private final String placeholder;
+        private final String markdownSafePlaceholder;
+        private final List<TemplatePlaceholder> orderedArgs;
         private static final Map<String, Translatable> BY_PLACEHOLDER = new HashMap<>();
 
         static {
             for (Translatable value : values()) {
                 BY_PLACEHOLDER.put(value.placeholder, value);
+                BY_PLACEHOLDER.put(value.markdownSafePlaceholder, value);
             }
         }
 
-        Translatable(String placeholder) {
+        Translatable(String placeholder, TemplateParameter... orderedArgs) {
             this.placeholder = placeholder;
+            this.markdownSafePlaceholder = placeholder.replace("_", ".");
+            this.orderedArgs = List.of(orderedArgs);
         }
 
         @Override
@@ -112,8 +124,17 @@ public enum TemplateParameter implements TemplatePlaceholder {
         }
 
         @Override
+        public String getMarkdownSafePlaceholder() {
+            return markdownSafePlaceholder;
+        }
+
+        @Override
         public String toString() {
             return placeholder;
+        }
+
+        public List<TemplatePlaceholder> getOrderedArgs() {
+            return orderedArgs;
         }
 
         public String unwrapBraces() {
