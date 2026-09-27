@@ -6,7 +6,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
@@ -17,9 +16,7 @@ public final class MessageTypes {
 
     public record DiscordMessage() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(GUILD, MEMBER, MESSAGE);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.empty(); }
 
         public record Params(Component guild, Component member, Component message) implements MessageParamsBuilder<DiscordMessage> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -30,9 +27,7 @@ public final class MessageTypes {
 
     public record PlayerMessage() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, MESSAGE);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.empty(); }
 
         public record Params(MinecraftMessageContext ctx) implements MessageParamsBuilder<PlayerMessage> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -46,9 +41,7 @@ public final class MessageTypes {
 
     public record TeamMessage() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(TEAM, PLAYER, MESSAGE);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.empty(); }
 
         public record Params(MinecraftMessageContext ctx) implements MessageParamsBuilder<TeamMessage> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -62,9 +55,7 @@ public final class MessageTypes {
 
     public record TellOutgoingMessage() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(Translatable.COMMANDS_MESSAGE_DISPLAY_OUTGOING, RECEIVER, MESSAGE);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.of(Translatable.COMMANDS_MESSAGE_DISPLAY_OUTGOING); }
 
         public record Params(MinecraftMessageContext ctx) implements MessageParamsBuilder<TellOutgoingMessage> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -78,9 +69,7 @@ public final class MessageTypes {
 
     public record TellIncomingMessage() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(Translatable.COMMANDS_MESSAGE_DISPLAY_INCOMING, SENDER, MESSAGE);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.of(Translatable.COMMANDS_MESSAGE_DISPLAY_INCOMING); }
 
         public record Params(MinecraftMessageContext ctx) implements MessageParamsBuilder<TellIncomingMessage> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -94,9 +83,7 @@ public final class MessageTypes {
 
     public record PlayerJoined() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, Translatable.PLAYER_JOINED);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.of(Translatable.PLAYER_JOINED); }
 
         public record Params(Entity player) implements MessageParamsBuilder<PlayerJoined> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -110,9 +97,7 @@ public final class MessageTypes {
 
     public record PlayerLeft() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, Translatable.PLAYER_LEFT);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.of(Translatable.PLAYER_LEFT); }
 
         public record Params(Entity player) implements MessageParamsBuilder<PlayerLeft> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -126,9 +111,7 @@ public final class MessageTypes {
 
     public record DeathCause() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(DEATH_CAUSE, X, Y, Z, DIMENSION);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.empty(); }
 
         public record Params(Entity diedEntity, Component deathCause) implements MessageParamsBuilder<DeathCause> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -142,9 +125,7 @@ public final class MessageTypes {
 
     public record DiedEntity() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.empty(); }
 
         public record Params(Entity diedEntity, Component displayName) implements MessageParamsBuilder<DiedEntity> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -158,9 +139,7 @@ public final class MessageTypes {
 
     public record KillerEntity() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(SECOND_ENTITY);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.empty(); }
 
         public record Params(Component killerEntity) implements MessageParamsBuilder<KillerEntity> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -171,9 +150,7 @@ public final class MessageTypes {
 
     public record KillerWeapon() implements MessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(ITEM);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.empty(); }
 
         public record Params(Component killerWeapon) implements MessageParamsBuilder<KillerWeapon> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
@@ -182,12 +159,10 @@ public final class MessageTypes {
         }
     }
 
-    public sealed interface AdvancementMessageType extends MessageType
-            permits MessageTypes.AdvancementTask, MessageTypes.AdvancementGoal, MessageTypes.AdvancementChallenge {
-        default Set<TemplatePlaceholder> baseParameters() {
-            return Set.of(PLAYER, ADVANCEMENT, translatable().orElseThrow());
-        }
-
+    public sealed interface AdvancementMessageType extends MessageType permits
+            MessageTypes.AdvancementTask,
+            MessageTypes.AdvancementGoal,
+            MessageTypes.AdvancementChallenge {
         record Params(Entity player, Component advancement) implements MessageParamsBuilder<AdvancementMessageType> {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
@@ -200,25 +175,16 @@ public final class MessageTypes {
 
     public record AdvancementTask() implements AdvancementMessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, ADVANCEMENT, Translatable.ADVANCEMENT_TASK);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.of(Translatable.ADVANCEMENT_TASK); }
-
-
     }
 
     public record AdvancementGoal() implements AdvancementMessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, ADVANCEMENT, Translatable.ADVANCEMENT_GOAL);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.of(Translatable.ADVANCEMENT_GOAL); }
-
     }
 
     public record AdvancementChallenge() implements AdvancementMessageType {
         public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, ADVANCEMENT, Translatable.ADVANCEMENT_CHALLENGE);
-
         public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
-        public Optional<TemplateParameter.Translatable> translatable() { return Optional.of(Translatable.ADVANCEMENT_CHALLENGE); }
     }
 }

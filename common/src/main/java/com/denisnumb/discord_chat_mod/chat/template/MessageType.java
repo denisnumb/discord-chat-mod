@@ -24,7 +24,13 @@ public sealed interface MessageType permits
         MessageTypes.KillerEntity,
         MessageTypes.KillerWeapon {
     Set<TemplatePlaceholder> baseParameters();
-    Optional<Translatable> translatable();
+
+    default Optional<Translatable> translatable() {
+        return baseParameters().stream()
+                .filter(Translatable.class::isInstance)
+                .map(Translatable.class::cast)
+                .findFirst();
+    }
 
     default Set<TemplatePlaceholder> availableParameters() {
         Set<TemplatePlaceholder> result = new HashSet<>(baseParameters());
