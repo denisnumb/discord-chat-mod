@@ -1,6 +1,9 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
 import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
+import com.denisnumb.discord_chat_mod.config.core.ConfigParameter;
+import com.denisnumb.discord_chat_mod.config.core.ConfigParameterBuilder;
+import com.denisnumb.discord_chat_mod.config.core.ConfigSection;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -11,238 +14,175 @@ import org.slf4j.Logger;
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
-public final class DiscordChatStyleConfig {
+public final class DiscordChatStyleConfig extends ConfigSection {
     private DiscordChatStyleConfig() {}
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new Gson();
 
-    public static String discordPlayerMessageStyle;
-    public static String discordPlayerMessageWebhookStyle;
-    public static String discordPlayerJoinedStyle;
-    public static String discordPlayerLeftStyle;
-    public static String discordPlayerDeathCauseStyle;
-    public static String discordPlayerDeathNameStyle;
-    public static String discordPlayerDeathSecondEntityStyle;
-    public static String discordPlayerDeathWeaponStyle;
-    public static String discordPlayerDeathMessageStyle;
-    public static String discordPlayerAdvancementTaskStyle;
-    public static String discordPlayerAdvancementGoalStyle;
-    public static String discordPlayerAdvancementChallengeStyle;
-    public static String discordSayCommandStyle;
-    public static String discordMeCommandStyle;
-    public static String discordMeCommandWebhookStyle;
-    public static String discordTellrawCommandStyle;
-    public static String discordCommandLogStyle;
-    public static String discordImageMessageStyle;
-    public static String discordImageMessageWebhookStyle;
-    public static String discordServerStartedMessageStyle;
-    public static String discordLocalServerStartedMessageStyle;
-    public static String discordServerClosedMessageStyle;
-    public static String discordPinnedStatusMessageServerUnavailableStyle;
-    public static String discordPinnedStatusMessageServerAvailableStyle;
-    public static String discordPinnedStatusMessagePlayerListDelimiter;
-    public static String discordPinnedStatusMessagePlayerListNicknameStyle;
-    public static String discordPinnedStatusMessageStyle;
-    public static String discordGuildForwardedMessageWebhookUsernameStyle;
-    public static String discordGuildForwardedMessageStyle;
+    public static final ConfigParameter<String, String> PLAYER_MESSAGE_TEMPLATE =
+            jsonMessage("discordPlayerMessageStyle", DISCORD_PLAYER_MESSAGE_STYLE_DEFAULT, DISCORD_PLAYER_MESSAGE_STYLE_COMMENT)
+                    .build();
 
-    public static CommentedConfig loadDiscordChatStyleConfig(CommentedConfig commonConfig){
-        CommentedConfig existedDiscordChatStyle = commonConfig.getOrElse("discordChatStyle", commonConfig.createSubConfig());
-        CommentedConfig discordChatStyle = commonConfig.createSubConfig();
+    public static final ConfigParameter<String, String> PLAYER_MESSAGE_WEBHOOK_TEMPLATE =
+            jsonMessage("discordPlayerMessageWebhookStyle", DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_DEFAULT, DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerMessageStyle = existedDiscordChatStyle.getOrElse("discordPlayerMessageStyle", DISCORD_PLAYER_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerMessageStyle", discordPlayerMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerMessageStyle", DISCORD_PLAYER_MESSAGE_STYLE_COMMENT);
-        discordPlayerMessageStyle = validateJsonValue(discordPlayerMessageStyle, DISCORD_PLAYER_MESSAGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PLAYER_JOINED_TEMPLATE =
+            jsonMessage("discordPlayerJoinedStyle", DISCORD_PLAYER_JOINED_STYLE_DEFAULT, DISCORD_PLAYER_JOINED_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerMessageWebhookStyle = existedDiscordChatStyle.getOrElse("discordPlayerMessageWebhookStyle", DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerMessageWebhookStyle", discordPlayerMessageWebhookStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerMessageWebhookStyle", DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_COMMENT);
-        discordPlayerMessageWebhookStyle = validateJsonValue(discordPlayerMessageWebhookStyle, DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PLAYER_LEFT_TEMPLATE =
+            jsonMessage("discordPlayerLeftStyle", DISCORD_PLAYER_LEFT_STYLE_DEFAULT, DISCORD_PLAYER_LEFT_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerJoinedStyle = existedDiscordChatStyle.getOrElse("discordPlayerJoinedStyle", DISCORD_PLAYER_JOINED_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerJoinedStyle", discordPlayerJoinedStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerJoinedStyle", DISCORD_PLAYER_JOINED_STYLE_COMMENT);
-        discordPlayerJoinedStyle = validateJsonValue(discordPlayerJoinedStyle, DISCORD_PLAYER_JOINED_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PLAYER_DEATH_CAUSE_TEMPLATE =
+            ConfigParameter.ofString("discordPlayerDeathCauseStyle")
+                    .defaultValue(DISCORD_PLAYER_DEATH_CAUSE_STYLE_DEFAULT)
+                    .comment(DISCORD_PLAYER_DEATH_CAUSE_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerLeftStyle = existedDiscordChatStyle.getOrElse("discordPlayerLeftStyle", DISCORD_PLAYER_LEFT_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerLeftStyle", discordPlayerLeftStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerLeftStyle", DISCORD_PLAYER_LEFT_STYLE_COMMENT);
-        discordPlayerLeftStyle = validateJsonValue(discordPlayerLeftStyle, DISCORD_PLAYER_LEFT_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PLAYER_DEATH_NAME_TEMPLATE =
+            ConfigParameter.ofString("discordPlayerDeathNameStyle")
+                    .defaultValue(DISCORD_PLAYER_DEATH_NAME_STYLE_DEFAULT)
+                    .build();
 
-        discordPlayerDeathCauseStyle = existedDiscordChatStyle.getOrElse("discordPlayerDeathCauseStyle", DISCORD_PLAYER_DEATH_CAUSE_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerDeathCauseStyle", discordPlayerDeathCauseStyle);
-        discordChatStyle.setComment("discordPlayerDeathCauseStyle", DISCORD_PLAYER_DEATH_CAUSE_STYLE_COMMENT);
+    public static final ConfigParameter<String, String> KILLER_ENTITY_TEMPLATE =
+            ConfigParameter.ofString("discordPlayerDeathSecondEntityStyle")
+                    .defaultValue(DISCORD_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT)
+                    .build();
 
-        discordPlayerDeathNameStyle = existedDiscordChatStyle.getOrElse("discordPlayerDeathNameStyle", DISCORD_PLAYER_DEATH_NAME_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerDeathNameStyle", discordPlayerDeathNameStyle);
+    public static final ConfigParameter<String, String> KILLER_WEAPON_TEMPLATE =
+            ConfigParameter.ofString("discordPlayerDeathWeaponStyle")
+                    .defaultValue(DISCORD_PLAYER_DEATH_WEAPON_STYLE_DEFAULT)
+                    .build();
 
-        discordPlayerDeathSecondEntityStyle = existedDiscordChatStyle.getOrElse("discordPlayerDeathSecondEntityStyle", DISCORD_PLAYER_DEATH_SECOND_ENTITY_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerDeathSecondEntityStyle", discordPlayerDeathSecondEntityStyle);
+    public static final ConfigParameter<String, String> DEATH_MESSAGE_TEMPLATE =
+            jsonMessage("discordPlayerDeathMessageStyle", DISCORD_PLAYER_DEATH_MESSAGE_STYLE_DEFAULT, DISCORD_PLAYER_DEATH_MESSAGE_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerDeathWeaponStyle = existedDiscordChatStyle.getOrElse("discordPlayerDeathWeaponStyle", DISCORD_PLAYER_DEATH_WEAPON_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerDeathWeaponStyle", discordPlayerDeathWeaponStyle);
+    public static final ConfigParameter<String, String> ADVANCEMENT_TASK_TEMPLATE =
+            jsonMessage("discordPlayerAdvancementTaskStyle", DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT, DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerDeathMessageStyle = existedDiscordChatStyle.getOrElse("discordPlayerDeathMessageStyle", DISCORD_PLAYER_DEATH_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerDeathMessageStyle", discordPlayerDeathMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerDeathMessageStyle", DISCORD_PLAYER_DEATH_MESSAGE_STYLE_COMMENT);
-        discordPlayerDeathMessageStyle = validateJsonValue(discordPlayerDeathMessageStyle, DISCORD_PLAYER_DEATH_MESSAGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> ADVANCEMENT_GOAL_TEMPLATE =
+            jsonMessage("discordPlayerAdvancementGoalStyle", DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT, DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerAdvancementTaskStyle = existedDiscordChatStyle.getOrElse("discordPlayerAdvancementTaskStyle", DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerAdvancementTaskStyle", discordPlayerAdvancementTaskStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerAdvancementTaskStyle", DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT);
-        discordPlayerAdvancementTaskStyle = validateJsonValue(discordPlayerAdvancementTaskStyle, DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> ADVANCEMENT_CHALLENGE_TEMPLATE =
+            jsonMessage("discordPlayerAdvancementChallengeStyle", DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT, DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerAdvancementGoalStyle = existedDiscordChatStyle.getOrElse("discordPlayerAdvancementGoalStyle", DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerAdvancementGoalStyle", discordPlayerAdvancementGoalStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerAdvancementGoalStyle", DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT);
-        discordPlayerAdvancementGoalStyle = validateJsonValue(discordPlayerAdvancementGoalStyle, DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> SAY_COMMAND_TEMPLATE =
+            jsonMessage("discordSayCommandStyle", DISCORD_SAY_COMMAND_STYLE_DEFAULT, DISCORD_SAY_COMMAND_STYLE_COMMENT)
+                    .build();
 
-        discordPlayerAdvancementChallengeStyle = existedDiscordChatStyle.getOrElse("discordPlayerAdvancementChallengeStyle", DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordPlayerAdvancementChallengeStyle", discordPlayerAdvancementChallengeStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPlayerAdvancementChallengeStyle", DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT);
-        discordPlayerAdvancementChallengeStyle = validateJsonValue(discordPlayerAdvancementChallengeStyle, DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> ME_COMMAND_TEMPLATE =
+            jsonMessage("discordMeCommandStyle", DISCORD_ME_COMMAND_STYLE_DEFAULT, DISCORD_ME_COMMAND_STYLE_COMMENT)
+                    .build();
 
-        discordSayCommandStyle = existedDiscordChatStyle.getOrElse("discordSayCommandStyle", DISCORD_SAY_COMMAND_STYLE_DEFAULT);
-        discordChatStyle.set("discordSayCommandStyle", discordSayCommandStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordSayCommandStyle", DISCORD_SAY_COMMAND_STYLE_COMMENT);
-        discordSayCommandStyle = validateJsonValue(discordSayCommandStyle, DISCORD_SAY_COMMAND_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> ME_COMMAND_WEBHOOK_TEMPLATE =
+            jsonMessage("discordMeCommandWebhookStyle", DISCORD_ME_COMMAND_WEBHOOK_STYLE_DEFAULT, DISCORD_ME_COMMAND_WEBHOOK_STYLE_COMMENT)
+                    .build();
 
-        discordMeCommandStyle = existedDiscordChatStyle.getOrElse("discordMeCommandStyle", DISCORD_ME_COMMAND_STYLE_DEFAULT);
-        discordChatStyle.set("discordMeCommandStyle", discordMeCommandStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordMeCommandStyle", DISCORD_ME_COMMAND_STYLE_COMMENT);
-        discordMeCommandStyle = validateJsonValue(discordMeCommandStyle, DISCORD_ME_COMMAND_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> TELLRAW_COMMAND_TEMPLATE =
+            jsonMessage("discordTellrawCommandStyle", DISCORD_TELLRAW_COMMAND_STYLE_DEFAULT, DISCORD_TELLRAW_COMMAND_STYLE_COMMENT)
+                    .build();
 
-        discordMeCommandWebhookStyle = existedDiscordChatStyle.getOrElse("discordMeCommandWebhookStyle", DISCORD_ME_COMMAND_WEBHOOK_STYLE_DEFAULT);
-        discordChatStyle.set("discordMeCommandWebhookStyle", discordMeCommandWebhookStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordMeCommandWebhookStyle", DISCORD_ME_COMMAND_WEBHOOK_STYLE_COMMENT);
-        discordMeCommandWebhookStyle = validateJsonValue(discordMeCommandWebhookStyle, DISCORD_ME_COMMAND_WEBHOOK_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> COMMAND_LOG_TEMPLATE =
+            jsonMessage("discordCommandLogStyle", DISCORD_COMMAND_LOG_STYLE_DEFAULT, DISCORD_COMMAND_LOG_STYLE_COMMENT)
+                    .build();
 
-        discordTellrawCommandStyle = existedDiscordChatStyle.getOrElse("discordTellrawCommandStyle", DISCORD_TELLRAW_COMMAND_STYLE_DEFAULT);
-        discordChatStyle.set("discordTellrawCommandStyle", discordTellrawCommandStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordTellrawCommandStyle", DISCORD_TELLRAW_COMMAND_STYLE_COMMENT);
-        discordTellrawCommandStyle = validateJsonValue(discordTellrawCommandStyle, DISCORD_TELLRAW_COMMAND_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> IMAGE_MESSAGE_TEMPLATE =
+            jsonMessage("discordImageMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT, DISCORD_IMAGE_MESSAGE_STYLE_COMMENT)
+                    .migrateFrom("discordScreenshotMessageStyle",
+                            value -> value.replace("{screenshot_url}", TemplateParameter.IMAGE_URL.getPlaceholder()))
+                    .build();
 
-        discordCommandLogStyle = existedDiscordChatStyle.getOrElse("discordCommandLogStyle", DISCORD_COMMAND_LOG_STYLE_DEFAULT);
-        discordChatStyle.set("discordCommandLogStyle", discordCommandLogStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordCommandLogStyle", DISCORD_COMMAND_LOG_STYLE_COMMENT);
-        discordCommandLogStyle = validateJsonValue(discordCommandLogStyle, DISCORD_COMMAND_LOG_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> IMAGE_MESSAGE_WEBHOOK_TEMPLATE =
+            jsonMessage("discordImageMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT, DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_COMMENT)
+                    .migrateFrom("discordScreenshotMessageWebhookStyle",
+                            value -> value.replace("{screenshot_url}", TemplateParameter.IMAGE_URL.getPlaceholder()))
+                    .build();
 
-        discordImageMessageStyle = existedDiscordChatStyle.getOrElse("discordImageMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordImageMessageStyle", discordImageMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordImageMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_COMMENT);
-        discordImageMessageStyle = validateJsonValue(discordImageMessageStyle, DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> SERVER_STARTED_MESSAGE_TEMPLATE =
+            jsonMessage("discordServerStartedMessageStyle", DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT, DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT)
+                    .build();
 
-        discordImageMessageWebhookStyle = existedDiscordChatStyle.getOrElse("discordImageMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
-        discordChatStyle.set("discordImageMessageWebhookStyle", discordImageMessageWebhookStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordImageMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_COMMENT);
-        discordImageMessageWebhookStyle = validateJsonValue(discordImageMessageWebhookStyle, DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> LOCAL_SERVER_STARTED_MESSAGE_TEMPLATE =
+            jsonMessage("discordLocalServerStartedMessageStyle", DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_DEFAULT, DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_COMMENT)
+                    .build();
 
-        discordServerStartedMessageStyle = existedDiscordChatStyle.getOrElse("discordServerStartedMessageStyle", DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordServerStartedMessageStyle", discordServerStartedMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordServerStartedMessageStyle", DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT);
-        discordServerStartedMessageStyle = validateJsonValue(discordServerStartedMessageStyle, DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> SERVER_CLOSED_MESSAGE_TEMPLATE =
+            jsonMessage("discordServerClosedMessageStyle", DISCORD_SERVER_CLOSED_MESSAGE_STYLE_DEFAULT, DISCORD_SERVER_CLOSED_MESSAGE_STYLE_COMMENT)
+                    .build();
 
-        discordLocalServerStartedMessageStyle = existedDiscordChatStyle.getOrElse("discordLocalServerStartedMessageStyle", DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordLocalServerStartedMessageStyle", discordLocalServerStartedMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordLocalServerStartedMessageStyle", DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_COMMENT);
-        discordLocalServerStartedMessageStyle = validateJsonValue(discordLocalServerStartedMessageStyle, DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_TEMPLATE =
+            jsonMessage("discordPinnedStatusMessageServerUnavailableStyle", DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_DEFAULT, DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_COMMENT)
+                    .build();
 
-        discordServerClosedMessageStyle = existedDiscordChatStyle.getOrElse("discordServerClosedMessageStyle", DISCORD_SERVER_CLOSED_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordServerClosedMessageStyle", discordServerClosedMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordServerClosedMessageStyle", DISCORD_SERVER_CLOSED_MESSAGE_STYLE_COMMENT);
-        discordServerClosedMessageStyle = validateJsonValue(discordServerClosedMessageStyle, DISCORD_SERVER_CLOSED_MESSAGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_TEMPLATE =
+            jsonMessage("discordPinnedStatusMessageServerAvailableStyle", DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_DEFAULT, DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_COMMENT)
+                    .build();
 
-        discordPinnedStatusMessageServerUnavailableStyle = existedDiscordChatStyle.getOrElse("discordPinnedStatusMessageServerUnavailableStyle", DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_DEFAULT);
-        discordChatStyle.set("discordPinnedStatusMessageServerUnavailableStyle", discordPinnedStatusMessageServerUnavailableStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPinnedStatusMessageServerUnavailableStyle", DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_COMMENT);
-        discordPinnedStatusMessageServerUnavailableStyle = validateJsonValue(discordPinnedStatusMessageServerUnavailableStyle, DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER =
+            ConfigParameter.ofString("discordPinnedStatusMessagePlayerListDelimiter")
+                    .defaultValue(DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_DEFAULT)
+                    .comment(DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_COMMENT)
+                    .build();
 
-        discordPinnedStatusMessageServerAvailableStyle = existedDiscordChatStyle.getOrElse("discordPinnedStatusMessageServerAvailableStyle", DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_DEFAULT);
-        discordChatStyle.set("discordPinnedStatusMessageServerAvailableStyle", discordPinnedStatusMessageServerAvailableStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPinnedStatusMessageServerAvailableStyle", DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_COMMENT);
-        discordPinnedStatusMessageServerAvailableStyle = validateJsonValue(discordPinnedStatusMessageServerAvailableStyle, DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_TEMPLATE =
+            ConfigParameter.ofString("discordPinnedStatusMessagePlayerListNicknameStyle")
+                    .defaultValue(DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_DEFAULT)
+                    .comment(DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_COMMENT)
+                    .build();
 
-        discordPinnedStatusMessagePlayerListDelimiter = existedDiscordChatStyle.getOrElse("discordPinnedStatusMessagePlayerListDelimiter", DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_DEFAULT);
-        discordChatStyle.set("discordPinnedStatusMessagePlayerListDelimiter", discordPinnedStatusMessagePlayerListDelimiter);
-        discordChatStyle.setComment("discordPinnedStatusMessagePlayerListDelimiter", DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_COMMENT);
+    public static final ConfigParameter<String, String> PINNED_STATUS_MESSAGE_TEMPLATE =
+            jsonMessage("discordPinnedStatusMessageStyle", DISCORD_PINNED_STATUS_MESSAGE_STYLE_DEFAULT, DISCORD_PINNED_STATUS_MESSAGE_STYLE_COMMENT)
+                    .build();
 
-        discordPinnedStatusMessagePlayerListNicknameStyle = existedDiscordChatStyle.getOrElse("discordPinnedStatusMessagePlayerListNicknameStyle", DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_DEFAULT);
-        discordChatStyle.set("discordPinnedStatusMessagePlayerListNicknameStyle", discordPinnedStatusMessagePlayerListNicknameStyle);
-        discordChatStyle.setComment("discordPinnedStatusMessagePlayerListNicknameStyle", DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_STYLE_COMMENT);
+    public static final ConfigParameter<String, String> GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_TEMPLATE =
+            ConfigParameter.ofString("discordGuildForwardedMessageWebhookUsernameStyle")
+                    .defaultValue(DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_DEFAULT)
+                    .comment(DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_COMMENT)
+                    .migrateFrom("discordGuildForwardedMessageUserNameStyle")
+                    .build();
 
-        discordPinnedStatusMessageStyle = existedDiscordChatStyle.getOrElse("discordPinnedStatusMessageStyle", DISCORD_PINNED_STATUS_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordPinnedStatusMessageStyle", discordPinnedStatusMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordPinnedStatusMessageStyle", DISCORD_PINNED_STATUS_MESSAGE_STYLE_COMMENT);
-        discordPinnedStatusMessageStyle = validateJsonValue(discordPinnedStatusMessageStyle, DISCORD_PINNED_STATUS_MESSAGE_STYLE_DEFAULT);
+    public static final ConfigParameter<String, String> GUILD_FORWARDED_MESSAGE_TEMPLATE =
+            jsonMessage("discordGuildForwardedMessageStyle", DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_DEFAULT, DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_COMMENT)
+                    .build();
 
-        discordGuildForwardedMessageWebhookUsernameStyle = existedDiscordChatStyle.getOrElse("discordGuildForwardedMessageWebhookUsernameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_DEFAULT);
-        discordChatStyle.set("discordGuildForwardedMessageWebhookUsernameStyle", discordGuildForwardedMessageWebhookUsernameStyle);
-        discordChatStyle.setComment("discordGuildForwardedMessageWebhookUsernameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_COMMENT);
-
-        discordGuildForwardedMessageStyle = existedDiscordChatStyle.getOrElse("discordGuildForwardedMessageStyle", DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_DEFAULT);
-        discordChatStyle.set("discordGuildForwardedMessageStyle", discordGuildForwardedMessageStyle.replace("\r", ""));
-        discordChatStyle.setComment("discordGuildForwardedMessageStyle", DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_COMMENT);
-        discordGuildForwardedMessageStyle = validateJsonValue(discordGuildForwardedMessageStyle, DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_DEFAULT);
-
-        migrateScreenshotMessageStyle(existedDiscordChatStyle, discordChatStyle);
-        migrateDiscordGuildForwardedMessageUserNameStyle(existedDiscordChatStyle, discordChatStyle);
-
-        return discordChatStyle;
+    private static ConfigParameterBuilder<String, String> jsonMessage(String key, String defaultValue, String comment) {
+        return ConfigParameter.ofString(key)
+                .defaultValue(defaultValue)
+                .comment(comment)
+                .normalize(value -> value.replace("\r", ""))
+                .validator(DiscordChatStyleConfig::validateJsonValue);
     }
 
     private static String validateJsonValue(String jsonValue, String defaultValue) {
         if (jsonValue.isBlank())
             return defaultValue;
 
-        try{
+        try {
             JsonObject jsonObject = GSON.fromJson(jsonValue, JsonObject.class);
 
             if (!jsonObject.has("content") && !jsonObject.has("embed"))
                 throw new JsonSyntaxException("Json should contains \"content\" or \"embed\" keys");
 
-            return jsonValue.replace("\r", "");
-        } catch (JsonSyntaxException e){
+            return jsonValue;
+        } catch (JsonSyntaxException e) {
             LOGGER.warn("Error on parsing discord message style json: {}", e.getMessage());
-            LOGGER.warn(jsonValue.replace("\r", ""));
+            LOGGER.warn(jsonValue);
             LOGGER.warn("Default style will be used");
             return defaultValue;
         }
     }
 
-    /**
-     * Migration method for configs generated with version 2.7.0 or less
-     * @since 2.8.0
-     */
-    private static void migrateScreenshotMessageStyle(CommentedConfig existedDiscordChatStyle, CommentedConfig newDiscordChatStyle){
-        if (existedDiscordChatStyle.contains("discordScreenshotMessageStyle")){
-            String existedOldStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageStyle", DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT)
-                    .replace("{screenshot_url}", TemplateParameter.IMAGE_URL.getPlaceholder());
-            newDiscordChatStyle.set("discordImageMessageStyle", existedOldStyle.replace("\r", ""));
-            discordImageMessageStyle = validateJsonValue(existedOldStyle, DISCORD_IMAGE_MESSAGE_STYLE_DEFAULT);
-            LOGGER.info("[discordChatStyle] Migrating \"discordScreenshotMessageStyle\" → \"discordImageMessageStyle\"");
-        }
+    public static CommentedConfig load(CommentedConfig commonConfig) {
+        CommentedConfig discordChatStyleConfig = commonConfig.getOrElse("discordChatStyle", commonConfig.createSubConfig());
+        ConfigSection.loadAll(DiscordChatStyleConfig.class, discordChatStyleConfig, discordChatStyleConfig);
 
-        if (existedDiscordChatStyle.contains("discordScreenshotMessageWebhookStyle")){
-            String existedOldStyle = existedDiscordChatStyle.getOrElse("discordScreenshotMessageWebhookStyle", DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT)
-                    .replace("{screenshot_url}", TemplateParameter.IMAGE_URL.getPlaceholder());
-            newDiscordChatStyle.set("discordImageMessageWebhookStyle", existedOldStyle.replace("\r", ""));
-            discordImageMessageWebhookStyle = validateJsonValue(existedOldStyle, DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_DEFAULT);
-            LOGGER.info("[discordChatStyle] Migrating \"discordScreenshotMessageWebhookStyle\" → \"discordImageMessageWebhookStyle\"");
-        }
-    }
-
-    /**
-     * Migration method for configs generated with version 2.8.0 or less
-     * @since 2.9.0
-     */
-    private static void migrateDiscordGuildForwardedMessageUserNameStyle(CommentedConfig existedDiscordChatStyle, CommentedConfig newDiscordChatStyle){
-        if (existedDiscordChatStyle.contains("discordGuildForwardedMessageUserNameStyle")){
-            String existedOldStyle = existedDiscordChatStyle.getOrElse("discordGuildForwardedMessageUserNameStyle", DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_DEFAULT);
-            newDiscordChatStyle.set("discordGuildForwardedMessageWebhookUsernameStyle", existedOldStyle);
-            discordGuildForwardedMessageWebhookUsernameStyle = existedOldStyle;
-            LOGGER.info("[discordChatStyle] Migrating \"discordGuildForwardedMessageUserNameStyle\" → \"discordGuildForwardedMessageWebhookUsernameStyle\"");
-        }
+        return discordChatStyleConfig;
     }
 }

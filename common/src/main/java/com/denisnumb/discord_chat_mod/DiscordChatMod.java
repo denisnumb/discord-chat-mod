@@ -3,8 +3,10 @@ package com.denisnumb.discord_chat_mod;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.commands.ReloadConfigCommand;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.AvatarUrlStorage;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
+import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
+import com.denisnumb.discord_chat_mod.config.configs.DiscordProxyConfig;
+import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
 import com.denisnumb.discord_chat_mod.discord.*;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
@@ -76,7 +78,7 @@ public final class DiscordChatMod {
     }
 
     public static void onServerStarted() {
-        if (ConfigProvider.getConfig().isServerLogsToDiscordEnabled())
+        if (LogsConfig.SERVER_LOGS_TO_DISCORD_ENABLED.get())
             ServerLogsRetranslator.start();
 
         if (server == null || !server.isDedicatedServer())
@@ -120,24 +122,27 @@ public final class DiscordChatMod {
     public static void initJDA(){
         try {
             JDALogger.setFallbackLoggerEnabled(false);
-            IConfigProvider config = ConfigProvider.getConfig();
+            String hostname = DiscordProxyConfig.PROXY_HOSTNAME.get();
+            int port = DiscordProxyConfig.PROXY_PORT.get();
+            String user = DiscordProxyConfig.PROXY_USER.get();
+            String password = DiscordProxyConfig.PROXY_PASSWORD.get();
 
             WebSocketFactory webSocketFactory = new WebSocketFactory();
-            if (!config.proxyHostname().isEmpty()) {
+            if (hostname.isEmpty()) {
                 ProxySettings settings = webSocketFactory.getProxySettings();
-                settings.setHost(config.proxyHostname()).setPort(config.proxyPort());
-                if (!config.proxyUser().isEmpty()) {
-                    settings.setCredentials(config.proxyUser(), config.proxyPassword());
+                settings.setHost(hostname).setPort(port);
+                if (!user.isEmpty()) {
+                    settings.setCredentials(user, password);
                 }
             }
 
             OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
-            if (!config.proxyHostname().isEmpty()) {
-                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.proxyHostname(), config.proxyPort()));
+            if (hostname.isEmpty()) {
+                Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(hostname, port));
                 httpClientBuilder.proxy(proxy);
-                if (!config.proxyUser().isEmpty()) {
+                if (!user.isEmpty()) {
                     httpClientBuilder.proxyAuthenticator((proxy1, url) -> {
-                        String credential = Credentials.basic(config.proxyUser(), config.proxyPassword());
+                        String credential = Credentials.basic(user, password);
                         return url.request().newBuilder()
                                 .header("Proxy-Authorization", credential)
                                 .build();
@@ -145,7 +150,7 @@ public final class DiscordChatMod {
                 }
             }
 
-            jda = JDABuilder.create(config.discordBotToken(),
+            jda = JDABuilder.create(CommonConfig.DISCORD_BOT_TOKEN.get(),
                             GatewayIntent.MESSAGE_CONTENT,
                             GatewayIntent.GUILD_MEMBERS,
                             GatewayIntent.GUILD_PRESENCES,
@@ -161,13 +166,13 @@ public final class DiscordChatMod {
 
             jda.awaitReady();
             initDiscordSendExecutor();
-            DiscordChannelRegistry.initDiscordChannels(config.discordGuildConfigs());
+            DiscordChannelRegistry.initDiscordChannels(DiscordGuildsConfig.discordGuildConfigs);
             initServerStatusController();
             DiscordSlashCommands.register(jda, DiscordChannelRegistry.getAllContexts());
             AvatarUrlStorage.load(server);
 
-            if (config.isServerLogsToDiscordEnabled())
-                ServerLogsRetranslator.init(config.serverLogsToDiscordLoggingLevel(), config.serverLogsPattern());
+            if (LogsConfig.SERVER_LOGS_TO_DISCORD_ENABLED.get())
+                ServerLogsRetranslator.init(LogsConfig.SERVER_LOGS_TO_DISCORD_LOGGING_LEVEL.get(), LogsConfig.SERVER_LOGS_PATTERN.get());
 
             LOGGER.info("Discord connected");
             trySendServerStartMessage();

@@ -2,8 +2,7 @@ package com.denisnumb.discord_chat_mod.chat;
 
 import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
 import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import net.minecraft.advancements.AdvancementType;
@@ -45,12 +44,10 @@ public final class MinecraftMessageFormatter {
     }
 
     public static Component getStyledAdvancementMessage(Player player, DisplayInfo displayInfo) {
-        IConfigProvider config = ConfigProvider.getConfig();
-
         MessageTemplate<MessageTypes.AdvancementMessageType> template = switch (displayInfo.getType()) {
-            case AdvancementType.TASK -> config.minecraftPlayerAdvancementTaskStyle();
-            case AdvancementType.GOAL -> config.minecraftPlayerAdvancementGoalStyle();
-            case AdvancementType.CHALLENGE -> config.minecraftPlayerAdvancementChallengeStyle();
+            case AdvancementType.TASK -> MinecraftChatStyleConfig.ADVANCEMENT_TASK_TEMPLATE.get();
+            case AdvancementType.GOAL -> MinecraftChatStyleConfig.ADVANCEMENT_GOAL_TEMPLATE.get();
+            case AdvancementType.CHALLENGE -> MinecraftChatStyleConfig.ADVANCEMENT_CHALLENGE_TEMPLATE.get();
         };
 
         MarkdownToken style = template.parseParameterStyles(Set.of(ADVANCEMENT)).get(ADVANCEMENT);
@@ -60,51 +57,45 @@ public final class MinecraftMessageFormatter {
     }
 
     public static Component getStyledJoinedLeftMessage(Player player, boolean isJoin) {
-        IConfigProvider config = ConfigProvider.getConfig();
-
         return isJoin
-                ? config.minecraftPlayerJoinedStyle().applyParameters(new MessageTypes.PlayerJoined.Params(player))
-                : config.minecraftPlayerLeftStyle().applyParameters(new MessageTypes.PlayerLeft.Params(player));
+                ? MinecraftChatStyleConfig.PLAYER_JOINED_TEMPLATE.get().applyParameters(new MessageTypes.PlayerJoined.Params(player))
+                : MinecraftChatStyleConfig.PLAYER_LEFT_TEMPLATE.get().applyParameters(new MessageTypes.PlayerLeft.Params(player));
     }
 
     @Nullable
     public static Component getStyledChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext ctx){
-        IConfigProvider config = ConfigProvider.getConfig();
-
         final MessageTypes.PlayerMessage.Params playerMessageParams = new MessageTypes.PlayerMessage.Params(ctx);
         final MessageTypes.TeamMessage.Params teamMessageParams = new MessageTypes.TeamMessage.Params(ctx);
 
         return switch (chatType.identifier().getPath()) {
             case CHAT_PATH ->
-                    config.minecraftPlayerMessageStyle().applyParameters(playerMessageParams);
+                    MinecraftChatStyleConfig.PLAYER_MESSAGE_TEMPLATE.get().applyParameters(playerMessageParams);
             case SAY_COMMAND_PATH ->
-                    config.minecraftSayCommandStyle().applyParameters(playerMessageParams);
+                    MinecraftChatStyleConfig.SAY_COMMAND_TEMPLATE.get().applyParameters(playerMessageParams);
             case EMOTE_COMMAND_PATH ->
-                    config.minecraftMeCommandStyle().applyParameters(playerMessageParams);
+                    MinecraftChatStyleConfig.ME_COMMAND_TEMPLATE.get().applyParameters(playerMessageParams);
             case TEAM_MSG_COMMAND_INCOMING_PATH ->
-                    config.minecraftTeamMessageReceivedStyle().applyParameters(teamMessageParams);
+                    MinecraftChatStyleConfig.TEAM_MESSAGE_INCOMING_TEMPLATE.get().applyParameters(teamMessageParams);
             case TEAM_MSG_COMMAND_OUTGOING_PATH ->
-                    config.minecraftTeamMessageSentStyle().applyParameters(teamMessageParams);
+                    MinecraftChatStyleConfig.TEAM_MESSAGE_OUTGOING_TEMPLATE.get().applyParameters(teamMessageParams);
             case MSG_COMMAND_INCOMING_PATH ->
-                    config.minecraftTellMessageReceivedStyle().applyParameters(new MessageTypes.TellIncomingMessage.Params(ctx));
+                    MinecraftChatStyleConfig.TELL_MESSAGE_INCOMING_TEMPLATE.get().applyParameters(new MessageTypes.TellIncomingMessage.Params(ctx));
             case MSG_COMMAND_OUTGOING_PATH ->
-                    config.minecraftTellMessageSentStyle().applyParameters(new MessageTypes.TellOutgoingMessage.Params(ctx));
+                    MinecraftChatStyleConfig.TELL_MESSAGE_OUTGOING_TEMPLATE.get().applyParameters(new MessageTypes.TellOutgoingMessage.Params(ctx));
             default -> null;
         };
     }
 
 
     public static Component getStyledDeathMessage(DeathMessageComponents components, Entity entity) {
-        IConfigProvider config = ConfigProvider.getConfig();
-
         List<Component> args = new ArrayList<>();
-        args.add(config.minecraftPlayerDeathNameStyle().applyParameters(new MessageTypes.DiedEntity.Params(entity, components.diedEntity())));
+        args.add(MinecraftChatStyleConfig.PLAYER_DEATH_NAME_TEMPLATE.get().applyParameters(new MessageTypes.DiedEntity.Params(entity, components.diedEntity())));
         if (components.killerEntity() != null)
-            args.add(config.minecraftPlayerDeathSecondEntityNameStyle().applyParameters(new MessageTypes.KillerEntity.Params(components.killerEntity())));
+            args.add(MinecraftChatStyleConfig.KILLER_ENTITY_TEMPLATE.get().applyParameters(new MessageTypes.KillerEntity.Params(components.killerEntity())));
         if (components.killerWeapon() != null)
-            args.add(config.minecraftPlayerDeathWeaponStyle().applyParameters(new MessageTypes.KillerWeapon.Params(components.killerWeapon())));
+            args.add(MinecraftChatStyleConfig.KILLER_WEAPON_TEMPLATE.get().applyParameters(new MessageTypes.KillerWeapon.Params(components.killerWeapon())));
 
         Component deathCause = Component.translatable(components.deathCauseLocaleKey(), args.toArray());
-        return config.minecraftPlayerDeathCauseStyle().applyParameters(new MessageTypes.DeathCause.Params(entity, deathCause));
+        return MinecraftChatStyleConfig.DEATH_CAUSE_TEMPLATE.get().applyParameters(new MessageTypes.DeathCause.Params(entity, deathCause));
     }
 }

@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord;
 
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
+import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
@@ -104,12 +104,11 @@ public final class ServerStatusController {
     }
 
     private static String buildPlayerList(){
-        IConfigProvider config = ConfigProvider.getConfig();
         int maxNicknames = 50;
 
         String[] players = getServerPlayerNames(server);
-        String delimiter = config.discordPinnedStatusMessagePlayerListDelimiter();
-        String nicknameStyle = config.discordPinnedStatusMessagePlayerListNicknameStyle();
+        String delimiter = DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER.get();
+        String nicknameStyle = DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_TEMPLATE.get();
         boolean escapeUnderscore = shouldEscape(nicknameStyle);
 
         String result = IntStream.range(0, Math.min(maxNicknames, players.length))
@@ -155,7 +154,7 @@ public final class ServerStatusController {
             });
         }
 
-        if (ConfigProvider.getConfig().isBotPresenceStatusEnabled()) {
+        if (CommonConfig.ENABLE_BOT_PRESENCE_STATUS.get()) {
             jda.getPresence().setActivity(Activity.customStatus(getOnlineCountString()));
         } else {
             jda.getPresence().setActivity(null);

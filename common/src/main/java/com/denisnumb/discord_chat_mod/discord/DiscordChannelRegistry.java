@@ -1,9 +1,8 @@
 package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
+import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
@@ -56,10 +55,9 @@ public final class DiscordChannelRegistry {
     public static void initDiscordChannels(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) {
         GUILD_CONTEXTS.clear();
 
-        IConfigProvider config = ConfigProvider.getConfig();
-
-        String webhookAvatarUrl = ImageUtils.isImageUrl(ImageUtils.getMimeType(config.webhookServerAvatarUrl()))
-                ? config.webhookServerAvatarUrl()
+        String webhookServerAvatarUrl = WebhookModeConfig.WEBHOOK_SERVER_AVATAR_URL.get();
+        String webhookAvatarUrl = ImageUtils.isImageUrl(ImageUtils.getMimeType(webhookServerAvatarUrl))
+                ? webhookServerAvatarUrl
                 : jda.getSelfUser().getAvatarUrl();
 
         try {
@@ -158,7 +156,7 @@ public final class DiscordChannelRegistry {
     }
 
     private static void initChannelWebhook(@Nullable DiscordGuildContext context, GuildMessageChannel channel){
-        if (context == null || !ConfigProvider.getConfig().isWebhookModeEnabled())
+        if (context == null || !WebhookModeConfig.ENABLE_WEBHOOK_MODE.get())
             return;
 
         IWebhookContainer webhookContainer = null;

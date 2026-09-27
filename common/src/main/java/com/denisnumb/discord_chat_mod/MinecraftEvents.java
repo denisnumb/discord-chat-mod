@@ -5,8 +5,9 @@ import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.commands.*;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.SetAvatarCommand;
 import com.denisnumb.discord_chat_mod.commands.vanilla.*;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
+import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
+import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.markdown.ComponentToMarkdownConverter;
@@ -55,13 +56,12 @@ public final class MinecraftEvents {
         EmoteCommand.register(dispatcher);
         TeamMsgCommand.register(dispatcher);
 
-        IConfigProvider config = ConfigProvider.getConfig();
-        if (config.isSetAvatarUrlCommandEnabled())
+        if (WebhookModeConfig.ENABLE_SET_AVATAR_URL_COMMAND.get())
             SetAvatarCommand.register(dispatcher);
     }
 
     public static Optional<Component> handleChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components) {
-        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+        if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
             return Optional.ofNullable(getStyledChatMessage(chatType, components));
         return Optional.empty();
     }
@@ -83,7 +83,7 @@ public final class MinecraftEvents {
             });
         }
 
-        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+        if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
             return Optional.of(getStyledDeathMessage(components, entity));
         return Optional.empty();
     }
@@ -119,21 +119,20 @@ public final class MinecraftEvents {
             );
         });
 
-        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+        if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
             return Optional.of(getStyledAdvancementMessage(player, displayInfo));
         return Optional.empty();
     }
 
     public static void handleCommandExecution(CommandSourceStack source, String command) {
-        IConfigProvider config = ConfigProvider.getConfig();
-        if (!config.isCommandLogEnabled())
+        if (!LogsConfig.COMMAND_LOG_ENABLED.get())
             return;
 
         Player player = source.getPlayer();
         if (player == null)
             return;
 
-        net.minecraft.server.permissions.PermissionCheck levelCheck = switch (Math.max(0, Math.min(4, config.commandLogMinPermissionLevel()))) {
+        net.minecraft.server.permissions.PermissionCheck levelCheck = switch (Math.max(0, Math.min(4, LogsConfig.COMMAND_LOG_MIN_PERMISSION_LEVEL.get()))) {
             case 0 -> Commands.LEVEL_ALL;
             case 1 -> Commands.LEVEL_MODERATORS;
             case 3 -> Commands.LEVEL_ADMINS;
@@ -147,7 +146,7 @@ public final class MinecraftEvents {
         int spaceIdx = trimmed.indexOf(' ');
         String rootCommand = (spaceIdx == -1 ? trimmed : trimmed.substring(0, spaceIdx))
                 .toLowerCase(java.util.Locale.ROOT);
-        if (rootCommand.isEmpty() || config.commandLogIgnoredCommands().contains(rootCommand))
+        if (rootCommand.isEmpty() || LogsConfig.COMMAND_LOG_IGNORED_COMMANDS.get().contains(rootCommand))
             return;
 
         String displayCommand = "/" + trimmed;
@@ -173,7 +172,7 @@ public final class MinecraftEvents {
             updateServerStatusWithDelay();
         });
 
-        if (ConfigProvider.getConfig().isMinecraftChatCustomizationEnabled())
+        if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
             return Optional.of(getStyledJoinedLeftMessage(player, isJoin));
         return Optional.empty();
     }

@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.config;
 
+import com.denisnumb.discord_chat_mod.config.configs.*;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import org.jetbrains.annotations.Nullable;
@@ -8,15 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static com.denisnumb.discord_chat_mod.config.configs.ClientConfig.loadClientConfig;
-import static com.denisnumb.discord_chat_mod.config.configs.CommonConfig.loadCommonConfig;
-import static com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig.loadDiscordChatStyleConfig;
-import static com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig.loadDiscordGuildsConfig;
-import static com.denisnumb.discord_chat_mod.config.configs.DiscordProxyConfig.loadDiscordProxyConfig;
-import static com.denisnumb.discord_chat_mod.config.configs.LogsConfig.loadLogsConfig;
-import static com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig.loadMinecraftChatStyleConfig;
-import static com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig.loadWebhookModeConfig;
 
 public final class ConfigManager {
     private ConfigManager() {}
@@ -73,13 +65,13 @@ public final class ConfigManager {
 
         commonConfig.load();
 
-        loadCommonConfig(commonConfig);
-        commonConfig.set("guilds", loadDiscordGuildsConfig(commonConfig));
-        commonConfig.set("logsConfig", loadLogsConfig(commonConfig));
-        commonConfig.set("webhookModeConfig", loadWebhookModeConfig(commonConfig));
-        commonConfig.set("discordProxyConfig", loadDiscordProxyConfig(commonConfig));
-        commonConfig.set("minecraftChatStyle", loadMinecraftChatStyleConfig(commonConfig));
-        commonConfig.set("discordChatStyle", loadDiscordChatStyleConfig(commonConfig));
+        CommonConfig.load(commonConfig);
+        commonConfig.set("guilds", DiscordGuildsConfig.load(commonConfig));
+        commonConfig.set("logsConfig", LogsConfig.load(commonConfig));
+        commonConfig.set("webhookModeConfig", WebhookModeConfig.load(commonConfig));
+        commonConfig.set("discordProxyConfig", DiscordProxyConfig.load(commonConfig));
+        commonConfig.set("minecraftChatStyle", MinecraftChatStyleConfig.load(commonConfig));
+        commonConfig.set("discordChatStyle", DiscordChatStyleConfig.load(commonConfig));
         removeDeprecatedParameters(commonConfig);
 
         commonConfig.save();
@@ -93,7 +85,7 @@ public final class ConfigManager {
                 .build();
 
         clientConfig.load();
-        loadClientConfig(clientConfig);
+        ClientConfig.load(clientConfig);
         clientConfig.save();
     }
 }

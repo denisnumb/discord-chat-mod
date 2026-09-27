@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord.chat;
 
+import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.denisnumb.discord_chat_mod.utils.PlayerAvatarProvider;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
@@ -283,7 +283,7 @@ public final class DiscordMessageSender {
     }
 
     private static String getWebhookServerName() {
-        String configValue = ConfigProvider.getConfig().webhookServerName();
+        String configValue = WebhookModeConfig.WEBHOOK_SERVER_NAME.get();
         return configValue.isBlank() ? null : configValue.replaceAll("(?i)discord", "DC");
     }
 

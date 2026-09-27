@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.network.chat.Style;
@@ -30,7 +30,7 @@ public abstract class StringSplitterMixin {
 
         Matcher matcher = EMOJI_PATTERN.matcher(text);
 
-        if (ConfigProvider.getConfig().isEmojifulCompatibilityEnabled()
+        if (ClientConfig.EMOJIFUL_COMPATIBILITY.get()
                 || !matcher.find()
                 || CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty()) {
             return text;
@@ -81,7 +81,7 @@ public abstract class StringSplitterMixin {
         String rawText = rawBuilder.toString();
         Matcher matcher = EMOJI_PATTERN.matcher(rawText);
 
-        if (ConfigProvider.getConfig().isEmojifulCompatibilityEnabled()
+        if (ClientConfig.EMOJIFUL_COMPATIBILITY.get()
                 || !matcher.find()
                 || CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty()) {
             return text;

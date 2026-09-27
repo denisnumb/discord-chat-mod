@@ -1,40 +1,47 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
+import com.denisnumb.discord_chat_mod.config.core.ConfigParameter;
+import com.denisnumb.discord_chat_mod.config.core.ConfigSection;
 import com.electronwill.nightconfig.core.CommentedConfig;
 
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
-public final class CommonConfig {
+public final class CommonConfig extends ConfigSection {
     private CommonConfig() {}
 
-    public static String discordBotToken;
-    public static String modLocale;
-    public static int utcOffsetHours;
-    public static boolean enableBotPresenceStatus;
-    public static boolean mentionBots;
+    public static final ConfigParameter<String, String> DISCORD_BOT_TOKEN =
+            ConfigParameter.ofString("discordBotToken")
+                    .defaultValue(DISCORD_BOT_TOKEN_DEFAULT)
+                    .comment(DISCORD_BOT_TOKEN_COMMENT)
+                    .build();
 
-    public static void loadCommonConfig(CommentedConfig commonConfig){
-        discordBotToken = commonConfig.getOrElse("discordBotToken", DISCORD_BOT_TOKEN_DEFAULT);
-        commonConfig.set("discordBotToken", discordBotToken);
-        commonConfig.setComment("discordBotToken", DISCORD_BOT_TOKEN_COMMENT);
+    public static final ConfigParameter<String, String> MOD_LOCALE =
+            ConfigParameter.ofString("modLocale")
+                    .defaultValue(MOD_LOCALE_DEFAULT)
+                    .comment(MOD_LOCALE_COMMENT)
+                    .build();
 
-        modLocale = commonConfig.getOrElse("modLocale", MOD_LOCALE_DEFAULT);
-        commonConfig.set("modLocale", modLocale);
-        commonConfig.setComment("modLocale", MOD_LOCALE_COMMENT);
+    public static final ConfigParameter<Integer, Integer> UTC_OFFSET_HOURS =
+            ConfigParameter.ofInt("utcOffsetHours")
+                    .defaultValue(UTC_OFFSET_HOURS_DEFAULT)
+                    .comment(UTC_OFFSET_HOURS_COMMENT)
+                    .rangeWithComment(-12, 14)
+                    .build();
 
-        utcOffsetHours = commonConfig.getOrElse("utcOffsetHours", UTC_OFFSET_HOURS_DEFAULT);
-        if (utcOffsetHours < -12) utcOffsetHours = -12;
-        if (utcOffsetHours > 14) utcOffsetHours = 14;
-        commonConfig.set("utcOffsetHours", utcOffsetHours);
-        commonConfig.setComment("utcOffsetHours", UTC_OFFSET_HOURS_COMMENT + String.format("\n Default: %d\n Range: -12 ~ 14", UTC_OFFSET_HOURS_DEFAULT));
+    public static final ConfigParameter<Boolean, Boolean> ENABLE_BOT_PRESENCE_STATUS =
+            ConfigParameter.ofBoolean("enableBotPresenceStatus")
+                    .defaultValue(ENABLE_BOT_PRESENCE_STATUS_DEFAULT)
+                    .comment(ENABLE_BOT_PRESENCE_STATUS_COMMENT)
+                    .build();
 
-        enableBotPresenceStatus = commonConfig.getOrElse("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_DEFAULT);
-        commonConfig.set("enableBotPresenceStatus", enableBotPresenceStatus);
-        commonConfig.setComment("enableBotPresenceStatus", ENABLE_BOT_PRESENCE_STATUS_COMMENT);
+    public static final ConfigParameter<Boolean, Boolean> MENTION_BOTS =
+            ConfigParameter.ofBoolean("mentionBots")
+                    .defaultValue(MENTION_BOTS_DEFAULT)
+                    .comment(MENTION_BOTS_COMMENT)
+                    .build();
 
-        mentionBots = commonConfig.getOrElse("mentionBots", MENTION_BOTS_DEFAULT);
-        commonConfig.set("mentionBots", mentionBots);
-        commonConfig.setComment("mentionBots", MENTION_BOTS_COMMENT);
+    public static void load(CommentedConfig commonConfig) {
+        ConfigSection.loadAll(CommonConfig.class, commonConfig, commonConfig);
     }
 }

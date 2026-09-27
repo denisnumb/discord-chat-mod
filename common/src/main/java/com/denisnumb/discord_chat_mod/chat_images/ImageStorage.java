@@ -1,12 +1,12 @@
 package com.denisnumb.discord_chat_mod.chat_images;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.denisnumb.discord_chat_mod.utils.FormattedCharSequenceUtils;
 import com.denisnumb.discord_chat_mod.utils.JavaUtils;
 import com.denisnumb.discord_chat_mod.chat_images.model.*;
 import com.denisnumb.discord_chat_mod.chat_images.model.Image;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.mixin.ChatComponentAccessor;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -64,7 +64,7 @@ public final class ImageStorage {
 
     private static int getMaxCacheSize(){
         if (MAX_CACHE_SIZE == null) {
-            MAX_CACHE_SIZE = ConfigProvider.getConfig().maxImageCacheSize();
+            MAX_CACHE_SIZE = ClientConfig.MAX_IMAGE_CACHE_SIZE.get();
         }
 
         return MAX_CACHE_SIZE;

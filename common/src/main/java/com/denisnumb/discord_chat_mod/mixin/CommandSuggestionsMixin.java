@@ -1,8 +1,8 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
@@ -136,7 +136,7 @@ public abstract class CommandSuggestionsMixin {
                 ci.cancel();
         }
 
-        if (!ConfigProvider.getConfig().isEmojifulCompatibilityEnabled()
+        if (!ClientConfig.EMOJIFUL_COMPATIBILITY.get()
                 && currentInput.substring(lastWordIndex).startsWith(":")){
             this.pendingSuggestions = EMOJIS_PROVIDER.getSuggestions(null, new SuggestionsBuilder(currentInput, lastWordIndex));
             showSuggestions(true);

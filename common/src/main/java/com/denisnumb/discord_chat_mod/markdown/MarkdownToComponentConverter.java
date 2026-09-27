@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import net.minecraft.network.chat.*;
@@ -45,7 +45,7 @@ public final class MarkdownToComponentConverter {
                 );
             }
         } else if (token.isUrl()) {
-            component = ComponentUtils.buildGradientComponent(textPart, ConfigProvider.getConfig().minecraftChatLinkColors());
+            component = ComponentUtils.buildGradientComponent(textPart, MinecraftChatStyleConfig.CHAT_LINK_COLORS.get());
         } else if (token.isGradient()) {
             component = ComponentUtils.buildGradientComponent(textPart, token.gradientColors);
         } else {

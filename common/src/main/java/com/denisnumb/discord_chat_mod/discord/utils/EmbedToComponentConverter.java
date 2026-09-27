@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord.utils;
 
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
@@ -401,7 +401,7 @@ public final class EmbedToComponentConverter {
         String footerText = footer != null && footer.getText() != null ? footer.getText() : null;
         String timestampText = timestamp == null
                 ? null
-                : timestamp.withOffsetSameInstant(ZoneOffset.ofHours(ConfigProvider.getConfig().utcOffsetHours()))
+                : timestamp.withOffsetSameInstant(ZoneOffset.ofHours(CommonConfig.UTC_OFFSET_HOURS.get()))
                     .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
 
         if (footerText == null && timestampText == null) {

@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.utils;
 
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
 import com.mojang.brigadier.StringReader;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
@@ -45,14 +45,14 @@ public final class MinecraftUtils {
 
     public static void logErrorToServer(Component message) {
         LOGGER.error(message.getString());
-        if (ConfigProvider.getConfig().isLoggingDiscordErrorsToServerChatEnabled())
-            sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.RED.getColor()), ConfigProvider.getConfig().discordErrorsChatPlayerSelector());
+        if (LogsConfig.LOG_DISCORD_ERRORS_TO_SERVER_CHAT.get())
+            sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.RED.getColor()), LogsConfig.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR.get());
     }
 
     public static void logWarnToServer(Component message) {
         LOGGER.warn(message.getString());
-        if (ConfigProvider.getConfig().isLoggingDiscordErrorsToServerChatEnabled())
-            sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.YELLOW.getColor()), ConfigProvider.getConfig().discordErrorsChatPlayerSelector());
+        if (LogsConfig.LOG_DISCORD_ERRORS_TO_SERVER_CHAT.get())
+            sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.YELLOW.getColor()), LogsConfig.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR.get());
     }
 
     public static int getServerPlayerCount(@Nullable MinecraftServer server) {

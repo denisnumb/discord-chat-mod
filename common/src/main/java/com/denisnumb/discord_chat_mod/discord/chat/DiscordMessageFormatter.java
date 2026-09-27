@@ -2,11 +2,11 @@ package com.denisnumb.discord_chat_mod.discord.chat;
 
 import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
 import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
+import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import com.denisnumb.discord_chat_mod.utils.JavaUtils;
 import com.google.gson.Gson;
@@ -71,18 +71,17 @@ public final class DiscordMessageFormatter {
     }
 
     public static String formatDeathMessageComponents(DeathMessageUtils.DeathMessageComponents components){
-        IConfigProvider config = ConfigProvider.getConfig();
-
-        String playerTemplate = config.discordPlayerDeathNameStyle().replace(PLAYER.getPlaceholder(), getTranslatedComponent(components.diedEntity()));
-        String killerTemplate = config.discordPlayerDeathSecondEntityStyle().replace(SECOND_ENTITY.getPlaceholder(),
+        String playerTemplate = DiscordChatStyleConfig.PLAYER_DEATH_NAME_TEMPLATE.get().replace(PLAYER.getPlaceholder(), getTranslatedComponent(components.diedEntity()));
+        String killerTemplate = DiscordChatStyleConfig.KILLER_ENTITY_TEMPLATE.get().replace(SECOND_ENTITY.getPlaceholder(),
                 components.killerEntity() == null ? "" : getTranslatedComponent(components.killerEntity())
         );
-        String weaponTemplate = config.discordPlayerDeathWeaponStyle().replace(ITEM.getPlaceholder(),
+        String weaponTemplate = DiscordChatStyleConfig.KILLER_WEAPON_TEMPLATE.get().replace(ITEM.getPlaceholder(),
                 components.killerWeapon() == null ? "" : components.killerWeapon().getString()
         );
 
         return String.format(
-                config.discordPlayerDeathCauseStyle().replace(DEATH_CAUSE.getPlaceholder(), DiscordLocaleProvider.getTranslate(components.deathCauseLocaleKey())),
+                DiscordChatStyleConfig.PLAYER_DEATH_CAUSE_TEMPLATE.get()
+                        .replace(DEATH_CAUSE.getPlaceholder(), DiscordLocaleProvider.getTranslate(components.deathCauseLocaleKey())),
                 playerTemplate,
                 killerTemplate,
                 weaponTemplate
@@ -97,8 +96,7 @@ public final class DiscordMessageFormatter {
 
 
     public static Optional<DiscordMessageComponents> getDiscordMessageComponents(MessageType messageType, Map<TemplatePlaceholder, String> parameterMap){
-        IConfigProvider config = ConfigProvider.getConfig();
-        OffsetDateTime now = JavaUtils.getDateTimeWithUtcOffset(ConfigProvider.getConfig().utcOffsetHours());
+        OffsetDateTime now = JavaUtils.getDateTimeWithUtcOffset(CommonConfig.UTC_OFFSET_HOURS.get());
 
         parameterMap = mergeMaps(
                 parameterMap,
@@ -109,54 +107,54 @@ public final class DiscordMessageFormatter {
         try{
             DiscordMessageComponents result = switch (messageType){
                 case PINNED_STATUS_AVAILABLE ->  parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordPinnedStatusMessageServerAvailableStyle(), SERVER_AVAILABLE),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_TEMPLATE.get(), SERVER_AVAILABLE),
                         parameterMap
                 );
                 case PINNED_STATUS_UNAVAILABLE ->  parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordPinnedStatusMessageServerUnavailableStyle(), SERVER_UNAVAILABLE),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_TEMPLATE.get(), SERVER_UNAVAILABLE),
                         parameterMap
                 );
-                case PINNED_STATUS_PLAYERS ->  parseDiscordConfigTemplate(config.discordPinnedStatusMessageStyle(), parameterMap);
+                case PINNED_STATUS_PLAYERS ->  parseDiscordConfigTemplate(DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_TEMPLATE.get(), parameterMap);
                 case SERVER_START -> parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordServerStartedMessageStyle(), SERVER_STARTED),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.SERVER_STARTED_MESSAGE_TEMPLATE.get(), SERVER_STARTED),
                         parameterMap
                 );
-                case LOCAL_SERVER_START -> parseDiscordConfigTemplate(config.discordLocalServerStartedMessageStyle(), parameterMap);
+                case LOCAL_SERVER_START -> parseDiscordConfigTemplate(DiscordChatStyleConfig.LOCAL_SERVER_STARTED_MESSAGE_TEMPLATE.get(), parameterMap);
                 case SERVER_STOP -> parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordServerClosedMessageStyle(), SERVER_CLOSED),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.SERVER_CLOSED_MESSAGE_TEMPLATE.get(), SERVER_CLOSED),
                         parameterMap
                 );
-                case CHAT -> parseDiscordConfigTemplate(config.discordPlayerMessageStyle(), parameterMap);
-                case CHAT_WEBHOOK -> parseDiscordConfigTemplate(config.discordPlayerMessageWebhookStyle(), parameterMap);
-                case IMAGE -> parseDiscordConfigTemplate(config.discordImageMessageStyle(), parameterMap);
-                case IMAGE_WEBHOOK -> parseDiscordConfigTemplate(config.discordImageMessageWebhookStyle(), parameterMap);
+                case CHAT -> parseDiscordConfigTemplate(DiscordChatStyleConfig.PLAYER_MESSAGE_TEMPLATE.get(), parameterMap);
+                case CHAT_WEBHOOK -> parseDiscordConfigTemplate(DiscordChatStyleConfig.PLAYER_MESSAGE_WEBHOOK_TEMPLATE.get(), parameterMap);
+                case IMAGE -> parseDiscordConfigTemplate(DiscordChatStyleConfig.IMAGE_MESSAGE_TEMPLATE.get(), parameterMap);
+                case IMAGE_WEBHOOK -> parseDiscordConfigTemplate(DiscordChatStyleConfig.IMAGE_MESSAGE_WEBHOOK_TEMPLATE.get(), parameterMap);
                 case LEFT -> parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordPlayerLeftStyle(), PLAYER_LEFT),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.PLAYER_LEFT_TEMPLATE.get(), PLAYER_LEFT),
                         parameterMap
                 );
                 case JOIN -> parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordPlayerJoinedStyle(), PLAYER_JOINED),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.PLAYER_JOINED_TEMPLATE.get(), PLAYER_JOINED),
                         parameterMap
                 );
-                case DEATH, PET_DEATH -> parseDiscordConfigTemplate(config.discordPlayerDeathMessageStyle(), parameterMap);
+                case DEATH, PET_DEATH -> parseDiscordConfigTemplate(DiscordChatStyleConfig.DEATH_MESSAGE_TEMPLATE.get(), parameterMap);
                 case ADVANCEMENT_GOAL -> parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordPlayerAdvancementGoalStyle(), ADVANCEMENT_GOAL),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.ADVANCEMENT_GOAL_TEMPLATE.get(), ADVANCEMENT_GOAL),
                         parameterMap
                 );
                 case ADVANCEMENT_TASK -> parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordPlayerAdvancementTaskStyle(), ADVANCEMENT_TASK),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.ADVANCEMENT_TASK_TEMPLATE.get(), ADVANCEMENT_TASK),
                         parameterMap
                 );
                 case ADVANCEMENT_CHALLENGE -> parseDiscordConfigTemplate(
-                        setConfigTemplateTranslatableParameters(config.discordPlayerAdvancementChallengeStyle(), ADVANCEMENT_CHALLENGE),
+                        setConfigTemplateTranslatableParameters(DiscordChatStyleConfig.ADVANCEMENT_CHALLENGE_TEMPLATE.get(), ADVANCEMENT_CHALLENGE),
                         parameterMap
                 );
-                case SAY_COMMAND -> parseDiscordConfigTemplate(config.discordSayCommandStyle(), parameterMap);
-                case ME_COMMAND -> parseDiscordConfigTemplate(config.discordMeCommandStyle(), parameterMap);
-                case ME_COMMAND_WEBHOOK -> parseDiscordConfigTemplate(config.discordMeCommandWebhookStyle(), parameterMap);
-                case TELLRAW_COMMAND -> parseDiscordConfigTemplate(config.discordTellrawCommandStyle(), parameterMap);
-                case COMMAND_LOG -> parseDiscordConfigTemplate(config.discordCommandLogStyle(), parameterMap);
-                case GUILD_FORWARDED_MESSAGE -> parseDiscordConfigTemplate(config.discordGuildForwardedMessageStyle(), parameterMap);
+                case SAY_COMMAND -> parseDiscordConfigTemplate(DiscordChatStyleConfig.SAY_COMMAND_TEMPLATE.get(), parameterMap);
+                case ME_COMMAND -> parseDiscordConfigTemplate(DiscordChatStyleConfig.ME_COMMAND_TEMPLATE.get(), parameterMap);
+                case ME_COMMAND_WEBHOOK -> parseDiscordConfigTemplate(DiscordChatStyleConfig.ME_COMMAND_WEBHOOK_TEMPLATE.get(), parameterMap);
+                case TELLRAW_COMMAND -> parseDiscordConfigTemplate(DiscordChatStyleConfig.TELLRAW_COMMAND_TEMPLATE.get(), parameterMap);
+                case COMMAND_LOG -> parseDiscordConfigTemplate(DiscordChatStyleConfig.COMMAND_LOG_TEMPLATE.get(), parameterMap);
+                case GUILD_FORWARDED_MESSAGE -> parseDiscordConfigTemplate(DiscordChatStyleConfig.GUILD_FORWARDED_MESSAGE_TEMPLATE.get(), parameterMap);
             };
 
             return Optional.of(result);

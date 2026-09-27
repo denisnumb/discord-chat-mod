@@ -54,7 +54,7 @@ public final class DiscordGuildsConfig {
             Map<String, String> channelOverrides
     ) { }
 
-    public static List<CommentedConfig> loadDiscordGuildsConfig(CommentedConfig commonConfig){
+    public static List<CommentedConfig> load(CommentedConfig commonConfig){
         List<CommentedConfig> guildList = commonConfig.getOrElse("guilds", getDefaultGuildConfig(commonConfig));
         discordGuildConfigs = new ArrayList<>();
 

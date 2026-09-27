@@ -1,10 +1,9 @@
 package com.denisnumb.discord_chat_mod.fabric;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.locale.LocaleStorage;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
-import com.denisnumb.discord_chat_mod.config.ConfigProviderImpl;
 import com.denisnumb.discord_chat_mod.fabric.compat.VanishCompat;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricNetworking;
 import com.denisnumb.discord_chat_mod.fabric.network.FabricPacketDistributor;
@@ -22,7 +21,6 @@ public final class DiscordChatModFabric implements ModInitializer{
     public void onInitialize() {
         ConfigManager.load(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
         FabricNetworking.init();
-        ConfigProvider.setConfigProvider(new ConfigProviderImpl());
         LocaleStorage.setLocaleLoader(new FabricLocaleLoader());
         loadLocalization();
         PlatformPacketDistributor.setHandler(new FabricPacketDistributor());
@@ -34,7 +32,7 @@ public final class DiscordChatModFabric implements ModInitializer{
 
     public static class FabricLocaleLoader implements LocaleLoader{
         public void loadLocalization() {
-            String configLocale = ConfigProvider.getConfig().modLocale();
+            String configLocale = CommonConfig.MOD_LOCALE.get();
 
             for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
                 String namespace = mod.getMetadata().getId();

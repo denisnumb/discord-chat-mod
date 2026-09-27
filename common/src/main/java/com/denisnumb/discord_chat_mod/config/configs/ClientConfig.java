@@ -1,50 +1,56 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
+import com.denisnumb.discord_chat_mod.config.core.ConfigParameter;
+import com.denisnumb.discord_chat_mod.config.core.ConfigSection;
 import com.electronwill.nightconfig.core.CommentedConfig;
 
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
-public final class ClientConfig {
+public final class ClientConfig extends ConfigSection {
     private ClientConfig() {}
 
-    public static boolean emojifulCompatibility;
-    public static int maxChatHistory;
-    public static int maxImageCacheSize;
-    public static int imageLoadTimeoutMs;
-    public static boolean enableAttachImageButton;
-    public static boolean enableClipboardImagePaste;
+    public static final ConfigParameter<Boolean, Boolean> EMOJIFUL_COMPATIBILITY =
+            ConfigParameter.ofBoolean("emojifulCompatibility")
+                    .defaultValue(EMOJIFUL_COMPATIBILITY_DEFAULT)
+                    .comment(EMOJIFUL_COMPATIBILITY_COMMENT)
+                    .build();
 
-    public static void loadClientConfig(CommentedConfig clientConfig){
-        emojifulCompatibility = clientConfig.getOrElse("emojifulCompatibility", EMOJIFUL_COMPATIBILITY_DEFAULT);
-        clientConfig.set("emojifulCompatibility", emojifulCompatibility);
-        clientConfig.setComment("emojifulCompatibility", EMOJIFUL_COMPATIBILITY_COMMENT);
+    public static final ConfigParameter<Integer, Integer> MAX_CHAT_HISTORY =
+            ConfigParameter.ofInt("maxChatHistory")
+                    .defaultValue(MAX_CHAT_HISTORY_DEFAULT)
+                    .comment(MAX_CHAT_HISTORY_COMMENT)
+                    .rangeWithComment(20, Integer.MAX_VALUE)
+                    .build();
 
-        maxChatHistory = clientConfig.getOrElse("maxChatHistory", MAX_CHAT_HISTORY_DEFAULT);
-        if (maxChatHistory < 20)
-            maxChatHistory = 20;
-        clientConfig.set("maxChatHistory", maxChatHistory);
-        clientConfig.setComment("maxChatHistory", MAX_CHAT_HISTORY_COMMENT + String.format("\n Default: %d\n Range: > 20", MAX_CHAT_HISTORY_DEFAULT));
+    public static final ConfigParameter<Integer, Integer> MAX_IMAGE_CACHE_SIZE =
+            ConfigParameter.ofInt("maxImageCacheSize")
+                    .defaultValue(MAX_IMAGE_CACHE_SIZE_DEFAULT)
+                    .comment(MAX_IMAGE_CACHE_SIZE_COMMENT)
+                    .rangeWithComment(50, 10000)
+                    .build();
 
-        maxImageCacheSize = clientConfig.getOrElse("maxImageCacheSize", MAX_IMAGE_CACHE_SIZE_DEFAULT);
-        if (maxImageCacheSize < 50) maxImageCacheSize = 50;
-        if (maxImageCacheSize > 10000) maxImageCacheSize = 10000;
-        clientConfig.set("maxImageCacheSize", maxImageCacheSize);
-        clientConfig.setComment("maxImageCacheSize", MAX_IMAGE_CACHE_SIZE_COMMENT + String.format("\n Default: %d\n Range: 50 ~ 10000", MAX_IMAGE_CACHE_SIZE_DEFAULT));
+    public static final ConfigParameter<Integer, Integer> IMAGE_LOAD_TIMEOUT_MS =
+            ConfigParameter.ofInt("imageLoadTimeout")
+                    .defaultValue(IMAGE_LOAD_TIMEOUT_DEFAULT)
+                    .comment(IMAGE_LOAD_TIMEOUT_COMMENT)
+                    .rangeWithComment(5, 300)
+                    .transform(seconds -> seconds * 1000)
+                    .build();
 
-        int imageLoadTimeout = clientConfig.getOrElse("imageLoadTimeout", IMAGE_LOAD_TIMEOUT_DEFAULT);
-        if (imageLoadTimeout < 5) imageLoadTimeout = 5;
-        if (imageLoadTimeout > 300) imageLoadTimeout = 300;
-        imageLoadTimeoutMs = imageLoadTimeout * 1000;
-        clientConfig.set("imageLoadTimeout", imageLoadTimeout);
-        clientConfig.setComment("imageLoadTimeout", IMAGE_LOAD_TIMEOUT_COMMENT + String.format("\n Default: %d\n Range: 5 ~ 300", IMAGE_LOAD_TIMEOUT_DEFAULT));
+    public static final ConfigParameter<Boolean, Boolean> ENABLE_ATTACH_IMAGE_BUTTON =
+            ConfigParameter.ofBoolean("enableAttachImageButton")
+                    .defaultValue(ENABLE_ATTACH_IMAGE_BUTTON_DEFAULT)
+                    .comment(ENABLE_ATTACH_IMAGE_BUTTON_COMMENT)
+                    .build();
 
-        enableAttachImageButton = clientConfig.getOrElse("enableAttachImageButton", ENABLE_ATTACH_IMAGE_BUTTON_DEFAULT);
-        clientConfig.set("enableAttachImageButton", enableAttachImageButton);
-        clientConfig.setComment("enableAttachImageButton", ENABLE_ATTACH_IMAGE_BUTTON_COMMENT);
+    public static final ConfigParameter<Boolean, Boolean> ENABLE_CLIPBOARD_IMAGE_PASTE =
+            ConfigParameter.ofBoolean("enableClipboardImagePaste")
+                    .defaultValue(ENABLE_CLIPBOARD_IMAGE_PASTE_DEFAULT)
+                    .comment(ENABLE_CLIPBOARD_IMAGE_PASTE_COMMENT)
+                    .build();
 
-        enableClipboardImagePaste = clientConfig.getOrElse("enableClipboardImagePaste", ENABLE_CLIPBOARD_IMAGE_PASTE_DEFAULT);
-        clientConfig.set("enableClipboardImagePaste", enableClipboardImagePaste);
-        clientConfig.setComment("enableClipboardImagePaste", ENABLE_CLIPBOARD_IMAGE_PASTE_COMMENT);
+    public static void load(CommentedConfig clientConfig) {
+        ConfigSection.loadAll(ClientConfig.class, clientConfig, clientConfig);
     }
 }

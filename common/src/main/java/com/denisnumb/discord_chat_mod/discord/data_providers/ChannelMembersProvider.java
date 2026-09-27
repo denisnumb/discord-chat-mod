@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord.data_providers;
 
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
@@ -29,7 +29,7 @@ public final class ChannelMembersProvider {
         if (!isDiscordConnected())
             return List.of();
 
-        boolean mentionBots = ConfigProvider.getConfig().mentionBots();
+        boolean mentionBots = CommonConfig.MENTION_BOTS.get();
 
         return getList(channelCategoryToParseMembers).stream()
                 .filter(member -> mentionBots || !member.getUser().isBot())

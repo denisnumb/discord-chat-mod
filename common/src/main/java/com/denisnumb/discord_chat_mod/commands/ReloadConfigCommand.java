@@ -2,7 +2,8 @@ package com.denisnumb.discord_chat_mod.commands;
 
 import com.denisnumb.discord_chat_mod.ServerLogsRetranslator;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
+import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
@@ -48,7 +49,7 @@ public final class ReloadConfigCommand {
                         if (discordConnected){
                             initJDA();
 
-                            if (ConfigProvider.getConfig().isServerLogsToDiscordEnabled())
+                            if (LogsConfig.SERVER_LOGS_TO_DISCORD_ENABLED.get())
                                 ServerLogsRetranslator.start();
                         }
                     });

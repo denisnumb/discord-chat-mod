@@ -1,11 +1,10 @@
 package com.denisnumb.discord_chat_mod.neoforge;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.locale.LocaleStorage;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.ConfigProviderImpl;
 import com.denisnumb.discord_chat_mod.neoforge.network.NeoForgePacketDistributor;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
 import net.neoforged.api.distmarker.Dist;
@@ -34,7 +33,6 @@ public final class DiscordChatModNeoForge {
         modEventBus.addListener(localeLoader::loadLocalizationFromSetup);
         NeoForge.EVENT_BUS.register(this);
         ConfigManager.load(FMLEnvironment.getDist() == Dist.CLIENT);
-        ConfigProvider.setConfigProvider(new ConfigProviderImpl());
         PlatformPacketDistributor.setHandler(new NeoForgePacketDistributor());
     }
 
@@ -45,7 +43,7 @@ public final class DiscordChatModNeoForge {
 
         public void loadLocalization() {
             ModList modList = ModList.get();
-            String configLocale = ConfigProvider.getConfig().modLocale();
+            String configLocale = CommonConfig.MOD_LOCALE.get();
 
             for (IModInfo modInfo : modList.getMods()){
                 String namespace = modInfo.getNamespace();

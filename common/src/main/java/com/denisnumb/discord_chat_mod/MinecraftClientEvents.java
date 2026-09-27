@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 
@@ -37,7 +37,7 @@ public final class MinecraftClientEvents {
     }
 
     public static Component handleChatMessage(Component message){
-        if (ConfigProvider.getConfig().isEmojifulCompatibilityEnabled()){
+        if (ClientConfig.EMOJIFUL_COMPATIBILITY.get()){
             if (!EmojiParser.extractEmojis(message.getString()).isEmpty()){
                 MutableComponent withReplacedEmojis = Component.empty();
                 for (Component comp : message.toFlatList())

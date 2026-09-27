@@ -1,40 +1,41 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
+import com.denisnumb.discord_chat_mod.config.core.ConfigParameter;
+import com.denisnumb.discord_chat_mod.config.core.ConfigSection;
 import com.electronwill.nightconfig.core.CommentedConfig;
 
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.PROXY_HOSTNAME_COMMENT;
-import static com.denisnumb.discord_chat_mod.config.ConfigComments.PROXY_USER_COMMENT;
+import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
-import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.PROXY_PASSWORD_DEFAULT;
 
-public final class DiscordProxyConfig {
+public final class DiscordProxyConfig extends ConfigSection {
     private DiscordProxyConfig() {}
 
-    public static String proxyHostname;
-    public static int proxyPort;
-    public static String proxyUser;
-    public static String proxyPassword;
+    public static final ConfigParameter<String, String> PROXY_HOSTNAME =
+            ConfigParameter.ofString("proxyHostname")
+                    .defaultValue(PROXY_HOSTNAME_DEFAULT)
+                    .comment(PROXY_HOSTNAME_COMMENT)
+                    .build();
 
-    public static CommentedConfig loadDiscordProxyConfig(CommentedConfig commonConfig){
-        CommentedConfig existedDiscordProxyConfig = commonConfig.getOrElse("discordProxyConfig", commonConfig.createSubConfig());
-        CommentedConfig discordProxyConfig = commonConfig.createSubConfig();
+    public static final ConfigParameter<Integer, Integer> PROXY_PORT =
+            ConfigParameter.ofInt("proxyPort")
+                    .defaultValue(PROXY_PORT_DEFAULT)
+                    .rangeWithComment(0, 65535)
+                    .build();
 
-        proxyHostname = existedDiscordProxyConfig.getOrElse("proxyHostname", PROXY_HOSTNAME_DEFAULT);
-        discordProxyConfig.set("proxyHostname", proxyHostname);
-        discordProxyConfig.setComment("proxyHostname", PROXY_HOSTNAME_COMMENT);
+    public static final ConfigParameter<String, String> PROXY_USER =
+            ConfigParameter.ofString("proxyUser")
+                    .defaultValue(PROXY_USER_DEFAULT)
+                    .comment(PROXY_USER_COMMENT)
+                    .build();
 
-        proxyPort = existedDiscordProxyConfig.getOrElse("proxyPort", PROXY_PORT_DEFAULT);
-        if (proxyPort < 0 || proxyPort > 65535)
-            proxyPort = PROXY_PORT_DEFAULT;
-        discordProxyConfig.set("proxyPort", proxyPort);
-        discordProxyConfig.setComment("proxyPort", String.format(" Default: %d\n Range: 0 ~ 65535", PROXY_PORT_DEFAULT));
+    public static final ConfigParameter<String, String> PROXY_PASSWORD =
+            ConfigParameter.ofString("proxyPassword")
+                    .defaultValue(PROXY_PASSWORD_DEFAULT)
+                    .build();
 
-        proxyUser = existedDiscordProxyConfig.getOrElse("proxyUser", PROXY_USER_DEFAULT);
-        discordProxyConfig.set("proxyUser", proxyUser);
-        discordProxyConfig.setComment("proxyUser", PROXY_USER_COMMENT);
-
-        proxyPassword = existedDiscordProxyConfig.getOrElse("proxyPassword", PROXY_PASSWORD_DEFAULT);
-        discordProxyConfig.set("proxyPassword", proxyPassword);
+    public static CommentedConfig load(CommentedConfig commonConfig) {
+        CommentedConfig discordProxyConfig = commonConfig.getOrElse("discordProxyConfig", commonConfig.createSubConfig());
+        ConfigSection.loadAll(DiscordProxyConfig.class, discordProxyConfig, discordProxyConfig);
 
         return discordProxyConfig;
     }

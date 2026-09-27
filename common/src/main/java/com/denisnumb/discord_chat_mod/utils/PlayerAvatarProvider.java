@@ -1,8 +1,7 @@
 package com.denisnumb.discord_chat_mod.utils;
 
 import com.denisnumb.discord_chat_mod.commands.set_avatar.AvatarUrlStorage;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.properties.Property;
@@ -25,16 +24,14 @@ public final class PlayerAvatarProvider {
     private PlayerAvatarProvider() {}
 
     public static String getPlayerAvatarUrl(Player player){
-        IConfigProvider config = ConfigProvider.getConfig();
-
-        if (config.isSetAvatarUrlCommandEnabled()){
+        if (WebhookModeConfig.ENABLE_SET_AVATAR_URL_COMMAND.get()){
             String customAvatarUrl = AvatarUrlStorage.getUrl(player);
             if (customAvatarUrl != null)
                 return customAvatarUrl;
         }
 
-        String avatarUrlTemplate = config.webhookPlayerAvatarUrl();
-        String defaultAvatarUrl = config.webhookPlayerDefaultAvatarUrl();
+        String avatarUrlTemplate = WebhookModeConfig.WEBHOOK_PLAYER_AVATAR_URL.get();
+        String defaultAvatarUrl = WebhookModeConfig.WEBHOOK_PLAYER_DEFAULT_AVATAR_URL.get();
         String playerName = player.getName().getString();
 
         avatarUrlTemplate = avatarUrlTemplate.replace("<name>", playerName);

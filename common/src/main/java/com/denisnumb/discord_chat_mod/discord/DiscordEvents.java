@@ -3,13 +3,15 @@ package com.denisnumb.discord_chat_mod.discord;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender;
 import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
+import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
+import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
+import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
@@ -50,7 +52,7 @@ public final class DiscordEvents extends ListenerAdapter {
         if (!isTrackedChannel(event.getMessage().getChannelId()))
             return;
 
-        if (ConfigProvider.getConfig().isDiscordMessagesLoggingEnabled()){
+        if (LogsConfig.LOG_DISCORD_MESSAGES.get()){
             System.out.printf("[Discord] <%s> %s%n",
                     event.getAuthor().getEffectiveName(),
                     event.getMessage().getContentDisplay());
@@ -78,8 +80,7 @@ public final class DiscordEvents extends ListenerAdapter {
         );
 
         if (webhookOpt.isPresent()){
-            String userName = ConfigProvider.getConfig()
-                    .discordGuildForwardedMessageWebhookUsernameStyle()
+            String userName = DiscordChatStyleConfig.GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_TEMPLATE.get()
                     .replace(USER.getPlaceholder(), event.getAuthor().getEffectiveName())
                     .replace(MEMBER.getPlaceholder(), event.getMember().getEffectiveName())
                     .replace(GUILD.getPlaceholder(), event.getGuild().getName());
@@ -278,8 +279,7 @@ public final class DiscordEvents extends ListenerAdapter {
     }
 
     private static Component wrap(Component messageComponent, MessageContext ctx) {
-        return ConfigProvider.getConfig()
-                .minecraftDiscordMessagesStyle()
+        return MinecraftChatStyleConfig.DISCORD_MESSAGE_TEMPLATE.get()
                 .applyParameters(new MessageTypes.DiscordMessage.Params(ctx.guild, ctx.userName, messageComponent));
     }
 

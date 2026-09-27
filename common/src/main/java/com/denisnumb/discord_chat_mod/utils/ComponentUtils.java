@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.utils;
 
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToken;
 import net.minecraft.network.chat.*;
@@ -35,7 +35,7 @@ public final class ComponentUtils {
     }
 
     public static MutableComponent buildUrlComponent(Component component, String url, boolean addHoverEvent) {
-        return applyGradientToComponent(component, ConfigProvider.getConfig().minecraftChatLinkColors()).withStyle(style -> {
+        return applyGradientToComponent(component, MinecraftChatStyleConfig.CHAT_LINK_COLORS.get()).withStyle(style -> {
             if (addHoverEvent){
                 style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal(url)));
             }

@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.chat_images.ImageScreen;
 import com.denisnumb.discord_chat_mod.chat_images.ImageSendScreen;
@@ -8,8 +9,6 @@ import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.chat_images.clipboard.ClipboardImageUtils;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.chat_images.widgets.AttachImageWidget;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
-import com.denisnumb.discord_chat_mod.config.IConfigProvider;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.components.EditBox;
@@ -57,8 +56,7 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
-        IConfigProvider config = ConfigProvider.getConfig();
-        if (!config.isAttachImageButtonEnabled() || config.isEmojifulCompatibilityEnabled()){
+        if (!ClientConfig.ENABLE_ATTACH_IMAGE_BUTTON.get() || ClientConfig.EMOJIFUL_COMPATIBILITY.get()){
             return;
         }
 
@@ -79,7 +77,7 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
     private void onKeyPressed(KeyEvent keyEvent, CallbackInfoReturnable<Boolean> cir) {
-        if (!keyEvent.isPaste() || !ConfigProvider.getConfig().isClipboardImagePasteEnabled())
+        if (!keyEvent.isPaste() || !ClientConfig.ENABLE_CLIPBOARD_IMAGE_PASTE.get())
             return;
 
         try {

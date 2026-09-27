@@ -1,9 +1,9 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.MinecraftClientEvents;
 import com.denisnumb.discord_chat_mod.chat_images.model.*;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
 import com.denisnumb.discord_chat_mod.discord.utils.EmbedToComponentConverter;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -252,12 +252,12 @@ public abstract class ChatComponentMixin {
 
     @ModifyConstant(method = "addMessageToQueue", constant = @Constant(intValue = 100), require = 0)
     private int modifyAddMessageToQueueMessageLimit(int original) {
-        return ConfigProvider.getConfig().maxChatHistory();
+        return ClientConfig.MAX_CHAT_HISTORY.get();
     }
 
     @ModifyConstant(method = "addMessageToDisplayQueue", constant = @Constant(intValue = 100), require = 0)
     private int modifyAddMessageToDisplayQueueMessageLimit(int original) {
-        return ConfigProvider.getConfig().maxChatHistory();
+        return ClientConfig.MAX_CHAT_HISTORY.get();
     }
 
     @Inject(method = "addMessageToQueue",
@@ -268,7 +268,7 @@ public abstract class ChatComponentMixin {
             )
     )
     private void removeOldFromAllMessages(GuiMessage message, CallbackInfo ci) {
-        while(allMessages.size() > ConfigProvider.getConfig().maxChatHistory()) {
+        while(allMessages.size() > ClientConfig.MAX_CHAT_HISTORY.get()) {
             int parentAddedTime = allMessages.getLast().addedTime();
 
             do allMessages.removeLast();
@@ -284,7 +284,7 @@ public abstract class ChatComponentMixin {
             )
     )
     private void removeOldFromTrimmedMessages(GuiMessage message, CallbackInfo ci) {
-        while(trimmedMessages.size() > ConfigProvider.getConfig().maxChatHistory()) {
+        while(trimmedMessages.size() > ClientConfig.MAX_CHAT_HISTORY.get()) {
             int parentAddedTime = trimmedMessages.getLast().addedTime();
 
             do trimmedMessages.removeLast();

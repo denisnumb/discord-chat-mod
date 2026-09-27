@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat_images.utils;
 
 import com.denisnumb.discord_chat_mod.chat_images.model.ImageSize;
-import com.denisnumb.discord_chat_mod.config.ConfigProvider;
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.mojang.blaze3d.platform.NativeImage;
 
 import javax.imageio.ImageIO;
@@ -81,7 +81,7 @@ public final class ImageUtils {
             HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
             connection.setRequestMethod("HEAD");
-            int loadTimeout = ConfigProvider.getConfig().imageLoadTimeoutMs();
+            int loadTimeout = ClientConfig.IMAGE_LOAD_TIMEOUT_MS.get();
             connection.setConnectTimeout(loadTimeout);
             connection.setReadTimeout(loadTimeout);
             connection.connect();
@@ -94,7 +94,7 @@ public final class ImageUtils {
 
     public static InputStream getImageInputStreamFromUrl(String url) throws IOException, URISyntaxException {
         HttpURLConnection conn = (HttpURLConnection) new URI(url).toURL().openConnection();
-        int loadTimeout = ConfigProvider.getConfig().imageLoadTimeoutMs();
+        int loadTimeout = ClientConfig.IMAGE_LOAD_TIMEOUT_MS.get();
         conn.setConnectTimeout(loadTimeout);
         conn.setReadTimeout(loadTimeout);
         conn.setRequestProperty("User-Agent",
