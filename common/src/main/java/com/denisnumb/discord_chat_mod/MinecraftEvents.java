@@ -1,16 +1,16 @@
 package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
+import com.denisnumb.discord_chat_mod.chat.MinecraftMessageFormatter;
 import com.denisnumb.discord_chat_mod.commands.*;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.SetAvatarCommand;
 import com.denisnumb.discord_chat_mod.commands.vanilla.*;
 import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
 import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
 import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
-import com.denisnumb.discord_chat_mod.markdown.ComponentToMarkdownConverter;
 import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.advancements.AdvancementHolder;
@@ -26,22 +26,15 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 import org.jetbrains.annotations.NotNull;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.formatDeathMessageComponents;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.AdvancementIconParser.parseAdvancementIcon;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
-import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageFormatter.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
 public final class MinecraftEvents {
     private MinecraftEvents() {}
@@ -62,7 +55,7 @@ public final class MinecraftEvents {
 
     public static Optional<Component> handleChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components) {
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
-            return Optional.ofNullable(getStyledChatMessage(chatType, components));
+            return Optional.ofNullable(MinecraftMessageFormatter.getStyledChatMessage(chatType, components));
         return Optional.empty();
     }
 
@@ -73,18 +66,11 @@ public final class MinecraftEvents {
         DeathMessageUtils.DeathMessageComponents components = DeathMessageUtils.getDeathMessageComponents(combatEntries, entity);
 
         if (entity instanceof Player){
-            handleDiscord(() -> {
-                Map<TemplatePlaceholder, String> parameters = mergeMaps(
-                        Map.of(DEATH_MESSAGE, formatDeathMessageComponents(components)),
-                        buildPlayerParameters(components.diedEntity().getString(), entity)
-                );
-                getDiscordMessageComponents(MessageType.DEATH, parameters)
-                        .ifPresent(discordMessageComponents -> sendMessageFromServer(ChannelCategory.DEATHS, getAllContexts(), discordMessageComponents));
-            });
+            handleDiscord(() -> sendMessageFromServer(ChannelCategory.DEATHS, getAllContexts(), DiscordMessageFormatter.formatDeathMessage(components, entity)));
         }
 
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
-            return Optional.of(getStyledDeathMessage(components, entity));
+            return Optional.of(MinecraftMessageFormatter.getStyledDeathMessage(components, entity));
         return Optional.empty();
     }
 
@@ -97,30 +83,12 @@ public final class MinecraftEvents {
             return Optional.empty();
 
         handleDiscord(() -> {
-            String formattedTitle = ComponentToMarkdownConverter.componentToDiscordMarkdown(displayInfo.getTitle());
-            String formattedDescription = ComponentToMarkdownConverter.componentToDiscordMarkdown(displayInfo.getDescription());
-
-            MessageType messageType = switch (displayInfo.getType()) {
-                case TASK -> MessageType.ADVANCEMENT_TASK;
-                case CHALLENGE -> MessageType.ADVANCEMENT_CHALLENGE;
-                case GOAL -> MessageType.ADVANCEMENT_GOAL;
-            };
-
-            Map<TemplatePlaceholder, String> parameters = mergeMaps(
-                    Map.of(ADVANCEMENT, formattedTitle, DESCRIPTION, formattedDescription, ICON_URL, "attachment://icon.png"),
-                    buildPlayerParameters(player)
-            );
-
-            getDiscordMessageComponents(messageType, parameters).ifPresent(components ->
-                    parseAdvancementIcon(displayInfo).ifPresentOrElse(
-                            iconData -> sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components, iconData),
-                            () -> sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components)
-                    )
-            );
+            DiscordMessageBody components = DiscordMessageFormatter.formatAdvancementMessage(displayInfo, player, "attachment://icon.png");
+            sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components, parseAdvancementIcon(displayInfo).orElse(null));
         });
 
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
-            return Optional.of(getStyledAdvancementMessage(player, displayInfo));
+            return Optional.of(MinecraftMessageFormatter.getStyledAdvancementMessage(player, displayInfo));
         return Optional.empty();
     }
 
@@ -151,14 +119,9 @@ public final class MinecraftEvents {
 
         String displayCommand = "/" + trimmed;
 
-        handleDiscord(() -> {
-            Map<TemplatePlaceholder, String> parameters = mergeMaps(
-                    Map.of(COMMAND, displayCommand),
-                    buildPlayerParameters(player)
-            );
-            getDiscordMessageComponents(MessageType.COMMAND_LOG, parameters)
-                    .ifPresent(components -> sendMessageFromServer(ChannelCategory.COMMAND_LOG, getAllContexts(), components));
-        });
+        handleDiscord(() ->
+                sendMessageFromServer(ChannelCategory.COMMAND_LOG, getAllContexts(), DiscordMessageFormatter.formatPlayerCommandLogMessage(player, displayCommand))
+        );
     }
 
     public static Optional<Component> handleJoinLeave(Player player, boolean isJoin) {
@@ -166,14 +129,16 @@ public final class MinecraftEvents {
             return Optional.empty();
 
         handleDiscord(() -> {
-            MessageType messageType = isJoin ? MessageType.JOIN : MessageType.LEFT;
-            getDiscordMessageComponents(messageType, buildPlayerParameters(player))
-                    .ifPresent(components -> sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), components));
+            DiscordMessageBody components = isJoin
+                    ? DiscordMessageFormatter.formatPlayerJoinedMessage(player)
+                    : DiscordMessageFormatter.formatPlayerLeftMessage(player);
+
+            sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), components);
             updateServerStatusWithDelay();
         });
 
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
-            return Optional.of(getStyledJoinedLeftMessage(player, isJoin));
+            return Optional.of(MinecraftMessageFormatter.getStyledJoinedLeftMessage(player, isJoin));
         return Optional.empty();
     }
 }

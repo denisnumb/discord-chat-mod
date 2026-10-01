@@ -2,8 +2,8 @@ package com.denisnumb.discord_chat_mod.discord.slash_commands;
 
 import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.ServerStatusController;
-import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissions;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
@@ -26,7 +26,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.DISCORD_GREEN_COLOR;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.DISCORD_RED_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.LOGGER;
@@ -96,7 +95,7 @@ public final class SlashCommandListener extends ListenerAdapter {
     }
     private void replyWithDiscordMessageComponents(
             SlashCommandInteractionEvent event,
-            DiscordMessageComponents components
+            DiscordMessageBody components
     ){
         if (components.hasContentAndEmbed())
             event.reply(components.getContent()).addEmbeds(components.getEmbed()).setEphemeral(true).queue();
@@ -107,14 +106,14 @@ public final class SlashCommandListener extends ListenerAdapter {
     }
 
     private void replyServerIsUnavailable(SlashCommandInteractionEvent event){
-        replyWithDiscordMessageComponents(event, getDiscordMessageComponents(MessageType.PINNED_STATUS_UNAVAILABLE, Map.of()).orElseThrow());
+        replyWithDiscordMessageComponents(event, DiscordMessageFormatter.formatPinnedStatusUnavailableMessage());
     }
 
     private void handleList(SlashCommandInteractionEvent event) {
         if (server == null)
             replyServerIsUnavailable(event);
         else
-            replyWithDiscordMessageComponents(event, ServerStatusController.createServerStatusMessageComponents());
+            replyWithDiscordMessageComponents(event, ServerStatusController.createServerStatusMessageBody());
     }
 
     private void handleUptime(SlashCommandInteractionEvent event) {

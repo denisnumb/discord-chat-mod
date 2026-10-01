@@ -1,11 +1,11 @@
 package com.denisnumb.discord_chat_mod.commands;
 
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
-import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
@@ -23,17 +23,11 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.sendMessageToAllPlayersFromPlayer;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 
 public final class MentionCommand {
     private MentionCommand() {}
@@ -70,14 +64,10 @@ public final class MentionCommand {
                                                         .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.discordName)))
                                                 );
 
-                                        sendMessageToAllPlayersFromPlayer(player, mentionComponent);
+                                        MinecraftMessageSender.sendMessageToAllPlayersFromPlayer(player, mentionComponent);
 
-                                        Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, member.mentionString), buildPlayerParameters(player));
-                                        Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
-                                        Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
-
-                                        if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
-                                            DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
+                                        DiscordMessageComponents components = DiscordMessageFormatter.formatPlayerChatMessage(player, member.mentionString);
+                                        DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, components);
                                     }
                                     return 1;
                                 })

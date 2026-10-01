@@ -64,7 +64,7 @@ public final class MessageTemplate<T extends MessageType> {
                 })
                 .toArray();
 
-        Component translatableContent = Component.translatable(translatableParam.unwrapBraces(), translatableArgs);
+        Component translatableContent = Component.translatable(translatableParam.translationKey(), translatableArgs);
         List<MarkdownToken> cleanedTemplate = removeParametersFromTemplate(args);
 
         Map<TemplatePlaceholder, Component> remainingParams = new HashMap<>(parameterToComponent);

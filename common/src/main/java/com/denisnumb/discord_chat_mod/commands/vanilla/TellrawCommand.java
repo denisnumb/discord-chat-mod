@@ -1,7 +1,8 @@
 package com.denisnumb.discord_chat_mod.commands.vanilla;
 
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
 import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -19,13 +20,10 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getPlayerListBySelector;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 
 public final class TellrawCommand {
     private TellrawCommand() {}
@@ -48,11 +46,12 @@ public final class TellrawCommand {
                                                     for (Component comp : message.getSiblings())
                                                         messageTextBuilder.append(parseComponentContents(comp.getContents(), comp.getStyle()));
 
-                                                    getDiscordMessageComponents(
-                                                            MessageType.TELLRAW_COMMAND,
-                                                            Map.of(MESSAGE, EmojiUtils.replaceEmojiCodesToDiscordMentions(messageTextBuilder.toString())))
-                                                            .ifPresent(components
-                                                                    -> sendMessageFromServer(ChannelCategory.TELLRAW_COMMAND, getAllContexts(), components)
+                                                    DiscordMessageSender.sendMessageFromServer(
+                                                            ChannelCategory.TELLRAW_COMMAND,
+                                                            getAllContexts(),
+                                                            DiscordMessageFormatter.formatTellrawCommandMessage(
+                                                                    EmojiUtils.replaceEmojiCodesToDiscordMentions(messageTextBuilder.toString())
+                                                            )
                                                     );
                                                 });
                                             }

@@ -2,9 +2,10 @@ package com.denisnumb.discord_chat_mod.discord;
 
 import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
-import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
-import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.template.StringTemplate;
+import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
@@ -25,9 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.COUNTER;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.PLAYER;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 
@@ -57,7 +56,7 @@ public final class ServerStatusController {
         Map<DiscordGuildContext, Optional<Message>> existingStatusMessages = findPinnedStatusMessages();
         serverStatusMessages = existingStatusMessages.entrySet().stream().map(entry ->
             entry.getValue().orElseGet(() ->
-                    sendPinnedStatusMessage(entry.getKey(), createServerStatusMessageComponents()).orElse(null)
+                    sendPinnedStatusMessage(entry.getKey(), createServerStatusMessageBody()).orElse(null)
             )
         ).toList();
 
@@ -84,23 +83,15 @@ public final class ServerStatusController {
         {
             serverStatusMessages.forEach(statusMessage -> {
                 if (statusMessage != null)
-                    editMessage(statusMessage, getDiscordMessageComponents(MessageType.PINNED_STATUS_UNAVAILABLE, Map.of()).orElseThrow());
+                    editMessage(statusMessage, DiscordMessageFormatter.formatPinnedStatusUnavailableMessage());
             });
         }
     }
 
-    public static DiscordMessageComponents createServerStatusMessageComponents() {
+    public static DiscordMessageBody createServerStatusMessageBody() {
         return getServerPlayerCount(server) == 0
-                ? getDiscordMessageComponents(MessageType.PINNED_STATUS_AVAILABLE, Map.of()).orElseThrow()
-                : getDiscordMessageComponents(
-                MessageType.PINNED_STATUS_PLAYERS,
-                Map.of(
-                        TemplateParameter.Translatable.ONLINE_PLAYERS, getOnlineCountString(),
-                        TemplateParameter.PLAYER_LIST, buildPlayerList(),
-                        TemplateParameter.PLAYER_COUNT, String.valueOf(getServerPlayerCount(server)),
-                        TemplateParameter.MAX_PLAYERS, String.valueOf(getServerMaxPlayers(server))
-                )
-        ).orElseThrow();
+                ? DiscordMessageFormatter.formatPinnedStatusAvailableMessage()
+                : DiscordMessageFormatter.formatPinnedStatusOnlinePlayersMessage(buildPlayerList(), getServerPlayerCount(server), getServerMaxPlayers(server));
     }
 
     private static String buildPlayerList(){
@@ -108,8 +99,8 @@ public final class ServerStatusController {
 
         String[] players = getServerPlayerNames(server);
         String delimiter = DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER.get();
-        String nicknameStyle = DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_TEMPLATE.get();
-        boolean escapeUnderscore = shouldEscape(nicknameStyle);
+        StringTemplate<TemplateTypes.PlayerListNickname> nicknameStyle = DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_TEMPLATE.get();
+        boolean escapeUnderscore = shouldEscape(nicknameStyle.rawTemplate());
 
         String result = IntStream.range(0, Math.min(maxNicknames, players.length))
                 .mapToObj(i -> {
@@ -118,9 +109,7 @@ public final class ServerStatusController {
                         player = player.replace("_", "\\_");
                     }
 
-                    return nicknameStyle
-                            .replace(PLAYER.getPlaceholder(), player)
-                            .replace(COUNTER.getPlaceholder(), String.valueOf(i + 1));
+                    return nicknameStyle.applyParameters(new TemplateTypes.PlayerListNickname.Params(player, i + 1));
                 })
                 .collect(Collectors.joining(delimiter));
 
@@ -150,7 +139,7 @@ public final class ServerStatusController {
         if (isDiscordConnected()){
             serverStatusMessages.forEach(statusMessage -> {
                 if (statusMessage != null)
-                    editMessage(statusMessage, createServerStatusMessageComponents());
+                    editMessage(statusMessage, createServerStatusMessageBody());
             });
         }
 
@@ -168,11 +157,11 @@ public final class ServerStatusController {
         );
     }
 
-    public static Optional<Message> sendPinnedStatusMessage(DiscordGuildContext guildContext, DiscordMessageComponents messageComponents) {
+    public static Optional<Message> sendPinnedStatusMessage(DiscordGuildContext guildContext, DiscordMessageBody body) {
         if (!guildContext.enablePinnedStatusMessage)
             return Optional.empty();
 
-        return sendChannelMessage(guildContext.getChannel(ChannelCategory.PINNED_STATUS), true, messageComponents, null);
+        return sendChannelMessage(guildContext.getChannel(ChannelCategory.PINNED_STATUS), true, body, null);
     }
 
     private static Map<DiscordGuildContext, Optional<Message>> findPinnedStatusMessages() {

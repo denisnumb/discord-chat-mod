@@ -1,6 +1,5 @@
 package com.denisnumb.discord_chat_mod.chat;
 
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -13,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.MOD_ID;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 
 public final class CustomChatTypeRegistry {
     private CustomChatTypeRegistry() {}
@@ -55,17 +53,6 @@ public final class CustomChatTypeRegistry {
 
         TEAM_MSG_COMMAND_OUTGOING = ResourceKey.create(Registries.CHAT_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, TEAM_MSG_COMMAND_OUTGOING_PATH));
         Registry.register(registry, TEAM_MSG_COMMAND_OUTGOING, buildChatType(TEAM_MSG_COMMAND_OUTGOING));
-    }
-
-    public static TemplatePlaceholder[] getParametersByChatType(ResourceKey<@NotNull ChatType> chatType) {
-        return switch (chatType.identifier().getPath()) {
-            case CHAT_PATH, SAY_COMMAND_PATH, EMOTE_COMMAND_PATH -> new TemplatePlaceholder[] { PLAYER, MESSAGE };
-            case MSG_COMMAND_INCOMING_PATH -> new TemplatePlaceholder[] { SENDER, MESSAGE};
-            case MSG_COMMAND_OUTGOING_PATH -> new TemplatePlaceholder[] { RECEIVER, MESSAGE };
-            case TEAM_MSG_COMMAND_INCOMING_PATH, TEAM_MSG_COMMAND_OUTGOING_PATH ->
-                    new TemplatePlaceholder[] { TEAM, PLAYER, MESSAGE };
-            default -> new TemplatePlaceholder[0];
-        };
     }
 
     public static ChatType.Bound buildBound(

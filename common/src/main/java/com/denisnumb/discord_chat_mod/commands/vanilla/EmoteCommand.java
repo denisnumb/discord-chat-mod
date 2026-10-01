@@ -3,11 +3,9 @@ package com.denisnumb.discord_chat_mod.commands.vanilla;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
-import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
@@ -17,17 +15,11 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
 
-import java.util.Map;
-import java.util.Optional;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter.formatMessage;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 
 public final class EmoteCommand {
     private EmoteCommand() {}
@@ -40,14 +32,12 @@ public final class EmoteCommand {
                 CommonMessageFormatter.FormattedMessage chatMessage
                         = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.ME_COMMAND);
 
-                handleDiscord(() -> {
-                    Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(source));
-                    Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.ME_COMMAND, parameters);
-                    Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.ME_COMMAND_WEBHOOK, parameters);
-
-                    if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
-                        DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.ME_COMMAND, getAllContexts(), source.getPlayer(), webhookComponentsOpt.get(), chatComponentsOpt.get());
-                });
+                handleDiscord(() -> DiscordMessageSender.sendMessageFromPlayer(
+                        ChannelCategory.ME_COMMAND,
+                        getAllContexts(),
+                        source.getPlayer(),
+                        DiscordMessageFormatter.formatMeCommandMessage(source, chatMessage.forDiscord())
+                ));
 
                 Component senderComponent = source.getDisplayName();
                 Component messageContent = chatMessage.forMinecraft();

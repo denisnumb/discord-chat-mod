@@ -1,13 +1,12 @@
 package com.denisnumb.discord_chat_mod.network.image;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
-import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
 import com.denisnumb.discord_chat_mod.utils.MinecraftUtils;
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
@@ -32,13 +31,9 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 
 public final class ImageTransceiver {
     private ImageTransceiver() {}
@@ -195,25 +190,18 @@ public final class ImageTransceiver {
     }
 
     private static void sendImageToDiscord(ImagePartPacketPayload payload, ServerPlayer fromPlayer) {
-        Map<TemplatePlaceholder, String> parameters = mergeMaps(
-                Map.of(IMAGE_URL, String.format("attachment://%s", payload.fileName())),
-                buildPlayerParameters(fromPlayer)
-        );
+        String imageUrl = String.format("attachment://%s", payload.fileName());
+        DiscordMessageComponents components = DiscordMessageFormatter.formatImageMessage(fromPlayer, imageUrl);
 
-        Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.IMAGE, parameters);
-        Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.IMAGE_WEBHOOK, parameters);
+        FileUpload imageFile = payload.isSpoiler()
+                ? FileUpload.fromData(payload.imageData(), ImageUtils.SPOILER_PREFIX + payload.fileName()).asSpoiler()
+                : FileUpload.fromData(payload.imageData(), payload.fileName());
 
-        if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent()) {
-            FileUpload imageFile = payload.isSpoiler()
-                    ? FileUpload.fromData(payload.imageData(), ImageUtils.SPOILER_PREFIX + payload.fileName()).asSpoiler()
-                    : FileUpload.fromData(payload.imageData(), payload.fileName());
-
-            DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, webhookComponentsOpt.get(), chatComponentsOpt.get(), imageFile)
-                    .ifPresentOrElse(
-                            discordUrl -> handleSuccessfulDiscordSend(payload.displayName(), discordUrl, fromPlayer),
-                            () -> sendImageToAllPlayers(payload, fromPlayer)
-                    );
-        }
+        DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, components, imageFile)
+                .ifPresentOrElse(
+                        discordUrl -> handleSuccessfulDiscordSend(payload.displayName(), discordUrl, fromPlayer),
+                        () -> sendImageToAllPlayers(payload, fromPlayer)
+                );
     }
 
     private static void handleSuccessfulDiscordSend(String displayName, String imageUrl, ServerPlayer fromPlayer) {

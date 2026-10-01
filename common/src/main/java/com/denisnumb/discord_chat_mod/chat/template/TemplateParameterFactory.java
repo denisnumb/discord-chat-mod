@@ -4,7 +4,6 @@ import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.denisnumb.discord_chat_mod.utils.PlayerAvatarProvider;
 import com.denisnumb.discord_chat_mod.utils.JavaUtils;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -25,12 +24,6 @@ import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 
 public final class TemplateParameterFactory {
     private TemplateParameterFactory() {}
-
-    public static Map<TemplatePlaceholder, String> buildPlayerParameters(CommandSourceStack source){
-        return source.getPlayer() == null
-                ? buildPlayerParameters(source.getDisplayName().getString(), null)
-                : buildPlayerParameters(source.getDisplayName().getString(), source.getEntity());
-    }
 
     public static Map<TemplatePlaceholder, String> buildPlayerParameters(Entity entity){
         return buildPlayerParameters(entity.getDisplayName().getString(), entity);
@@ -62,7 +55,7 @@ public final class TemplateParameterFactory {
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Component.literal(e.getValue())));
     }
 
-    public static Map<TemplatePlaceholder, String> buildPositionParameters(@Nullable Entity entity){
+    private static Map<TemplatePlaceholder, String> buildPositionParameters(@Nullable Entity entity){
         HashMap<TemplatePlaceholder, String> result = new HashMap<>();
 
         if (entity == null){

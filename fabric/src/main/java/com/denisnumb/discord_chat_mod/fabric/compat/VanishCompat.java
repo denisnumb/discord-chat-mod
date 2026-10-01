@@ -1,9 +1,10 @@
 package com.denisnumb.discord_chat_mod.fabric.compat;
 
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
 import com.denisnumb.discord_chat_mod.compat.IVanishCompat;
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import me.drex.vanish.api.VanishAPI;
 import me.drex.vanish.api.VanishEvents;
@@ -13,14 +14,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Arrays;
-import java.util.Map;
 
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromServer;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 
 public class VanishCompat implements IVanishCompat {
 
@@ -58,10 +55,15 @@ public class VanishCompat implements IVanishCompat {
     private static void registerVanishEventListener() {
         VanishEvents.VANISH_EVENT.register((player, vanish) -> {
             handleDiscord(() -> {
-                MessageType messageType = vanish ? MessageType.LEFT : MessageType.JOIN;
-                Map<TemplatePlaceholder, String> parameters = buildPlayerParameters(player);
-                getDiscordMessageComponents(messageType, parameters)
-                        .ifPresent(components -> sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), components));
+                DiscordMessageBody body = vanish
+                        ? DiscordMessageFormatter.formatPlayerLeftMessage(player)
+                        : DiscordMessageFormatter.formatPlayerJoinedMessage(player);
+
+                DiscordMessageSender.sendMessageFromServer(
+                        ChannelCategory.PLAYER_JOIN_LEAVE,
+                        getAllContexts(),
+                        body
+                );
                 updateServerStatusWithDelay();
             });
         });

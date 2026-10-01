@@ -4,8 +4,8 @@ import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
@@ -14,16 +14,11 @@ import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
-import java.util.Map;
 
 import static com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter.formatMessage;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 
 public final class SayCommand {
     private SayCommand() {}
@@ -39,11 +34,11 @@ public final class SayCommand {
                                         CommonMessageFormatter.FormattedMessage chatMessage
                                                 = formatMessage(resolvedMessage.decoratedContent().getString(), ChannelCategory.SAY_COMMAND);
 
-                                        handleDiscord(() -> {
-                                            Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(source));
-                                            getDiscordMessageComponents(MessageType.SAY_COMMAND, parameters)
-                                                    .ifPresent(components -> sendMessageFromServer(ChannelCategory.SAY_COMMAND, getAllContexts(), components));
-                                        });
+                                        handleDiscord(() -> DiscordMessageSender.sendMessageFromServer(
+                                                ChannelCategory.SAY_COMMAND,
+                                                getAllContexts(),
+                                                DiscordMessageFormatter.formatSayCommandMessage(source, chatMessage.forDiscord())
+                                        ));
 
                                         Component senderComponent = source.getDisplayName();
                                         Component messageContent = chatMessage.forMinecraft();

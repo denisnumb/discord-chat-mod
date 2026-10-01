@@ -8,13 +8,12 @@ import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordProxyConfig;
 import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
 import com.denisnumb.discord_chat_mod.discord.*;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
-import com.denisnumb.discord_chat_mod.chat.template.TemplateParameter;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
-import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import com.mojang.logging.LogUtils;
 import com.neovisionaries.ws.client.ProxySettings;
 import com.neovisionaries.ws.client.WebSocketFactory;
@@ -35,10 +34,8 @@ import org.slf4j.Logger;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.initServerStatusController;
@@ -62,8 +59,11 @@ public final class DiscordChatMod {
         if (!serverStartPending.compareAndSet(true, false))
             return;
 
-        getDiscordMessageComponents(MessageType.SERVER_START, Map.of())
-                .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
+        DiscordMessageSender.sendMessageFromServer(
+                ChannelCategory.SERVER_START_STOP,
+                DiscordChannelRegistry.getAllContexts(),
+                DiscordMessageFormatter.formatServerStartMessage()
+        );
     }
 
     public static void onServerStarting(MinecraftServer minecraftServer) {
@@ -90,20 +90,22 @@ public final class DiscordChatMod {
 
     public static void onServerStopped() {
         serverStartPending.set(false);
-        getDiscordMessageComponents(MessageType.SERVER_STOP, Map.of())
-                .ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
+        DiscordMessageSender.sendMessageFromServer(
+                ChannelCategory.SERVER_START_STOP,
+                DiscordChannelRegistry.getAllContexts(),
+                DiscordMessageFormatter.formatServerStopMessage()
+        );
         stopJDA();
     }
 
     public static void onIntegratedServerStarted(){
         Thread t = new Thread(() -> {
             initJDA();
-            getDiscordMessageComponents(MessageType.LOCAL_SERVER_START,
-                    Map.of(
-                            TemplateParameter.Translatable.LOCAL_SERVER_STARTED, DiscordLocaleProvider.Server.localStarted(server.getPort()),
-                            TemplateParameter.SERVER_PORT, String.valueOf(server.getPort())
-                    )
-            ).ifPresent(components -> sendMessageFromServer(ChannelCategory.SERVER_START_STOP, DiscordChannelRegistry.getAllContexts(), components));
+            DiscordMessageSender.sendMessageFromServer(
+                    ChannelCategory.SERVER_START_STOP,
+                    DiscordChannelRegistry.getAllContexts(),
+                    DiscordMessageFormatter.formatLocalServerStartMessage(server.getPort())
+            );
 
             StickersProvider.loadClient(StickersProvider.getNameToUrlMap());
             CustomEmojiProvider.loadClient(CustomEmojiProvider.getNameToUrlMap());
@@ -128,7 +130,7 @@ public final class DiscordChatMod {
             String password = DiscordProxyConfig.PROXY_PASSWORD.get();
 
             WebSocketFactory webSocketFactory = new WebSocketFactory();
-            if (hostname.isEmpty()) {
+            if (!hostname.isEmpty()) {
                 ProxySettings settings = webSocketFactory.getProxySettings();
                 settings.setHost(hostname).setPort(port);
                 if (!user.isEmpty()) {
@@ -137,7 +139,7 @@ public final class DiscordChatMod {
             }
 
             OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
-            if (hostname.isEmpty()) {
+            if (!hostname.isEmpty()) {
                 Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(hostname, port));
                 httpClientBuilder.proxy(proxy);
                 if (!user.isEmpty()) {

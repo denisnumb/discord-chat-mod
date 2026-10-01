@@ -2,12 +2,12 @@ package com.denisnumb.discord_chat_mod.config;
 
 import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
+import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.Translatable.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
 public final class ConfigComments {
@@ -544,43 +544,40 @@ public final class ConfigComments {
 
              Chat message from player\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
             PLAYER_AVATAR_URL, PLAYER,
             X, Y, Z, DIMENSION, PLAYER,
             TIMESTAMP, TIMESTAMP,
             DATETIME,
-            PLAYER, MESSAGE
+            joinParameters(TemplateTypes.PlayerMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PLAYER_MESSAGE_WEBHOOK_STYLE_COMMENT = String.format(
             """
              Chat message from player (if webhook mode is enabled) \
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            MESSAGE
+            joinParameters(TemplateTypes.PlayerMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PLAYER_JOINED_STYLE_COMMENT = String.format(
             """
              Player joined the game\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            PLAYER_JOINED
+            joinParameters(TemplateTypes.PlayerJoined.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PLAYER_LEFT_STYLE_COMMENT = String.format(
             """
              Player left the game\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            PLAYER_LEFT
+            joinParameters(TemplateTypes.PlayerLeft.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PLAYER_DEATH_CAUSE_STYLE_COMMENT = String.format(
@@ -596,79 +593,63 @@ public final class ConfigComments {
             """
              Player death message (configure parameters above)\
 
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            DEATH_MESSAGE
+            joinParameters(TemplateTypes.DeathMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PLAYER_ADVANCEMENT_TASK_STYLE_COMMENT = String.format(
             """
              Player has made the advancement\
             
-             Parameters: %s, %s, %s, %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            ADVANCEMENT_TASK,
-            ADVANCEMENT,
-            DESCRIPTION,
-            ICON_URL
+            joinParameters(TemplateTypes.AdvancementTask.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PLAYER_ADVANCEMENT_GOAL_STYLE_COMMENT = String.format(
             """
              Player has reached the goal\
             
-             Parameters: %s, %s, %s, %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            ADVANCEMENT_GOAL,
-            ADVANCEMENT,
-            DESCRIPTION,
-            ICON_URL
+            joinParameters(TemplateTypes.AdvancementGoal.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PLAYER_ADVANCEMENT_CHALLENGE_STYLE_COMMENT = String.format(
             """
              Player has completed the challenge\
             
-             Parameters: %s, %s, %s, %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            ADVANCEMENT_CHALLENGE,
-            ADVANCEMENT,
-            DESCRIPTION,
-            ICON_URL
+            joinParameters(TemplateTypes.AdvancementChallenge.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_SAY_COMMAND_STYLE_COMMENT = String.format(
             """
              Chat message from player sent using /say command\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            MESSAGE
+            joinParameters(TemplateTypes.PlayerMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_ME_COMMAND_STYLE_COMMENT = String.format(
             """
              Chat message from player sent using /me command\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            MESSAGE
+            joinParameters(TemplateTypes.PlayerMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_ME_COMMAND_WEBHOOK_STYLE_COMMENT = String.format(
             """
              Chat message from player sent using /me command (if webhook mode is enabled)\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            MESSAGE
+            joinParameters(TemplateTypes.PlayerMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_TELLRAW_COMMAND_STYLE_COMMENT = String.format(
@@ -677,37 +658,34 @@ public final class ConfigComments {
 
              Parameters: %s\
             """,
-            MESSAGE
+            joinParameters(TemplateTypes.TellrawMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_COMMAND_LOG_STYLE_COMMENT = String.format(
             """
              Command executed by a player above the configured permission level\
 
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            COMMAND
+            joinParameters(TemplateTypes.CommandLog.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_IMAGE_MESSAGE_STYLE_COMMENT = String.format(
             """
              Image from player\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            IMAGE_URL
+            joinParameters(TemplateTypes.ImageMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_IMAGE_MESSAGE_WEBHOOK_STYLE_COMMENT = String.format(
             """
              Image from player (if webhook mode is enabled)\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            PLAYER,
-            IMAGE_URL
+            joinParameters(TemplateTypes.ImageMessage.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT = String.format(
@@ -716,17 +694,16 @@ public final class ConfigComments {
             
              Parameters: %s\
             """,
-            SERVER_STARTED
+            joinParameters(TemplateTypes.ServerStarted.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_LOCAL_SERVER_STARTED_MESSAGE_STYLE_COMMENT = String.format(
             """
              Local server started message\
             
-             Parameters: %s, %s\
+             Parameters: %s\
             """,
-            LOCAL_SERVER_STARTED,
-            SERVER_PORT
+            joinParameters(TemplateTypes.LocalServerStated.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_SERVER_CLOSED_MESSAGE_STYLE_COMMENT = String.format(
@@ -735,7 +712,7 @@ public final class ConfigComments {
             
              Parameters: %s\
             """,
-            SERVER_CLOSED
+            joinParameters(TemplateTypes.ServerClosed.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_UNAVAILABLE_STYLE_COMMENT = String.format(
@@ -744,7 +721,7 @@ public final class ConfigComments {
             
              Parameters: %s\
             """,
-            SERVER_UNAVAILABLE
+            joinParameters(TemplateTypes.PinnedStatusUnavailable.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PINNED_STATUS_MESSAGE_SERVER_AVAILABLE_STYLE_COMMENT = String.format(
@@ -753,7 +730,7 @@ public final class ConfigComments {
             
              Parameters: %s\
             """,
-            SERVER_AVAILABLE
+            joinParameters(TemplateTypes.PinnedStatusAvailable.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER_COMMENT = String.format(
@@ -765,48 +742,37 @@ public final class ConfigComments {
             """
              Style of a single nickname in the %s parameter of a pinned status message\
             
-             Parameters: %s, %s — can be used to number players in order\
+             Parameters: %s (counter can be used to number players in order)\
             """,
             PLAYER_LIST,
-            PLAYER,
-            COUNTER
+            joinParameters(TemplateTypes.PlayerListNickname.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_PINNED_STATUS_MESSAGE_STYLE_COMMENT = String.format(
             """
              Pinned server status message when there are players on the server\
             
-             Parameters: %s, %s, %s, %s\
+             Parameters: %s\
             """,
-            ONLINE_PLAYERS,
-            PLAYER_LIST,
-            PLAYER_COUNT,
-            MAX_PLAYERS
+            joinParameters(TemplateTypes.PinnedStatusOnlinePlayers.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_STYLE_COMMENT = String.format(
             """
              The webhook username displayed in Discord when forwarding a message from another guild\
             
-             Parameters: %s, %s, %s\
+             Parameters: %s\
             """,
-            MEMBER,
-            USER,
-            GUILD
+            joinParameters(TemplateTypes.GuildForwardedMessageWebhookUsername.BASE_PARAMETERS)
     );
 
     public static final String DISCORD_GUILD_FORWARDED_MESSAGE_STYLE_COMMENT = String.format(
             """
               Style of a message forwarded from another guild\
              
-              Parameters: %s, %s, %s, %s, %s, %s\
+              Parameters: %s\
              """,
-            FORWARDED_MESSAGE,
-            MEMBER,
-            USER,
-            AVATAR_URL,
-            GUILD,
-            MESSAGE
+            joinParameters(TemplateTypes.GuildForwardedMessage.BASE_PARAMETERS)
     );
 
     // =================================================================================================================

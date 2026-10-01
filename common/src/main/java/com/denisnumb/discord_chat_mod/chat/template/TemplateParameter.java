@@ -137,7 +137,7 @@ public enum TemplateParameter implements TemplatePlaceholder {
             return orderedArgs;
         }
 
-        public String unwrapBraces() {
+        public String translationKey() {
             return placeholder.substring(1, placeholder.length() - 1);
         }
     }

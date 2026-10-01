@@ -3,10 +3,8 @@ package com.denisnumb.discord_chat_mod.mixin.chat_style;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
-import com.denisnumb.discord_chat_mod.chat.template.TemplatePlaceholder;
-import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageComponents;
+import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
-import com.denisnumb.discord_chat_mod.discord.model.MessageType;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.chat.ChatType;
@@ -21,15 +19,8 @@ import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-import java.util.Map;
-import java.util.Optional;
-
 import static com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter.formatMessage;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPlayerParameters;
-import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter.getDiscordMessageComponents;
-import static com.denisnumb.discord_chat_mod.utils.JavaUtils.mergeMaps;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.MESSAGE;
 import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromPlayer;
@@ -67,14 +58,12 @@ public class PlayerListMixin {
 
         CommonMessageFormatter.FormattedMessage chatMessage = formatMessage(originalContent.getString(), ChannelCategory.PLAYER_CHAT);
 
-        handleDiscord(() -> {
-            Map<TemplatePlaceholder, String> parameters = mergeMaps(Map.of(MESSAGE, chatMessage.forDiscord()), buildPlayerParameters(player));
-            Optional<DiscordMessageComponents> chatComponentsOpt = getDiscordMessageComponents(MessageType.CHAT, parameters);
-            Optional<DiscordMessageComponents> webhookComponentsOpt = getDiscordMessageComponents(MessageType.CHAT_WEBHOOK, parameters);
-
-            if (chatComponentsOpt.isPresent() && webhookComponentsOpt.isPresent())
-                sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, webhookComponentsOpt.get(), chatComponentsOpt.get());
-        });
+        handleDiscord(() -> sendMessageFromPlayer(
+                ChannelCategory.PLAYER_CHAT,
+                getAllContexts(),
+                player,
+                DiscordMessageFormatter.formatPlayerChatMessage(player, chatMessage.forDiscord())
+        ));
 
         Component withMarkdown = chatMessage.forMinecraft();
         args.set(0, originalMessage.withUnsignedContent(withMarkdown));
