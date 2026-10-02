@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.sendMessageToAllPlayersFromPlayer;
@@ -53,8 +54,8 @@ public final class SendStickerCommand {
                                         sendMessageToAllPlayersFromPlayer(player, messageWithStickerComponent);
 
                                         handleDiscord(() -> {
+                                            DiscordMessageBody webhookBody = new DiscordMessageBody(Optional.empty(), List.of());
                                             DiscordMessageBody regularBody = DiscordMessageFormatter.formatPlayerChatMessage(player, stickerMessageContent).regular();
-                                            DiscordMessageBody webhookBody = new DiscordMessageBody(Optional.empty(), Optional.empty());
                                             DiscordMessageComponents components = new DiscordMessageComponents(webhookBody, regularBody);
                                             sendMessageFromPlayer(ChannelCategory.PLAYER_CHAT, getAllContexts(), player, components, stickerData);
                                         });

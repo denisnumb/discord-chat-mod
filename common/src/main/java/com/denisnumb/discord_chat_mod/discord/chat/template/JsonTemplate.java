@@ -11,10 +11,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.data.DataObject;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public final class JsonTemplate<T extends TemplateType> {
     private static final Gson GSON = new Gson();
@@ -54,9 +51,9 @@ public final class JsonTemplate<T extends TemplateType> {
                 ? Optional.of(parsedTemplate.get("content").getAsString())
                 : Optional.empty();
 
-        Optional<MessageEmbed> embed = parseEmbedJson(parsedTemplate);
+        List<MessageEmbed> embeds = new ArrayList<>(parseEmbedJson(parsedTemplate).stream().toList());
 
-        return new DiscordMessageBody(content, embed);
+        return new DiscordMessageBody(content, embeds);
     }
 
     private static Optional<MessageEmbed> parseEmbedJson(JsonObject jsonTemplate){

@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateRequest;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -26,12 +27,12 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
     protected T request;
 
     private final Function<String, T> contentStarter;
-    private final Function<MessageEmbed[], T> embedsStarter;
+    private final Function<List<MessageEmbed>, T> embedsStarter;
     private final Function<FileUpload[], T> filesStarter;
 
     protected DiscordRequestSender(
             Function<String, T> contentStarter,
-            Function<MessageEmbed[], T> embedsStarter,
+            Function<List<MessageEmbed>, T> embedsStarter,
             Function<FileUpload[], T> filesStarter
     ) {
         this.contentStarter = contentStarter;
@@ -50,8 +51,8 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
         return this;
     }
 
-    public final DiscordRequestSender<T> withEmbeds(MessageEmbed... embeds) {
-        if (Arrays.stream(embeds).allMatch(Objects::nonNull)) {
+    public final DiscordRequestSender<T> withEmbeds(List<MessageEmbed> embeds) {
+        if (!embeds.isEmpty() && embeds.stream().allMatch(Objects::nonNull)) {
             if (request != null) {
                 request.addEmbeds(embeds);
             } else {
@@ -94,7 +95,7 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
         public WebhookBuilder(Webhook webhook) {
             super(
                     webhook::sendMessage,
-                    embeds -> webhook.sendMessageEmbeds(Arrays.asList(embeds)),
+                    webhook::sendMessageEmbeds,
                     webhook::sendFiles
             );
         }
@@ -142,7 +143,7 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
         public ChannelBuilder(GuildMessageChannel channel) {
             super(
                     channel::sendMessage,
-                    embeds -> channel.sendMessageEmbeds(Arrays.asList(embeds)),
+                    channel::sendMessageEmbeds,
                     channel::sendFiles
             );
             this.channel = channel;

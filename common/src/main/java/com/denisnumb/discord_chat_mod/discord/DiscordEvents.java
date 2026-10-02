@@ -6,8 +6,8 @@ import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
 import com.denisnumb.discord_chat_mod.config.configs.LogsConfig;
 import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
-import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
@@ -67,15 +67,9 @@ public final class DiscordEvents extends ListenerAdapter {
     }
 
     private static void retranslateGuildMessage(DiscordGuildContext guildContext, MessageReceivedEvent event) {
-        String messageContent = event.getMessage().getContentRaw();
-        List<MessageEmbed> embeds = event.getMessage().getEmbeds();
         FileUpload[] attachments = collectAttachments(event.getMessage());
-
+        DiscordMessageComponents components = DiscordMessageFormatter.formatGuildForwardedMessage(event);
         Optional<Webhook> webhookOpt = guildContext.getWebhook(guildContext.defaultChannel);
-        DiscordMessageBody messageComponents = new DiscordMessageBody(
-                Optional.of(messageContent),
-                embeds.isEmpty() ? Optional.empty() : Optional.of(embeds.getFirst())
-        );
 
         if (webhookOpt.isPresent()){
             String userName = DiscordChatStyleConfig.GUILD_FORWARDED_MESSAGE_WEBHOOK_USERNAME_TEMPLATE.get().applyParameters(
@@ -83,10 +77,9 @@ public final class DiscordEvents extends ListenerAdapter {
             );
 
             sendWebhookMessage(guildContext.defaultChannel, webhookOpt.get(), false,
-                    event.getAuthor().getAvatarUrl(), userName, messageComponents, null, attachments);
+                    event.getAuthor().getAvatarUrl(), userName, components.webhook(), null, attachments);
         } else {
-            messageComponents = DiscordMessageFormatter.formatGuildForwardedMessage(event);
-            sendChannelMessage(guildContext.defaultChannel, false, messageComponents, null, attachments);
+            sendChannelMessage(guildContext.defaultChannel, false, components.regular(), null, attachments);
         }
     }
 
@@ -95,7 +88,7 @@ public final class DiscordEvents extends ListenerAdapter {
         for (Message.Attachment attachment : message.getAttachments()) {
             attachments.add(attachment.getProxy().downloadAsFileUpload(attachment.getFileName()));
         }
-        if (attachments.size() < 10 && !message.getStickers().isEmpty()) {
+        if (attachments.size() < Message.MAX_FILE_AMOUNT && !message.getStickers().isEmpty()) {
             StickerItem sticker = message.getStickers().getFirst();
             attachments.add(downloadStickerFile(
                     new StickersProvider.StickerData(sticker.getIconUrl(), sticker.getId(), sticker.getName())

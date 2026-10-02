@@ -97,12 +97,12 @@ public final class SlashCommandListener extends ListenerAdapter {
             SlashCommandInteractionEvent event,
             DiscordMessageBody components
     ){
-        if (components.hasContentAndEmbed())
-            event.reply(components.getContent()).addEmbeds(components.getEmbed()).setEphemeral(true).queue();
+        if (components.hasContentAndEmbeds())
+            event.reply(components.getContent()).addEmbeds(components.embeds()).setEphemeral(true).queue();
         else if (components.hasOnlyContent())
             event.reply(components.getContent()).setEphemeral(true).queue();
         else
-            event.replyEmbeds(components.getEmbed()).setEphemeral(true).queue();
+            event.replyEmbeds(components.embeds()).setEphemeral(true).queue();
     }
 
     private void replyServerIsUnavailable(SlashCommandInteractionEvent event){

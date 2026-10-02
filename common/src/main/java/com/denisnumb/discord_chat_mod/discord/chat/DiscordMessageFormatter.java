@@ -9,6 +9,7 @@ import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.markdown.ComponentToMarkdownConverter;
 import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.commands.CommandSourceStack;
@@ -17,6 +18,9 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.List;
+import java.util.Optional;
 
 
 public final class DiscordMessageFormatter {
@@ -86,10 +90,17 @@ public final class DiscordMessageFormatter {
         );
     }
 
-    public static DiscordMessageBody formatGuildForwardedMessage(MessageReceivedEvent event) {
-        return DiscordChatStyleConfig.GUILD_FORWARDED_MESSAGE_TEMPLATE.get().applyParameters(
-                new TemplateTypes.GuildForwardedMessage.Params(event.getMember(), event.getAuthor(), event.getGuild(), event.getMessage().getContentRaw())
-        );
+    public static DiscordMessageComponents formatGuildForwardedMessage(MessageReceivedEvent event) {
+        String messageContent = event.getMessage().getContentRaw();
+        List<MessageEmbed> messageEmbeds = event.getMessage().getEmbeds();
+
+        DiscordMessageBody webhookBody = new DiscordMessageBody(Optional.of(messageContent), messageEmbeds);
+
+        DiscordMessageBody regularBody = DiscordChatStyleConfig.GUILD_FORWARDED_MESSAGE_TEMPLATE.get().applyParameters(
+                new TemplateTypes.GuildForwardedMessage.Params(event.getMember(), event.getAuthor(), event.getGuild(), messageContent)
+        ).withAdditionalEmbeds(messageEmbeds);
+
+        return new DiscordMessageComponents(webhookBody, regularBody);
     }
 
     public static DiscordMessageComponents formatImageMessage(Player player, String imageUrl) {

@@ -31,8 +31,7 @@ import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
 
 
 public final class DiscordMessageSender {
-    private DiscordMessageSender() {
-    }
+    private DiscordMessageSender() {}
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static ExecutorService EXECUTOR;
@@ -146,7 +145,7 @@ public final class DiscordMessageSender {
                     .withAvatarUrl(avatarUrl)
                     .withUserName(userName)
                     .withContent(body.getContent())
-                    .withEmbeds(body.getEmbed())
+                    .withEmbeds(body.embeds())
                     .withSticker(stickerData)
                     .withFiles(files)
                     .send(complete);
@@ -169,7 +168,7 @@ public final class DiscordMessageSender {
         try {
             return new DiscordRequestSender.ChannelBuilder(channel)
                     .withContent(body.getContent())
-                    .withEmbeds(body.getEmbed())
+                    .withEmbeds(body.embeds())
                     .withSticker(stickerData)
                     .withFiles(files)
                     .send(complete);
@@ -189,12 +188,12 @@ public final class DiscordMessageSender {
 
     public static void editMessage(Message message, DiscordMessageBody body) {
         try {
-            if (body.hasContentAndEmbed())
-                message.editMessage(body.getContent()).setEmbeds(body.getEmbed()).queue();
+            if (body.hasContentAndEmbeds())
+                message.editMessage(body.getContent()).setEmbeds(body.embeds()).queue();
             else if (body.hasOnlyContent())
                 message.editMessage(body.getContent()).queue();
             else
-                message.editMessageEmbeds(body.getEmbed()).queue();
+                message.editMessageEmbeds(body.embeds()).queue();
         } catch (Exception e) {
             LOGGER.error("EditMessageError", e);
         }
