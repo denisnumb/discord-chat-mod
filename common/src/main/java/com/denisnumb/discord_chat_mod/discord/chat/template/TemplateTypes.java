@@ -66,7 +66,7 @@ public final class TemplateTypes {
         public record Params(Entity player, String command) implements ParamsBuilder<CommandLog> {
             public Map<TemplatePlaceholder, String> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
-                        Map.of(MESSAGE, command),
+                        Map.of(COMMAND, command),
                         TemplateParameterFactory.buildPlayerParameters(player)
                 );
             }
