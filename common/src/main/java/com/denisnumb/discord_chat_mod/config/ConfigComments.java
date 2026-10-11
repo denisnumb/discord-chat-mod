@@ -222,8 +222,6 @@ public final class ConfigComments {
             = """
              If true, server and player messages will be sent in webhook mode.\
             
-             [!] Webhook mode works only in regular channels (Threads does not work)\
-            
              [!] The bot must have Manage Webhooks permission\
             """;
 
