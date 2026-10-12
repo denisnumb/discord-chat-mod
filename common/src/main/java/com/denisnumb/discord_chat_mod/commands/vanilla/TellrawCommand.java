@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod.commands.vanilla;
 
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
-import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
+import com.denisnumb.discord_chat_mod.emoji.EmojiUtils;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;

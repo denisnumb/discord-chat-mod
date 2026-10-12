@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord.utils;
 
 import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
-import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
+import com.denisnumb.discord_chat_mod.emoji.EmojiUtils;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;

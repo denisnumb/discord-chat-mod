@@ -4,16 +4,14 @@ import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
 import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
+import com.denisnumb.discord_chat_mod.emoji.EmojiLayoutCache;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -23,7 +21,8 @@ public final class CustomEmojiProvider {
     private CustomEmojiProvider() {}
 
     public record EmojiData(String url, String mentionString) { }
-    public static Map<String, AbstractImage> CLIENT_EMOJI_CACHE = new HashMap<>();
+    public static Map<String, AbstractImage> CLIENT_EMOJI_CACHE = new ConcurrentHashMap<>();
+    private static final AtomicInteger CLIENT_EMOJI_CACHE_GENERATION = new AtomicInteger();
     private static long lastGetEmojiData = 0;
     private static Map<String, EmojiData> cachedEmojiData;
 
@@ -66,7 +65,8 @@ public final class CustomEmojiProvider {
                             .mapToObj(i -> {
                                 RichCustomEmoji emoji = sortedEmojis.get(i);
                                 String name = i == 0 ? baseName : baseName + "~" + i;
-                                return Map.entry(name, new EmojiData(emoji.getImageUrl(), String.format("<:%s:%s>", baseName, emoji.getId())));
+                                String mentionBase = emoji.isAnimated() ? "<a:%s:%s>" : "<:%s:%s>";
+                                return Map.entry(name, new EmojiData(emoji.getImageUrl(), String.format(mentionBase, baseName, emoji.getId())));
                             });
                 })
                 .collect(Collectors.toMap(
@@ -76,19 +76,32 @@ public final class CustomEmojiProvider {
     }
 
     public static void loadClient(Map<String, String> rawEmojis){
-        if (!rawEmojis.isEmpty())
-            CLIENT_EMOJI_CACHE.clear();
+        if (rawEmojis.isEmpty())
+            return;
+
+        final int gen = CLIENT_EMOJI_CACHE_GENERATION.incrementAndGet();
+        boolean removed = CLIENT_EMOJI_CACHE.entrySet().removeIf(e -> {
+            String url = rawEmojis.get(e.getKey());
+            return url == null || !url.equals(e.getValue().url);
+        });
+
+        if (removed)
+            EmojiLayoutCache.invalidate();
 
         ExecutorService executor = Executors.newFixedThreadPool(10);
 
         rawEmojis.forEach((name, url) -> {
-            if (!CLIENT_EMOJI_CACHE.containsKey(name)){
-                executor.submit(() -> {
-                    AbstractImage image = ImageStorage.parseEmojiOrSticker(url);
-                    if (image != null)
-                        CLIENT_EMOJI_CACHE.putIfAbsent(name, image);
-                });
-            }
+            if (CLIENT_EMOJI_CACHE.containsKey(name))
+                return;
+
+            executor.submit(() -> {
+                AbstractImage image = ImageStorage.parseEmojiOrSticker(url);
+                if (image == null || gen != CLIENT_EMOJI_CACHE_GENERATION.get())
+                    return;
+
+                CLIENT_EMOJI_CACHE.put(name, image);
+                EmojiLayoutCache.invalidate();
+            });
         });
         executor.shutdown();
 

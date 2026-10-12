@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.config;
 
 import com.denisnumb.discord_chat_mod.config.configs.*;
+import com.denisnumb.discord_chat_mod.emoji.EmojiLayoutCache;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import org.jetbrains.annotations.Nullable;
@@ -87,5 +88,7 @@ public final class ConfigManager {
         clientConfig.load();
         ClientConfig.load(clientConfig);
         clientConfig.save();
+
+        EmojiLayoutCache.onClientConfigChanged();
     }
 }

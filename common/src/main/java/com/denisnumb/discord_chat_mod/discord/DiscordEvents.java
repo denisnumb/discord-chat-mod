@@ -12,7 +12,7 @@ import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
-import com.denisnumb.discord_chat_mod.utils.EmojiUtils;
+import com.denisnumb.discord_chat_mod.emoji.EmojiUtils;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
