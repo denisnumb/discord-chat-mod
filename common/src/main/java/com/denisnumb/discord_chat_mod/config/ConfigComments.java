@@ -153,46 +153,11 @@ public final class ConfigComments {
 
     public static final String SLASH_COMMAND_PERMISSIONS_DEFAULT_COMMENT
             = """
-             Configuration section for permissions to execute server commands using the /cmd slash command\
+             Permissions for executing server commands via the /cmd slash command.\
+
+             By default, /cmd is denied for everyone. To grant access, add a subsections for a Discord roles (see the example below).\
 
              You can read more about this configuration section and see examples here: https://github.com/denisnumb/discord-chat-mod/wiki/Discord-server-configuration#slash-commands\
-            """;
-
-    public static final String SLASH_COMMAND_PERMISSIONS_MODE_COMMENT
-            = """
-             Determines how permissions are evaluated when user has multiple roles defined in the configuration.\
-    
-             Available modes:\
-    
-               merge    — The permissions of all roles are evaluated in priority order.\
-
-                          If the highest-priority role does not explicitly allow or deny a command, the next role in the hierarchy is checked, and so on.\
-
-                          If no role defines a permission for a command, the command is denied.\
-
-            \
-
-               top-role — The permissions of the highest-priority Discord role are used. Other roles are ignored.\
-            """;
-
-    public static final String SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_COMMENT
-            = """
-             List of /cmd server commands allowed for users who have no configured roles.\
-    
-             Use ["*"] to allow all commands, or specify command names like ["ban", "kick"].\
-    
-             Everything not listed here is denied automatically.\
-            """;
-
-    public static final String SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_COMMENT
-            = """
-             List of /cmd server commands explicitly denied for users who have no configured roles.\
-    
-             Deny takes priority over allow. A command present in both lists will always be denied.\
-    
-             In most cases this can be left empty, since unlisted commands are already denied.\
-    
-             Deny is mainly useful to restrict command list when allow = ["*"].\
             """;
 
     public static final String SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_COMMENT
@@ -200,19 +165,31 @@ public final class ConfigComments {
              Role-specific permission overrides. Replace "ExampleRole" with a role name or role ID.\
     
              You can define multiple sections like this for different roles.\
-    
-             If allow or deny is not specified, the [] (empty) value is used.\
-    
-             To define permissions for all users regardless of their roles, add a section with the guild ID (@everyone role).\
-    
-             This is useful in "merge" mode to set a common baseline that applies when no other role matches a command.\
+
+             If a user has several roles listed here, for each command the highest role (by Discord role order) that allows or denies it decides.\
+
+             To set permissions for all members regardless of their roles, add a section named "@everyone". It has the lowest priority.\
             """;
 
     public static final String SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_COMMENT
-            = " List of /cmd server commands allowed for this role.";
+            = """
+             List of /cmd server commands allowed for this role.\
+    
+             Use ["*"] to allow all commands, or specify command names like ["ban", "kick"].\
+    
+             Everything not listed here is denied automatically.\
+            """;
 
     public static final String SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_DENY_COMMENT
-            = " List of /cmd server commands denied for this role.";
+            = """
+             List of /cmd server commands denied for this role.\
+    
+             Deny takes priority over allow. A command present in both lists will always be denied.\
+    
+             In most cases this can be left empty, since unlisted commands are already denied.\
+    
+             Deny is mainly useful to restrict command list when allow = ["*"].\
+            """;
 
     // =================================================================================================================
     //                                              WEBHOOK MODE COMMENTS

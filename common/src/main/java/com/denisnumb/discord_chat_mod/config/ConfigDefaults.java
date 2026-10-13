@@ -64,9 +64,6 @@ public final class ConfigDefaults {
     //                                        SLASH COMMAND PERMISSIONS DEFAULTS
     // =================================================================================================================
 
-    public static final String SLASH_COMMAND_PERMISSIONS_MODE_DEFAULT = "merge";
-    public static final List<String> SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_DEFAULT = List.of();
-    public static final List<String> SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_DEFAULT = List.of();
     public static final List<String> SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_DEFAULT = List.of();
     public static final List<String> SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_DENY_DEFAULT = List.of();
 

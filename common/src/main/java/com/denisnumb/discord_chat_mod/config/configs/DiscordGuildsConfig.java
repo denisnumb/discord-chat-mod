@@ -16,32 +16,7 @@ public final class DiscordGuildsConfig {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     public static List<DiscordGuildConfig> discordGuildConfigs;
-
-    public record SlashCommandPermissionsConfig(
-            Mode mode,
-            SlashCommandPermissions defaultPermissions,
-            Map<String, SlashCommandPermissions> roleMap
-    ) {
-        public enum Mode {
-            MERGE,
-            TOP_ROLE;
-
-            public static boolean isValid(String value) {
-                return value != null && switch (value.trim().toLowerCase()) {
-                    case "merge", "top-role" -> true;
-                    default -> false;
-                };
-            }
-
-            public static Mode fromString(String value) {
-                if (value == null) return MERGE;
-                return switch (value.trim().toLowerCase()) {
-                    case "top-role" -> TOP_ROLE;
-                    default -> MERGE;
-                };
-            }
-        }
-    }
+    public static final String SLASH_COMMAND_PERMISSIONS_EVERYONE_KEY = "@everyone";
 
     public record DiscordGuildConfig(
             String guildId,
@@ -50,7 +25,7 @@ public final class DiscordGuildsConfig {
             boolean duplicateMessages,
             boolean enablePinnedStatusMessage,
             boolean enableSlashCommands,
-            SlashCommandPermissionsConfig slashCommandPermissionsConfig,
+            Map<String, SlashCommandPermissions> slashCommandPermissions,
             Map<String, String> channelOverrides
     ) { }
 
@@ -70,53 +45,12 @@ public final class DiscordGuildsConfig {
             boolean enablePinnedStatusMessage = guildConfig.get("enablePinnedStatusMessage");
             boolean enableSlashCommands = guildConfig.get("enableSlashCommands");
 
-            CommentedConfig slashCommandPermissions = guildConfig.get("slashCommandPermissions");
-            SlashCommandPermissionsConfig.Mode slashCommandPermissionsMode
-                    = SlashCommandPermissionsConfig.Mode.fromString(slashCommandPermissions.get("mode"));
-            SlashCommandPermissions defaultSlashCommandPermissions = new SlashCommandPermissions(
-                    slashCommandPermissions.get("allow"),
-                    slashCommandPermissions.get("deny")
-            );
-
-            Map<String, SlashCommandPermissions> rolePermissionsMap = new LinkedHashMap<>();
-            for (CommentedConfig.Entry entry : slashCommandPermissions.entrySet()) {
-                if (entry.getValue() instanceof CommentedConfig roleConfig) {
-                    String roleName = entry.getKey();
-                    List<String> allow = roleConfig.getOrElse("allow", SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_DEFAULT);
-                    List<String> deny = roleConfig.getOrElse("deny",  SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_DEFAULT);
-                    rolePermissionsMap.put(roleName, new SlashCommandPermissions(allow, deny));
-                }
-            }
-
-            SlashCommandPermissionsConfig slashCommandPermissionsConfig = new SlashCommandPermissionsConfig(
-                    slashCommandPermissionsMode,
-                    defaultSlashCommandPermissions,
-                    rolePermissionsMap
-            );
+            Map<String, SlashCommandPermissions> slashCommandPermissions
+                    = loadSlashCommandPermissions(guildConfig.get("slashCommandPermissions"), guildId);
 
             CommentedConfig overrides = guildConfig.get("channelOverrides");
             boolean duplicateMessages = overrides.get("duplicateMessages");
-            Map<String, String> channelOverrides = new HashMap<>();
-
-            for (CommentedConfig.Entry entry : overrides.entrySet()) {
-                if (entry.getKey().equals("duplicateMessages"))
-                    continue;
-
-                String key = entry.getKey();
-                String value = entry.getValue();
-
-                boolean valid = false;
-                for (ChannelCategory cat : ChannelCategory.values()) {
-                    if (cat.getConfigName().equalsIgnoreCase(key)) {
-                        valid = true;
-                        channelOverrides.put(cat.getConfigName(), value);
-                        break;
-                    }
-                }
-
-                if (!valid)
-                    LOGGER.error("Unknown channel key \"{}\" in channel overrides for guildId: {}", key, guildId);
-            }
+            Map<String, String> channelOverrides = loadChannelOverrides(overrides, guildId);
 
             discordGuildConfigs.add(
                     new DiscordGuildConfig(
@@ -126,7 +60,7 @@ public final class DiscordGuildsConfig {
                             duplicateMessages,
                             enablePinnedStatusMessage,
                             enableSlashCommands,
-                            slashCommandPermissionsConfig,
+                            slashCommandPermissions,
                             channelOverrides
                     )
             );
@@ -149,15 +83,11 @@ public final class DiscordGuildsConfig {
             addExampleRole = true;
         }
 
-        CommentedConfig slashCommandPermissions = guildConfig.get("slashCommandPermissions");
-        createFieldIfNotExists(slashCommandPermissions, guildId, "mode", SLASH_COMMAND_PERMISSIONS_MODE_DEFAULT, SLASH_COMMAND_PERMISSIONS_MODE_COMMENT);
-        if (!SlashCommandPermissionsConfig.Mode.isValid(slashCommandPermissions.get("mode"))){
-            LOGGER.warn("[guildId: {}] Invalid value for field \"slashCommandPermissions.mode\". Resetting to default ({})", guildId, SLASH_COMMAND_PERMISSIONS_MODE_DEFAULT);
-            slashCommandPermissions.set("mode", SLASH_COMMAND_PERMISSIONS_MODE_DEFAULT);
-        }
-        createFieldIfNotExists(slashCommandPermissions, guildId, "allow", SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_DEFAULT, SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_COMMENT);
-        createFieldIfNotExists(slashCommandPermissions, guildId, "deny", SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_DEFAULT, SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_COMMENT);
+        // Must run before anything reads the section: removes the legacy mode/allow/deny keys
+        migrateSlashCommandsConfig(guildConfig, guildId); // <= 2.7.0
+        migrateSlashCommandPermissionsToRolesOnly(guildConfig, guildId); // <= 2.8.0
 
+        CommentedConfig slashCommandPermissions = guildConfig.get("slashCommandPermissions");
         if (addExampleRole){
             CommentedConfig exampleRole = slashCommandPermissions.createSubConfig();
             createFieldIfNotExists(exampleRole, guildId, "allow", SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_DEFAULT, SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_COMMENT);
@@ -177,7 +107,6 @@ public final class DiscordGuildsConfig {
             createFieldIfNotExists(overrides, guildId, category.getConfigName(), OVERRIDE_CHANNEL_ID_DEFAULT, category.getConfigComment());
 
         // Migrate from old config versions
-        migrateSlashCommandsConfig(guildConfig, guildId);
         migrateScreenshotChannelId(guildConfig, guildId);
     }
 
@@ -203,13 +132,6 @@ public final class DiscordGuildsConfig {
         exampleServer.setComment("enableSlashCommands",ENABLE_SLASH_COMMANDS_COMMENT);
 
         CommentedConfig slashCommandPermissions = exampleServer.createSubConfig();
-        slashCommandPermissions.set("mode", SLASH_COMMAND_PERMISSIONS_MODE_DEFAULT);
-        slashCommandPermissions.setComment("mode", SLASH_COMMAND_PERMISSIONS_MODE_COMMENT);
-        slashCommandPermissions.set("allow", SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_DEFAULT);
-        slashCommandPermissions.setComment("allow", SLASH_COMMAND_PERMISSIONS_DEFAULT_ALLOW_COMMENT);
-        slashCommandPermissions.set("deny", SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_DEFAULT);
-        slashCommandPermissions.setComment("deny", SLASH_COMMAND_PERMISSIONS_DEFAULT_DENY_COMMENT);
-
         CommentedConfig exampleRole = slashCommandPermissions.createSubConfig();
         exampleRole.set("allow", SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_DEFAULT);
         exampleRole.setComment("allow", SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_COMMENT);
@@ -236,6 +158,139 @@ public final class DiscordGuildsConfig {
         commonConfig.add("guilds", guildList);
 
         return guildList;
+    }
+
+    private static boolean isEveryoneKey(String key, String guildId) {
+        return key.equals(guildId) || key.equalsIgnoreCase(SLASH_COMMAND_PERMISSIONS_EVERYONE_KEY);
+    }
+
+    private static Map<String, SlashCommandPermissions> loadSlashCommandPermissions(CommentedConfig section, String guildId) {
+        Map<String, SlashCommandPermissions> permissions = new LinkedHashMap<>();
+
+        for (CommentedConfig.Entry entry : section.entrySet()) {
+            if (!(entry.getValue() instanceof CommentedConfig roleConfig)) {
+                LOGGER.warn("[guildId: {}] Ignoring \"slashCommandPermissions.{}\": permissions are defined only inside role sections, e.g. [guilds.slashCommandPermissions.RoleName]", guildId, entry.getKey());
+                continue;
+            }
+
+            String key = isEveryoneKey(entry.getKey(), guildId) ? guildId : entry.getKey();
+            List<String> allow = roleConfig.getOrElse("allow", SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_DEFAULT);
+            List<String> deny = roleConfig.getOrElse("deny", SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_DENY_DEFAULT);
+
+            if (permissions.putIfAbsent(key, new SlashCommandPermissions(allow, deny)) != null)
+                LOGGER.warn("[guildId: {}] Section \"{}\" duplicates another @everyone section (guild ID / \"@everyone\"). Only the first one is used", guildId, entry.getKey());
+        }
+
+        return permissions;
+    }
+
+    private static Map<String, String> loadChannelOverrides(CommentedConfig overrides, String guildId) {
+        Map<String, String> channelOverrides = new HashMap<>();
+
+        for (CommentedConfig.Entry entry : overrides.entrySet()) {
+            if (entry.getKey().equals("duplicateMessages"))
+                continue;
+
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            boolean valid = false;
+            for (ChannelCategory cat : ChannelCategory.values()) {
+                if (cat.getConfigName().equalsIgnoreCase(key)) {
+                    valid = true;
+                    channelOverrides.put(cat.getConfigName(), value);
+                    break;
+                }
+            }
+
+            if (!valid)
+                LOGGER.error("Unknown channel key \"{}\" in channel overrides for guildId: {}", key, guildId);
+        }
+
+        return channelOverrides;
+    }
+
+    // ==============================================================================
+    //                                  MIGRATIONS
+    // ==============================================================================
+
+    private static final List<String> LEGACY_SLASH_PERMISSION_KEYS = List.of("mode", "allow", "deny");
+
+    private static boolean hasLegacyKeys(CommentedConfig permissions) {
+        return permissions != null && LEGACY_SLASH_PERMISSION_KEYS.stream().anyMatch(key -> isLegacyValue(permissions, key));
+    }
+
+    private static boolean isLegacyValue(CommentedConfig permissions, String key) {
+        Object value = permissions.get(key);
+        return value != null && !(value instanceof CommentedConfig);
+    }
+
+    private static List<String> readLegacyList(CommentedConfig permissions, String key) {
+        Object value = permissions.get(key);
+        return value instanceof List<?> list ? list.stream().map(String::valueOf).toList() : List.of();
+    }
+
+    /**
+     * Migration method for configs generated with version 2.8.0 or less.
+     * @since 2.9.0
+     */
+    private static void migrateSlashCommandPermissionsToRolesOnly(CommentedConfig guildConfig, String guildId) {
+        CommentedConfig permissions = guildConfig.get("slashCommandPermissions");
+        if (!hasLegacyKeys(permissions))
+            return;
+
+        Object modeRaw = permissions.get("mode");
+        boolean topRole = modeRaw instanceof String mode && mode.trim().equalsIgnoreCase("top-role");
+        List<String> legacyAllow = readLegacyList(permissions, "allow");
+        List<String> legacyDeny = readLegacyList(permissions, "deny");
+
+        for (String key : LEGACY_SLASH_PERMISSION_KEYS)
+            if (isLegacyValue(permissions, key))
+                permissions.remove(key);
+
+        boolean hasEveryoneSection = permissions.entrySet().stream()
+                .anyMatch(e -> e.getValue() instanceof CommentedConfig && isEveryoneKey(e.getKey(), guildId));
+
+        if (!legacyAllow.isEmpty() || !legacyDeny.isEmpty()) {
+            if (hasEveryoneSection) {
+                LOGGER.warn("[guildId: {}] Legacy \"slashCommandPermissions.allow/deny\" were removed without migration: they were never applied because an @everyone section already exists", guildId);
+            } else {
+                CommentedConfig everyone = permissions.createSubConfig();
+                everyone.set("allow", legacyAllow);
+                everyone.set("deny", legacyDeny);
+                permissions.set(SLASH_COMMAND_PERMISSIONS_EVERYONE_KEY, everyone);
+
+                LOGGER.info("[guildId: {}] Migrating \"slashCommandPermissions.allow/deny\" → \"slashCommandPermissions.{}\"", guildId, SLASH_COMMAND_PERMISSIONS_EVERYONE_KEY);
+                if (!topRole)
+                    LOGGER.warn("[guildId: {}] These permissions now apply to ALL members, including those who have other configured roles. Please review the \"{}\" section", guildId, SLASH_COMMAND_PERMISSIONS_EVERYONE_KEY);
+            }
+        }
+
+        if (topRole) {
+            List<String> patchedRoles = new ArrayList<>();
+
+            for (CommentedConfig.Entry entry : permissions.entrySet()) {
+                if (!(entry.getValue() instanceof CommentedConfig roleConfig))
+                    continue;
+                if (isEveryoneKey(entry.getKey(), guildId))
+                    continue;
+
+                List<String> allow = roleConfig.getOrElse("allow", SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_DEFAULT);
+                List<String> deny = roleConfig.getOrElse("deny", SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_DENY_DEFAULT);
+                if (allow.contains("*") || deny.contains("*"))
+                    continue;
+
+                List<String> newDeny = new ArrayList<>(deny);
+                newDeny.add("*");
+                roleConfig.set("deny", newDeny);
+
+                patchedRoles.add(entry.getKey());
+            }
+
+            LOGGER.info("[guildId: {}] Option \"slashCommandPermissions.mode\" was removed (permissions are always merged by role priority). To keep the former \"top-role\" behaviour, \"*\" was added to deny of roles: {}", guildId, patchedRoles);
+        }
+
+        LOGGER.info("[guildId: {}] Legacy keys \"slashCommandPermissions.mode/allow/deny\" were removed. Permissions are now defined only in role sections", guildId);
     }
 
     /**

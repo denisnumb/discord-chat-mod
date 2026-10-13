@@ -81,7 +81,7 @@ public final class DiscordChannelRegistry {
                     guildConfig.duplicateMessages(),
                     guildConfig.enablePinnedStatusMessage(),
                     guildConfig.enableSlashCommands(),
-                    guildConfig.slashCommandPermissionsConfig()
+                    guildConfig.slashCommandPermissions()
             );
             try{
                 context.setDefaultChannel(getDiscordChannel(context, guildConfig.defaultChannelId()));
