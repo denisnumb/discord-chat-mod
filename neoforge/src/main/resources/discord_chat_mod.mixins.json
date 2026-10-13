@@ -25,7 +25,8 @@
     "SuggestionsListAccessorMixin",
     "ClientPacketListenerMixin",
     "StringSplitterMixin",
-    "PreparedTextBuilderMixin"
+    "PreparedTextBuilderMixin",
+    "GuiMessageLineMixin"
   ],
   "injectors": {
     "defaultRequire": 1

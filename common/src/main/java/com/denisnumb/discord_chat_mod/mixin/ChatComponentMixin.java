@@ -18,7 +18,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -44,9 +43,6 @@ public abstract class ChatComponentMixin {
     @Shadow @Final private List<GuiMessage> allMessages;
     @Shadow public abstract int getLinesPerPage();
 
-    @Unique private final String IMAGE_TAG_LABEL = "discord_chat_mod$IMAGE";
-    @Unique private final String EMBEDDED_IMAGE_TAG_LABEL = IMAGE_TAG_LABEL + "_EMBED";
-
     @ModifyArg(
             method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;Lnet/minecraft/client/GuiMessageTag;)V",
             at = @At(
@@ -61,7 +57,7 @@ public abstract class ChatComponentMixin {
     }
 
     @Unique
-    private List<String> discord_minecraft_chat$getComponentUrls(Component component){
+    private List<String> discord_chat_mod$getComponentUrls(Component component){
         return component.toFlatList().stream().filter(comp -> {
             ClickEvent clickEvent = comp.getStyle().getClickEvent();
             return clickEvent != null && clickEvent.action() == ClickEvent.Action.OPEN_URL;
@@ -72,52 +68,12 @@ public abstract class ChatComponentMixin {
     }
 
     @Unique
-    private int discord_minecraft_chat$getImageLinesCount(int imageHeight){
+    private int discord_chat_mod$getImageLinesCount(int imageHeight){
         return Mth.ceil((float) imageHeight / getLineHeight()) + 1;
     }
 
     @Unique
-    private int discord_minecraft_chat$getGuiMessageIndexByTrimmedMessageIndex(int targetIndex) {
-        int messageIndex = -1;
-
-        for (int i = 0; i <= targetIndex; i++)
-            if (trimmedMessages.get(i).endOfEntry())
-                messageIndex++;
-
-        return messageIndex;
-    }
-
-    @Unique
-    private boolean discord_minecraft_chat$isImageTag(@Nullable GuiMessageTag tag){
-        if (tag != null && tag.logTag() != null)
-            return tag.logTag().startsWith(IMAGE_TAG_LABEL);
-
-        return false;
-    }
-
-    @Unique
-    private boolean discord_minecraft_chat$isImageEmbedded(@Nullable GuiMessageTag tag){
-        if (tag != null && tag.logTag() != null)
-            return tag.logTag().equals(EMBEDDED_IMAGE_TAG_LABEL);
-
-        return false;
-    }
-
-    @Unique
-    private @Nullable String discord_minecraft_chat$getImageUrlFromPlaceholder(FormattedCharSequence line) {
-        String[] result = {null};
-        line.accept((index, style, codePoint) -> {
-            if (style.getClickEvent() instanceof ClickEvent.RunCommand(String command)
-                    && command.startsWith(OPEN_IMAGE_COMMAND))
-                result[0] = command.substring(OPEN_IMAGE_COMMAND.length());
-            return result[0] == null;
-        });
-
-        return result[0];
-    }
-
-    @Unique
-    private Set<String> discord_minecraft_chat$findImageUrlsInLine(FormattedCharSequence line) {
+    private Set<String> discord_chat_mod$findImageUrlsInLine(FormattedCharSequence line) {
         Set<String> urls = new LinkedHashSet<>();
         line.accept((index, style, codePoint) -> {
             if (style.getClickEvent() instanceof ClickEvent.OpenUrl(java.net.URI uri))
@@ -130,13 +86,13 @@ public abstract class ChatComponentMixin {
     }
 
     @Unique
-    private Map<String, GuiMessage.Line> discord_minecraft_chat$buildUrlToLineMap(GuiMessage guimessage) {
+    private Map<String, GuiMessage.Line> discord_chat_mod$buildUrlToLineMap(GuiMessage guimessage) {
         Map<String, GuiMessage.Line> result = new HashMap<>();
         for (GuiMessage.Line line : trimmedMessages) {
             if (line.addedTime() != guimessage.addedTime())
                 break;
 
-            for (String url : discord_minecraft_chat$findImageUrlsInLine(line.content()))
+            for (String url : discord_chat_mod$findImageUrlsInLine(line.content()))
                 result.putIfAbsent(url, line);
         }
 
@@ -144,7 +100,7 @@ public abstract class ChatComponentMixin {
     }
 
     @Unique
-    private Component discord_minecraft_chat$createImagePlaceholderComponent(AbstractImage image, GuiMessage.Line line, boolean isEmbed) {
+    private Component discord_chat_mod$createImagePlaceholderComponent(AbstractImage image, GuiMessage.Line line, boolean isEmbed) {
         AtomicInteger embedColor = new AtomicInteger(ColorUtils.Color.DISCORD_DEFAULT_COLOR);
         if (isEmbed){
             line.content().accept((index, style, codePoint) -> {
@@ -168,7 +124,7 @@ public abstract class ChatComponentMixin {
     }
 
     @Unique
-    private boolean discord_minecraft_chat$isEmbedMessage(GuiMessage.Line line) {
+    private boolean discord_chat_mod$isEmbedMessage(GuiMessage.Line line) {
         AtomicBoolean isEmbed = new AtomicBoolean(false);
         line.content().accept((index, style, codePoint) -> {
             isEmbed.set(codePoint == EmbedToComponentConverter.BORDER_SIDE_CHAR);
@@ -179,20 +135,43 @@ public abstract class ChatComponentMixin {
     }
 
     @Unique
-    private GuiMessageTag discord_minecraft_chat$buildImageTag(@Nullable GuiMessageTag parentTag, boolean isEmbed) {
-        int color = parentTag != null
-                ? parentTag.indicatorColor()
-                : ColorUtils.Color.TRANSPARENT_IMAGE_TAG_COLOR;
+    private ImagePlaceholder discord_chat_mod$parsePlaceholder(FormattedCharSequence line) {
+        ImagePlaceholder[] result = {ImagePlaceholder.NONE};
 
-        Component component = parentTag != null
-                ? parentTag.text()
-                : null;
+        line.accept((index, style, codePoint) -> {
+            if (style.getClickEvent() instanceof ClickEvent.RunCommand(String command) && command.startsWith(OPEN_IMAGE_COMMAND)) {
+                result[0] = new ImagePlaceholder(
+                        command.substring(OPEN_IMAGE_COMMAND.length()),
+                        codePoint == EmbedToComponentConverter.BORDER_SIDE_CHAR
+                );
+                return false;
+            }
+            return true;
+        });
 
-        String metadata = isEmbed
-                ? EMBEDDED_IMAGE_TAG_LABEL
-                : IMAGE_TAG_LABEL;
+        return result[0];
+    }
 
-        return new GuiMessageTag(color, null, component, metadata);
+    @Unique
+    private ImagePlaceholder discord_chat_mod$resolvePlaceholder(GuiMessage.Line line) {
+        ImageMessageLine accessor = (ImageMessageLine) (Object) line;
+        ImagePlaceholder placeholder = accessor.discord_chat_mod$getPlaceholder();
+        if (placeholder == null) {
+            placeholder = discord_chat_mod$parsePlaceholder(line.content());
+            accessor.discord_chat_mod$setPlaceholder(placeholder);
+        }
+        return placeholder;
+    }
+
+    @Unique
+    private boolean discord_chat_mod$isImageAnchorLine(int trimmedIndex, GuiMessage.Line line, ImagePlaceholder placeholder) {
+        int olderIndex = trimmedIndex + 1;
+        if (olderIndex >= trimmedMessages.size())
+            return true;
+
+        GuiMessage.Line older = trimmedMessages.get(olderIndex);
+        return older.addedTime() != line.addedTime()
+                || !placeholder.url().equals(discord_chat_mod$resolvePlaceholder(older).url());
     }
 
     @Inject(
@@ -200,12 +179,12 @@ public abstract class ChatComponentMixin {
             at = @At("TAIL")
     )
     private void addMessage(Component chatComponent, MessageSignature headerSignature, GuiMessageTag tag, CallbackInfo ci, @Local GuiMessage guimessage){
-        List<String> componentUrls = discord_minecraft_chat$getComponentUrls(chatComponent);
+        List<String> componentUrls = discord_chat_mod$getComponentUrls(chatComponent);
         if (componentUrls.isEmpty())
             return;
 
         GuiMessage.Line bottomLine = trimmedMessages.getFirst();
-        Map<String, GuiMessage.Line> urlToLineObject = discord_minecraft_chat$buildUrlToLineMap(guimessage);
+        Map<String, GuiMessage.Line> urlToLineObject = discord_chat_mod$buildUrlToLineMap(guimessage);
 
         loadImagesParallel(componentUrls).thenAccept(loadedImages -> {
             int allMessagesInsertIndex = allMessages.indexOf(guimessage);
@@ -234,17 +213,20 @@ public abstract class ChatComponentMixin {
                 if (insertIndex == -1)
                     continue;
 
-                int linesCount = discord_minecraft_chat$getImageLinesCount(image.imageSize.height());
-                boolean isEmbed = discord_minecraft_chat$isEmbedMessage(targetLine);
-                Component imageComponent = discord_minecraft_chat$createImagePlaceholderComponent(image, targetLine, isEmbed);
+                int linesCount = discord_chat_mod$getImageLinesCount(image.imageSize.height());
+                boolean isEmbed = discord_chat_mod$isEmbedMessage(targetLine);
+                Component imageComponent = discord_chat_mod$createImagePlaceholderComponent(image, targetLine, isEmbed);
                 FormattedCharSequence imageSequence = imageComponent.getVisualOrderText();
-                GuiMessageTag imageTag = discord_minecraft_chat$buildImageTag(tag, isEmbed);
+                ImagePlaceholder placeholder = new ImagePlaceholder(image.url, isEmbed);
+
+                for (int i = 0; i < linesCount; i++) {
+                    GuiMessage.Line imageLine = new GuiMessage.Line(guimessage.addedTime(), imageSequence, tag, true);
+                    ((ImageMessageLine) (Object) imageLine).discord_chat_mod$setPlaceholder(placeholder);
+                    trimmedMessages.add(insertIndex, imageLine);
+                }
 
                 for (int i = 0; i < linesCount; i++)
-                    trimmedMessages.add(insertIndex, new GuiMessage.Line(guimessage.addedTime(), imageSequence, i == 0 ? imageTag : tag, true));
-
-                for (int i = 0; i < linesCount; i++)
-                    allMessages.add(allMessagesInsertIndex, new GuiMessage(guimessage.addedTime(), imageComponent, headerSignature, i == 0 ? imageTag : tag));
+                    allMessages.add(allMessagesInsertIndex, new GuiMessage(guimessage.addedTime(), imageComponent, headerSignature, tag));
                 allMessagesInsertIndex += linesCount;
             }
         });
@@ -313,14 +295,18 @@ public abstract class ChatComponentMixin {
             if (messageY < chatTopYWithMargin)
                 break;
 
-            GuiMessage.Line line = trimmedMessages.get(i + chatScrollbarPos);
+            int trimmedIndex = i + chatScrollbarPos;
+            GuiMessage.Line line = trimmedMessages.get(trimmedIndex);
             if (tickCount - line.addedTime() >= 200 && !isChatFocused)
                 continue;
-            if (!discord_minecraft_chat$isImageTag(line.tag()))
+
+            ImagePlaceholder placeholder = discord_chat_mod$resolvePlaceholder(line);
+            if (placeholder.isNone())
+                continue;
+            if (!discord_chat_mod$isImageAnchorLine(trimmedIndex, line, placeholder))
                 continue;
 
-            String imageUrl = discord_minecraft_chat$getImageUrlFromPlaceholder(line.content());
-            AbstractImage abstractImage = imageUrl == null ? null : IMAGE_CACHE.get(imageUrl);
+            AbstractImage abstractImage = IMAGE_CACHE.get(placeholder.url());
             if (abstractImage == null)
                 continue;
 
@@ -333,9 +319,9 @@ public abstract class ChatComponentMixin {
             int imageHeight = imageSize.height();
             int visibleHeight = imageHeight;
 
-            int startX = 0;
-            if (discord_minecraft_chat$isImageEmbedded(line.tag()))
-                startX = minecraft.font.width(EmbedToComponentConverter.BORDER_SIDE_WITH_SPACE);
+            int startX = placeholder.embedded()
+                    ? minecraft.font.width(EmbedToComponentConverter.BORDER_SIDE_WITH_SPACE)
+                    : 0;
 
             int startY = messageY - lineHeight / 2;
             int startV = 0;
