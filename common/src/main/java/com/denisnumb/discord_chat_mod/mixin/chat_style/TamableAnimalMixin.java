@@ -25,7 +25,6 @@ public abstract class TamableAnimalMixin extends LivingEntity {
             require = 0
     )
     private Component modifyPetDeathMessage(Component original) {
-        return MinecraftEvents.handlePlayerOrPetDie(((CombatTrackerAccessorMixin) getCombatTracker()).getEntries(), this)
-                .orElse(original);
+        return MinecraftEvents.handlePlayerOrPetDie(original, this).orElse(original);
     }
 }

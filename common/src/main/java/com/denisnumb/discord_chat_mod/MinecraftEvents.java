@@ -20,14 +20,11 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.List;
 import java.util.Optional;
-
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,11 +56,13 @@ public final class MinecraftEvents {
         return Optional.empty();
     }
 
-    public static Optional<Component> handlePlayerOrPetDie(List<CombatEntry> combatEntries, LivingEntity entity) {
+    public static Optional<Component> handlePlayerOrPetDie(Component originalMessage, LivingEntity entity) {
         if (!(entity instanceof Player) && !(entity instanceof TamableAnimal a && a.isTame()))
             return Optional.empty();
 
-        DeathMessageUtils.DeathMessageComponents components = DeathMessageUtils.getDeathMessageComponents(combatEntries, entity);
+        DeathMessageUtils.DeathMessageComponents components = DeathMessageUtils.getDeathMessageComponents(originalMessage);
+        if (components == null)
+            return Optional.empty();
 
         if (entity instanceof Player){
             handleDiscord(() -> sendMessageFromServer(ChannelCategory.DEATHS, getAllContexts(), DiscordMessageFormatter.formatDeathMessage(components, entity)));

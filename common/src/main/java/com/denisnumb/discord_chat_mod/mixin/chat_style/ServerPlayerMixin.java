@@ -26,7 +26,6 @@ public abstract class ServerPlayerMixin extends Player {
             require = 0
     )
     private Component modifyDeathMessage(Component original) {
-        return MinecraftEvents.handlePlayerOrPetDie(((CombatTrackerAccessorMixin) getCombatTracker()).getEntries(), this)
-                .orElse(original);
+        return MinecraftEvents.handlePlayerOrPetDie(original, this).orElse(original);
     }
 }
