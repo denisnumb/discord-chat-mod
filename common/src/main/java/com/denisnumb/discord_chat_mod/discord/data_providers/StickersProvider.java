@@ -7,13 +7,14 @@ import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.entities.sticker.GuildSticker;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -23,7 +24,8 @@ public final class StickersProvider {
     private StickersProvider() {}
 
     public record StickerData(String imageUrl, String discordId, String originalName) {}
-    public static Map<String, AbstractImage> CLIENT_STICKER_CACHE = new HashMap<>();
+    public static Map<String, AbstractImage> CLIENT_STICKER_CACHE = new ConcurrentHashMap<>();
+    private static final AtomicInteger CLIENT_STICKER_CACHE_GENERATION = new AtomicInteger();
     private static long lastGetNameToRawStickerMapGet = 0;
     private static Map<String, StickerData> cachedNameToRawStickerDataMap;
 
@@ -78,19 +80,28 @@ public final class StickersProvider {
     }
 
     public static void loadClient(Map<String, String> rawStickers){
-         if (!rawStickers.isEmpty())
-            CLIENT_STICKER_CACHE.clear();
+        if (rawStickers.isEmpty())
+            return;
+
+        final int gen = CLIENT_STICKER_CACHE_GENERATION.incrementAndGet();
+        CLIENT_STICKER_CACHE.entrySet().removeIf(e -> {
+            String url = rawStickers.get(e.getKey());
+            return url == null || !url.equals(e.getValue().url);
+        });
 
         ExecutorService executor = Executors.newFixedThreadPool(10);
 
         rawStickers.forEach((name, url) -> {
-            if (!CLIENT_STICKER_CACHE.containsKey(name)){
-                executor.submit(() -> {
-                    AbstractImage image = ImageStorage.parseEmojiOrSticker(url);
-                    if (image != null)
-                        CLIENT_STICKER_CACHE.putIfAbsent(name, image);
-                });
-            }
+            if (CLIENT_STICKER_CACHE.containsKey(name))
+                return;
+
+            executor.submit(() -> {
+                AbstractImage image = ImageStorage.parseEmojiOrSticker(url);
+                if (image == null || gen != CLIENT_STICKER_CACHE_GENERATION.get())
+                    return;
+
+                CLIENT_STICKER_CACHE.put(name, image);
+            });
         });
         executor.shutdown();
 

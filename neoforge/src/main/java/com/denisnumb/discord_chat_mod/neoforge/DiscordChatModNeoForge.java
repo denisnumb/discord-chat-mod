@@ -5,6 +5,7 @@ import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.locale.LocaleStorage;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
+import com.denisnumb.discord_chat_mod.emoji.UnicodeEmojis;
 import com.denisnumb.discord_chat_mod.neoforge.network.NeoForgePacketDistributor;
 import com.denisnumb.discord_chat_mod.network.PlatformPacketDistributor;
 import net.neoforged.api.distmarker.Dist;
@@ -33,6 +34,7 @@ public final class DiscordChatModNeoForge {
         modEventBus.addListener(localeLoader::loadLocalizationFromSetup);
         NeoForge.EVENT_BUS.register(this);
         ConfigManager.load(FMLEnvironment.getDist() == Dist.CLIENT);
+        UnicodeEmojis.preloadAsync();
         PlatformPacketDistributor.setHandler(new NeoForgePacketDistributor());
     }
 

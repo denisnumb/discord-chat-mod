@@ -2,12 +2,12 @@ package com.denisnumb.discord_chat_mod;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
+import com.denisnumb.discord_chat_mod.emoji.UnicodeEmojis;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
 import com.denisnumb.discord_chat_mod.network.sticker.DiscordStickersTransceiver;
-import com.vdurmont.emoji.EmojiParser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -38,10 +38,11 @@ public final class MinecraftClientEvents {
 
     public static Component handleChatMessage(Component message){
         if (ClientConfig.EMOJIFUL_COMPATIBILITY.get()){
-            if (!EmojiParser.extractEmojis(message.getString()).isEmpty()){
+            String text = message.getString();
+            if (!UnicodeEmojis.replaceWithNames(text).equals(text)){
                 MutableComponent withReplacedEmojis = Component.empty();
                 for (Component comp : message.toFlatList())
-                    withReplacedEmojis.append(Component.literal(EmojiParser.parseToAliases(comp.getString())).withStyle(comp.getStyle()));
+                    withReplacedEmojis.append(Component.literal(UnicodeEmojis.replaceWithNames(comp.getString())).withStyle(comp.getStyle()));
 
                 return withReplacedEmojis;
             }

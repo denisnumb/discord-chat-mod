@@ -87,7 +87,7 @@ Type `@` in game chat to get a list of Discord users to mention
 
 ### Discord Unicode & Custom emojis
 
-Type `:` in game chat to get a list of discord guild Custom and Unicode emojis
+Type `:` in game chat to get a list of discord guild Custom and Unicode emojis, or open the emoji picker with the 😀 button in the chat input.
 
 ![emojis](https://github.com/user-attachments/assets/eedc957e-f505-48e2-ab99-548d53f4ded4)
 
@@ -198,3 +198,9 @@ Second server chat:
 ![mention_command](https://github.com/user-attachments/assets/c9eefdad-e838-48be-95d7-921a2d83f6a1)
 
 ![Screenshot 2025-02-11 011313](https://github.com/user-attachments/assets/9bbfbd84-cd6b-4343-b502-8af9989c2331)
+
+---
+
+## Credits
+
+Emoji graphics are [Twemoji](https://github.com/discord/twemoji) as modified by Discord, licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/). Emoji names and categories come from Discord's emoji picker data ([@emoji-platform-data/discord](https://www.npmjs.com/package/@emoji-platform-data/discord), [discord-emoji](https://www.npmjs.com/package/discord-emoji)).

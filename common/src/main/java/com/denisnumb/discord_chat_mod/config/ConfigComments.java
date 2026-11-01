@@ -789,4 +789,7 @@ public final class ConfigComments {
 
     public static final String ENABLE_CLIPBOARD_IMAGE_PASTE_COMMENT
             = " When set to \"true\" it allows pasting images from the clipboard into the chat by pressing Ctrl+V.";
+
+    public static final String ENABLE_EMOJI_PICKER_BUTTON_COMMENT
+            = " When set to \"true\" it adds a button to the right corner of the chat that opens a window for searching and inserting emojis and sending Discord stickers.";
 }

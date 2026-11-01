@@ -14,6 +14,7 @@ public enum MarkdownStyle{
     URL,
     DISCORD_MENTION,
     EMOJI,
+    ESCAPED_EMOJI,
     COLOR_RANGE,
     COLOR_SINGLE,
     COLOR_OPEN,

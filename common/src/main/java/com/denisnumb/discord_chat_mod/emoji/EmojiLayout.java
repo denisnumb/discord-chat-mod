@@ -11,6 +11,6 @@ public record EmojiLayout(FormattedCharSequence replaced, List<Slot> slots) {
     public record Slot(int xOffset, AbstractImage image) {}
 
     public boolean isEmpty() {
-        return slots.isEmpty();
+        return replaced == null;
     }
 }

@@ -7,6 +7,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.FormattedCharSink;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +48,7 @@ public final class EmojiLayoutCache {
     }
 
     private static boolean isInactive() {
-        return disabled || CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty();
+        return disabled || (CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty() && !UnicodeEmojis.isAvailable());
     }
 
     private static void syncVersion() {
@@ -71,6 +74,9 @@ public final class EmojiLayoutCache {
         if (cached != null)
             return cached;
 
+        if (!new PreScan().mayContainEmoji(text))
+            return EmojiLayout.NONE;
+
         EmojiLayout layout;
         computing = true;
         try {
@@ -89,7 +95,7 @@ public final class EmojiLayoutCache {
     }
 
     public static String replaceForWidth(String text) {
-        if (text == null || text.indexOf(':') < 0 || isInactive())
+        if (text == null || isInactive() || (text.indexOf(':') < 0 && !UnicodeEmojis.mayNeedGlyphs(text)))
             return text;
 
         syncVersion();
@@ -103,12 +109,40 @@ public final class EmojiLayoutCache {
         return result;
     }
 
+    private static final class PreScan implements FormattedCharSink {
+        private int run = -1;
+        private boolean found;
+
+        boolean mayContainEmoji(FormattedCharSequence text) {
+            text.accept(this);
+            return found;
+        }
+
+        @Override
+        public boolean accept(int index, @NotNull Style style, int cp) {
+            if (UnicodeEmojis.isSequenceCandidate(cp)) {
+                found = true;
+            } else if (cp == ':') {
+                found = run >= 2;
+                run = 0;
+            } else if (run >= 0 && (cp == '_' || cp == '~' || (cp < 128 && Character.isLetterOrDigit(cp)))) {
+                run++;
+            } else {
+                run = -1;
+            }
+            return !found;
+        }
+    }
+
+    private record Replacement(int start, int end, @Nullable AbstractImage image, int glyph) {}
+
     private static EmojiLayout compute(Font font, FormattedCharSequence text) {
         IntList cps = new IntList();
         IntList charStart = new IntList();
         List<Style> styles = new ArrayList<>();
         StringBuilder raw = new StringBuilder();
         boolean[] hasColon = {false};
+        boolean[] hasSequence = {false};
 
         text.accept((idx, style, cp) -> {
             charStart.add(raw.length());
@@ -117,46 +151,47 @@ public final class EmojiLayoutCache {
             styles.add(style);
             if (cp == ':')
                 hasColon[0] = true;
+            else if (!hasSequence[0] && UnicodeEmojis.isSequenceCandidate(cp))
+                hasSequence[0] = true;
             return true;
         });
 
-        if (!hasColon[0])
+        boolean unicodeAvailable = UnicodeEmojis.isAvailable();
+        List<Replacement> replacements = hasColon[0] ? findEmojiCodes(raw, charStart, unicodeAvailable) : List.of();
+        if (hasSequence[0] && unicodeAvailable)
+            replacements = addSequenceGlyphs(cps.toArray(), replacements);
+
+        if (replacements.isEmpty())
             return EmojiLayout.NONE;
 
-        Matcher matcher = EMOJI_PATTERN.matcher(raw);
-        if (!matcher.find())
-            return EmojiLayout.NONE;
-
+        boolean hasImages = replacements.stream().anyMatch(r -> r.image() != null);
         List<FormattedCharSequence> parts = new ArrayList<>();
         List<EmojiLayout.Slot> slots = new ArrayList<>();
         int xOffset = 0;
         int lastCp = 0;
 
-        do {
-            AbstractImage image = CustomEmojiProvider.CLIENT_EMOJI_CACHE.get(matcher.group(1));
-            if (image == null)
-                continue;
-
-            int startCp = charToCp(charStart, matcher.start());
-            int endCp = charToCp(charStart, matcher.end());
-
-            if (startCp > lastCp) {
-                FormattedCharSequence before = slice(cps, styles, lastCp, startCp);
+        for (Replacement replacement : replacements) {
+            if (replacement.start() > lastCp) {
+                FormattedCharSequence before = slice(cps, styles, lastCp, replacement.start());
                 parts.add(before);
-                xOffset += font.width(before);
+                if (hasImages)
+                    xOffset += font.width(before);
             }
 
-            slots.add(new EmojiLayout.Slot(xOffset, image));
+            if (replacement.image() != null) {
+                slots.add(new EmojiLayout.Slot(xOffset, replacement.image()));
+                parts.add(FormattedCharSequence.codepoint(' ', Style.EMPTY));
+                parts.add(FormattedCharSequence.codepoint(' ', Style.EMPTY.withBold(true)));
+                xOffset += EMOJI_WIDTH;
+            } else {
+                FormattedCharSequence glyph = FormattedCharSequence.codepoint(replacement.glyph(), styles.get(replacement.start()));
+                parts.add(glyph);
+                if (hasImages)
+                    xOffset += font.width(glyph);
+            }
 
-            parts.add(FormattedCharSequence.codepoint(' ', Style.EMPTY));
-            parts.add(FormattedCharSequence.codepoint(' ', Style.EMPTY.withBold(true)));
-            xOffset += EMOJI_WIDTH;
-
-            lastCp = endCp;
-        } while (matcher.find());
-
-        if (slots.isEmpty())
-            return EmojiLayout.NONE;
+            lastCp = replacement.end();
+        }
 
         if (lastCp < cps.size())
             parts.add(slice(cps, styles, lastCp, cps.size()));
@@ -164,23 +199,83 @@ public final class EmojiLayoutCache {
         return new EmojiLayout(FormattedCharSequence.composite(parts), List.copyOf(slots));
     }
 
-    private static String computeString(String text) {
-        Matcher matcher = EMOJI_PATTERN.matcher(text);
-        if (!matcher.find())
-            return text;
+    private static List<Replacement> findEmojiCodes(CharSequence raw, IntList charStart, boolean unicodeAvailable) {
+        boolean customAvailable = !CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty();
+        if (!customAvailable && !unicodeAvailable)
+            return List.of();
 
-        StringBuilder sb = new StringBuilder(text.length());
-        int last = 0;
-        do {
-            sb.append(text, last, matcher.start());
-            if (CustomEmojiProvider.CLIENT_EMOJI_CACHE.get(matcher.group(1)) != null)
-                sb.append("  ");
-            else
-                sb.append(text, matcher.start(), matcher.end());
-            last = matcher.end();
-        } while (matcher.find());
-        sb.append(text, last, text.length());
-        return sb.toString();
+        List<Replacement> replacements = new ArrayList<>();
+        Matcher matcher = EMOJI_PATTERN.matcher(raw);
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            int startCp = charToCp(charStart, matcher.start());
+            int endCp = charToCp(charStart, matcher.end());
+
+            AbstractImage image = CustomEmojiProvider.CLIENT_EMOJI_CACHE.get(name);
+            if (image != null) {
+                replacements.add(new Replacement(startCp, endCp, image, 0));
+                continue;
+            }
+
+            UnicodeEmojis.Entry unicode = unicodeAvailable && matcher.group(2) == null ? UnicodeEmojis.byName(name) : null;
+            if (unicode != null)
+                replacements.add(new Replacement(startCp, endCp, null, unicode.glyph()));
+        }
+        return replacements;
+    }
+
+    private static List<Replacement> addSequenceGlyphs(int[] cps, List<Replacement> codes) {
+        List<Replacement> result = new ArrayList<>(codes.size() + 4);
+        int next = 0;
+        int i = 0;
+        while (i < cps.length) {
+            if (next < codes.size() && i >= codes.get(next).start()) {
+                Replacement code = codes.get(next++);
+                result.add(code);
+                i = code.end();
+                continue;
+            }
+
+            int limit = next < codes.size() ? codes.get(next).start() : cps.length;
+            UnicodeEmojis.Match match = UnicodeEmojis.matchAt(cps, i, limit);
+            if (match == null) {
+                i++;
+                continue;
+            }
+            if (match.needsGlyph(cps))
+                result.add(new Replacement(match.start(), match.end(), null, match.entry().glyph()));
+            i = match.end();
+        }
+        return result;
+    }
+
+    private static String computeString(String text) {
+        boolean customAvailable = !CustomEmojiProvider.CLIENT_EMOJI_CACHE.isEmpty();
+        boolean unicodeAvailable = UnicodeEmojis.isAvailable();
+        String result = text;
+
+        if (text.indexOf(':') >= 0 && (customAvailable || unicodeAvailable)) {
+            Matcher matcher = EMOJI_PATTERN.matcher(text);
+            if (matcher.find()) {
+                StringBuilder sb = new StringBuilder(text.length());
+                int last = 0;
+                do {
+                    sb.append(text, last, matcher.start());
+                    UnicodeEmojis.Entry unicode;
+                    if (CustomEmojiProvider.CLIENT_EMOJI_CACHE.get(matcher.group(1)) != null)
+                        sb.append("  ");
+                    else if (unicodeAvailable && matcher.group(2) == null && (unicode = UnicodeEmojis.byName(matcher.group(1))) != null)
+                        sb.append(unicode.glyphText());
+                    else
+                        sb.append(text, matcher.start(), matcher.end());
+                    last = matcher.end();
+                } while (matcher.find());
+                sb.append(text, last, text.length());
+                result = sb.toString();
+            }
+        }
+
+        return unicodeAvailable ? UnicodeEmojis.replaceWithGlyphs(result) : result;
     }
 
     private static FormattedCharSequence slice(IntList cps, List<Style> styles, int from, int to) {
@@ -227,6 +322,10 @@ public final class EmojiLayoutCache {
 
         int size() {
             return size;
+        }
+
+        int[] toArray() {
+            return Arrays.copyOf(data, size);
         }
     }
 }

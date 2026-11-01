@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.markdown;
 
+import com.denisnumb.discord_chat_mod.emoji.EmojiUtils;
 import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 
 import java.util.ArrayList;
@@ -101,6 +102,9 @@ public abstract class MarkdownParser {
                     token.isMention = true;
                 }
                 case MarkdownStyle.EMOJI -> token = new MarkdownToken(matchedText);
+                case MarkdownStyle.ESCAPED_EMOJI -> token = new MarkdownToken(EmojiUtils.escapedEmojiCode(
+                        matcher.group(1) != null ? matcher.group(1) : matcher.group(2)
+                ));
                 case MarkdownStyle.GRADIENT_RANGE,
                      MarkdownStyle.GRADIENT_SINGLE,
                      MarkdownStyle.GRADIENT_OPEN -> {

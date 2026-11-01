@@ -51,7 +51,6 @@ dependencies {
     shadowBundle(implementation("org.apache.commons:commons-collections4:4.4")) {transitive = false }
     shadowBundle(implementation("org.json:json:20231013")) { transitive = false }
     shadowBundle(implementation("org.jsoup:jsoup:1.17.2")) { transitive = false }
-    shadowBundle(implementation(files("../libs/emoji-java-5.1.1.jar")))
     shadowBundle(implementation("com.electronwill.night-config:core:3.8.3")) { transitive = false }
     shadowBundle(implementation("com.electronwill.night-config:toml:3.8.3")) { transitive = false }
     shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")) { transitive = false }
@@ -62,7 +61,6 @@ dependencies {
     minecraftRuntimeLibraries "org.json:json:20231013"
     minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-webp:3.12.0"
     minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-core:3.12.0"
-    minecraftRuntimeLibraries(files("../libs/emoji-java-5.1.1.jar"))
 }
 
 processResources {
@@ -87,7 +85,6 @@ shadowJar {
     relocate("kotlin", "com.shadow.kotlin")
     relocate("okhttp3", "com.shadow.okhttp3")
     relocate("okio", "com.shadow.okio")
-    relocate("com.vdurmont", "com.shadow.com.vdurmont")
     relocate("org.json", "com.shadow.org.json")
     relocate("org.jsoup", "com.shadow.org.jsoup")
     relocate("com.electronwill", "com.shadow.com.electronwill")

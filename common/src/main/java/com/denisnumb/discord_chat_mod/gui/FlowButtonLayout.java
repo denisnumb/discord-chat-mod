@@ -1,4 +1,4 @@
-package com.denisnumb.discord_chat_mod.chat_images.widgets;
+package com.denisnumb.discord_chat_mod.gui;
 
 import java.util.ArrayList;
 import java.util.List;

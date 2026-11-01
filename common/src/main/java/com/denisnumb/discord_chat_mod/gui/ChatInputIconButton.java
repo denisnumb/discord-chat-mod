@@ -1,6 +1,5 @@
-package com.denisnumb.discord_chat_mod.chat_images.widgets;
+package com.denisnumb.discord_chat_mod.gui;
 
-import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
@@ -13,24 +12,39 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-public class AttachImageWidget extends AbstractWidget {
-    private final Consumer<AttachImageWidget> onPress;
+public class ChatInputIconButton extends AbstractWidget {
+    private static final int HOVER_COLOR = 0x30FFFFFF;
+    private static final int PRESSED_COLOR = 0x50FFFFFF;
 
-    public AttachImageWidget(int x, int y, int width, int height, Consumer<AttachImageWidget> onPress) {
-        super(x, y, width, height, Component.literal("📎"));
+    private final Consumer<ChatInputIconButton> onPress;
+    private final BooleanSupplier pressed;
+
+    public ChatInputIconButton(int x, int y, int size, Component icon, Component tooltip,
+                               Consumer<ChatInputIconButton> onPress) {
+        this(x, y, size, icon, tooltip, onPress, () -> false);
+    }
+
+    public ChatInputIconButton(int x, int y, int size, Component icon, Component tooltip,
+                               Consumer<ChatInputIconButton> onPress, BooleanSupplier pressed) {
+        super(x, y, size, size, icon);
         this.onPress = onPress;
+        this.pressed = pressed;
         this.setFocused(false);
-        this.setTooltip(Tooltip.create(MinecraftLocaleProvider.SendImage.attachImage()));
+        this.setTooltip(Tooltip.create(tooltip));
     }
 
     @Override
     protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        if (this.isHovered()) {
-            graphics.fill(getX(), getY(), getX() + width, getY() + height, 0x30FFFFFF);
+        if (pressed.getAsBoolean())
+            graphics.fill(getX(), getY(), getX() + width, getY() + height, PRESSED_COLOR);
+        else if (this.isHovered())
+            graphics.fill(getX(), getY(), getX() + width, getY() + height, HOVER_COLOR);
+
+        if (this.isHovered())
             graphics.requestCursor(CursorTypes.POINTING_HAND);
-        }
 
         graphics.drawCenteredString(
                 Minecraft.getInstance().font,

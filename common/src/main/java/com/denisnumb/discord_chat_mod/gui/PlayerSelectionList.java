@@ -1,4 +1,4 @@
-package com.denisnumb.discord_chat_mod.chat_images.widgets;
+package com.denisnumb.discord_chat_mod.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-public class PlayerSelectionList extends ObjectSelectionList<PlayerSelectionList.PlayerEntry> {
+public class PlayerSelectionList extends ObjectSelectionList<PlayerSelectionList.@NotNull PlayerEntry> {
     private final List<PlayerInfo> allPlayers;
     private final List<String> selectedPlayers = new ArrayList<>();
     private final Consumer<List<String>> onSelectionChanged;
@@ -50,7 +50,7 @@ public class PlayerSelectionList extends ObjectSelectionList<PlayerSelectionList
         return this.width - 8;
     }
 
-    public class PlayerEntry extends ObjectSelectionList.Entry<PlayerEntry> {
+    public class PlayerEntry extends ObjectSelectionList.Entry<@NotNull PlayerEntry> {
         private final String name;
         private final Checkbox checkbox;
 

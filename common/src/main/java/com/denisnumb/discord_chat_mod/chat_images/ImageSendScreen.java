@@ -1,10 +1,10 @@
 package com.denisnumb.discord_chat_mod.chat_images;
 
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
-import com.denisnumb.discord_chat_mod.chat_images.widgets.FlowButtonLayout;
-import com.denisnumb.discord_chat_mod.chat_images.widgets.FlowButtonLayout.ButtonSlot;
+import com.denisnumb.discord_chat_mod.gui.FlowButtonLayout;
+import com.denisnumb.discord_chat_mod.gui.FlowButtonLayout.ButtonSlot;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
-import com.denisnumb.discord_chat_mod.chat_images.widgets.PlayerSelectionPopup;
+import com.denisnumb.discord_chat_mod.gui.PlayerSelectionPopup;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.image.ImageTransceiver;
 import com.denisnumb.discord_chat_mod.network.image.model.ImagePartPacketPayload;

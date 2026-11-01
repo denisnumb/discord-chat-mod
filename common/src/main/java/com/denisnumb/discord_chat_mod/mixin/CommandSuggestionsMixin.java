@@ -7,6 +7,7 @@ import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvi
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
+import com.denisnumb.discord_chat_mod.emoji.UnicodeEmojis;
 import com.denisnumb.discord_chat_mod.locale.MinecraftLocaleProvider;
 import com.denisnumb.discord_chat_mod.network.emoji.DiscordEmojisTransceiver;
 import com.denisnumb.discord_chat_mod.network.mentions.DiscordMentionsTransceiver;
@@ -17,8 +18,6 @@ import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import com.vdurmont.emoji.Emoji;
-import com.vdurmont.emoji.EmojiManager;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.CommandSuggestions;
@@ -35,7 +34,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -170,19 +171,26 @@ public abstract class CommandSuggestionsMixin {
     private static final SuggestionProvider<String> EMOJIS_PROVIDER = (context, builder) -> {
         DiscordEmojisTransceiver.requestDiscordEmojis();
 
-        String partial = builder.getRemaining().toLowerCase().substring(1);
+        String partial = builder.getRemaining().toLowerCase(Locale.ROOT).substring(1);
+        StringRange range = StringRange.between(builder.getStart(), builder.getInput().length());
+        List<Suggestion> suggestions = new ArrayList<>();
 
-        Stream<String> customEmojis = CustomEmojiProvider.CLIENT_EMOJI_CACHE.keySet().stream()
-                .map(emojiName -> ":" + emojiName + ":")
-                .filter(emojiName -> emojiName.toLowerCase().contains(partial));
+        CustomEmojiProvider.CLIENT_EMOJI_CACHE.keySet().stream()
+                .filter(emojiName -> emojiName.toLowerCase(Locale.ROOT).contains(partial))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .forEach(emojiName -> suggestions.add(new Suggestion(range, ":" + emojiName + ":")));
 
-        Stream<String> unicodeEmojis = EmojiManager.getAll().stream()
-                .filter(emoji -> emoji.getAliases().stream().anyMatch(alias -> alias.contains(partial)))
-                .map(Emoji::getUnicode);
+        if (partial.isEmpty()) {
+            for (String category : UnicodeEmojis.categories())
+                for (UnicodeEmojis.Entry emoji : UnicodeEmojis.category(category))
+                    suggestions.add(new Suggestion(range, emoji.emoji()));
+        } else {
+            boolean skinTones = partial.contains("tone") || partial.contains("skin");
+            for (UnicodeEmojis.Entry emoji : UnicodeEmojis.search(partial, false, skinTones))
+                suggestions.add(new Suggestion(range, emoji.emoji()));
+        }
 
-        Stream.concat(customEmojis, unicodeEmojis).forEach(builder::suggest);
-
-        return builder.buildFuture();
+        return CompletableFuture.completedFuture(new Suggestions(range, suggestions));
     };
 
     @Unique

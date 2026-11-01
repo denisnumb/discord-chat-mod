@@ -51,6 +51,20 @@ public class MarkdownEditBoxParser extends MarkdownParser {
                 continue;
             }
 
+            if (style == MarkdownStyle.ESCAPED_EMOJI) {
+                String matched = matcher.group(0);
+                if (matcher.group(1) != null) {
+                    addSpecialCharactersToken(tokens, MarkdownStyle.ESCAPED, null, null, false);
+                    addToken(tokens, new MarkdownToken(matched.substring(1)));
+                } else {
+                    addToken(tokens, new MarkdownToken(matched.substring(0, matched.length() - 2)));
+                    addSpecialCharactersToken(tokens, MarkdownStyle.ESCAPED, null, null, false);
+                    addToken(tokens, new MarkdownToken(":"));
+                }
+                currentPos += matcher.end();
+                continue;
+            }
+
             String matchedText = matcher.group(0);
             String innerText = matcher.groupCount() > 0 ? matcher.group(1) : null;
 

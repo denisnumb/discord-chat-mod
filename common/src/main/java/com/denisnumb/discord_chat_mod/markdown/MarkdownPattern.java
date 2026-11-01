@@ -21,6 +21,9 @@ public final class MarkdownPattern{
     public static final Pattern URL = Pattern.compile("(https?://\\S+)");
     public static final Pattern DISCORD_MENTION = Pattern.compile("(?<!\\\\)<((?<!\\\\)([@#][!&]?\\d+)|(:.+?:\\d+))(?<!\\\\)>");
     public static final Pattern EMOJI = Pattern.compile(":[a-zA-Z0-9_]{2,}(~([1-9][0-9]*))?:");
+    public static final Pattern ESCAPED_EMOJI = Pattern.compile(
+            "\\\\:([a-zA-Z0-9_]{2,}(?:~[1-9][0-9]*)?):|:([a-zA-Z0-9_]{2,}(?:~[1-9][0-9]*)?)\\\\:"
+    );
     public static final Pattern COLOR_RANGE = Pattern.compile("(?<!\\\\)<([a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?<!\\\\)>(.+?)(?<!\\\\)<\\1(?<!\\\\)/(?<!\\\\)>");
     public static final Pattern COLOR_SINGLE = Pattern.compile("(?<!\\\\)<([a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?<!\\\\)/(?<!\\\\)>(\\S+)");
     public static final Pattern COLOR_OPEN = Pattern.compile("(?<!\\\\)<([a-zA-Z]+|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})(?<!\\\\)>(.*?)(?=(?:<|$))");
@@ -51,6 +54,7 @@ public final class MarkdownPattern{
         map.put(URL, MarkdownStyle.URL);
         map.put(DISCORD_MENTION, MarkdownStyle.DISCORD_MENTION);
         map.put(EMOJI, MarkdownStyle.EMOJI);
+        map.put(ESCAPED_EMOJI, MarkdownStyle.ESCAPED_EMOJI);
         map.put(GRADIENT_RANGE, MarkdownStyle.GRADIENT_RANGE);
         map.put(GRADIENT_SINGLE, MarkdownStyle.GRADIENT_SINGLE);
         map.put(GRADIENT_OPEN, MarkdownStyle.GRADIENT_OPEN);
