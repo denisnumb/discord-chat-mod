@@ -1,7 +1,8 @@
 package com.denisnumb.discord_chat_mod;
 
-import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.MinecraftMessageFormatter;
+import com.denisnumb.discord_chat_mod.chat.model.DeathMessageComponents;
 import com.denisnumb.discord_chat_mod.commands.*;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.SetAvatarCommand;
 import com.denisnumb.discord_chat_mod.commands.vanilla.*;
@@ -14,7 +15,6 @@ import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.linking.AccountLinking;
 import com.denisnumb.discord_chat_mod.linking.commands.DiscordLinkCommand;
-import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
@@ -66,7 +66,7 @@ public final class MinecraftEvents {
         if (!(entity instanceof Player) && !(entity instanceof TamableAnimal a && a.isTame()))
             return Optional.empty();
 
-        DeathMessageUtils.DeathMessageComponents components = DeathMessageUtils.getDeathMessageComponents(originalMessage);
+        DeathMessageComponents components = DeathMessageComponents.fromOriginalMessage(originalMessage);
         if (components == null)
             return Optional.empty();
 

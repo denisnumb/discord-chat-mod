@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod.commands.vanilla;
 
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
-import com.denisnumb.discord_chat_mod.chat.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;

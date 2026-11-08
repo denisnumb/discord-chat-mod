@@ -1,22 +1,17 @@
-package com.denisnumb.discord_chat_mod.utils;
+package com.denisnumb.discord_chat_mod.chat.model;
 
 import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import org.jetbrains.annotations.Nullable;
 
-
-public final class DeathMessageUtils {
-    private DeathMessageUtils() {}
-
-    public record DeathMessageComponents(
-            Component diedEntity,
-            String deathCauseLocaleKey,
-            @Nullable Component killerEntity,
-            @Nullable Component killerWeapon
-    ) {}
-
+public record DeathMessageComponents(
+        Component diedEntity,
+        String deathCauseLocaleKey,
+        @Nullable Component killerEntity,
+        @Nullable Component killerWeapon
+) {
     @Nullable
-    public static DeathMessageComponents getDeathMessageComponents(Component original) {
+    public static DeathMessageComponents fromOriginalMessage(Component original) {
         if (!(original.getContents() instanceof TranslatableContents tc))
             return null;
 

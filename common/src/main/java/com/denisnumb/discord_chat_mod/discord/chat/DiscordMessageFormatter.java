@@ -1,13 +1,13 @@
 package com.denisnumb.discord_chat_mod.discord.chat;
 
 
+import com.denisnumb.discord_chat_mod.chat.model.DeathMessageComponents;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateType;
 import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.markdown.ComponentToMarkdownConverter;
-import com.denisnumb.discord_chat_mod.utils.DeathMessageUtils;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -32,7 +32,7 @@ public final class DiscordMessageFormatter {
                 : component.getString();
     }
 
-    public static DiscordMessageBody formatDeathMessage(DeathMessageUtils.DeathMessageComponents components, LivingEntity diedEntity){
+    public static DiscordMessageBody formatDeathMessage(DeathMessageComponents components, LivingEntity diedEntity){
         String deathCauseTemplate = DiscordChatStyleConfig.PLAYER_DEATH_CAUSE_TEMPLATE.get().applyParameters(
                 new TemplateTypes.DeathCause.Params(DiscordLocaleProvider.getTranslate(components.deathCauseLocaleKey())));
 

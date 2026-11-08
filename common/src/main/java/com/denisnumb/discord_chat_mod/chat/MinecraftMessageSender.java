@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat;
 
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
+import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
 import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.config.ConfigDefaults;

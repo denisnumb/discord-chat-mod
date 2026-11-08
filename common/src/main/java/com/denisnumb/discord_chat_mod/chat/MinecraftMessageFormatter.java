@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat;
 
+import com.denisnumb.discord_chat_mod.chat.model.DeathMessageComponents;
+import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
 import com.denisnumb.discord_chat_mod.chat.template.MessageTypes;
 import com.denisnumb.discord_chat_mod.config.configs.MinecraftChatStyleConfig;
@@ -16,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.denisnumb.discord_chat_mod.utils.DeathMessageUtils.*;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.*;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
 

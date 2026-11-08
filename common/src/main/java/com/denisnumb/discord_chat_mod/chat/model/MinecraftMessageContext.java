@@ -1,4 +1,4 @@
-package com.denisnumb.discord_chat_mod.chat;
+package com.denisnumb.discord_chat_mod.chat.model;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
