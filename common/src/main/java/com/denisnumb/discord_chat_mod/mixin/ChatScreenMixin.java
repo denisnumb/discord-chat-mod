@@ -222,11 +222,11 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private EmojiPickerPopup discord_chat_mod$createEmojiPicker() {
         return new EmojiPickerPopup(minecraft, EmojiPickerPopup.Host.of(
-                this::addWidget,
-                this::removeWidget,
-                this::setFocused,
-                this::discord_chat_mod$insertEmoji,
-                this::discord_chat_mod$sendSticker
+                listener -> this.addWidget(listener),
+                listener -> this.removeWidget(listener),
+                listener -> this.setFocused(listener),
+                (entry, keepOpen) -> this.discord_chat_mod$insertEmoji(entry, keepOpen),
+                sticker -> this.discord_chat_mod$sendSticker(sticker)
         ));
     }
 
@@ -268,11 +268,11 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Unique
     private void discord_chat_mod$insertEmoji(PickerEntry entry, boolean keepOpen) {
-        String text = switch (entry) {
-            case PickerEntry.UnicodeEmoji unicode -> unicode.insertText();
-            case PickerEntry.CustomEmoji custom -> custom.insertText() + " ";
-            case PickerEntry.Sticker sticker -> null;
-        };
+        String text = null;
+        if (entry instanceof PickerEntry.UnicodeEmoji unicode)
+            text = unicode.insertText();
+        else if (entry instanceof PickerEntry.CustomEmoji custom)
+            text = custom.insertText() + " ";
 
         if (text != null) {
             String value = this.input.getValue();
