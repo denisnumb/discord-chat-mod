@@ -13,6 +13,7 @@ public final class ConfigDefaults {
     public static final int UTC_OFFSET_HOURS_DEFAULT = 0;
     public static final boolean ENABLE_BOT_PRESENCE_STATUS_DEFAULT = true;
     public static final boolean MENTION_BOTS_DEFAULT = true;
+    public static final String PERMISSIONS_PROVIDER_DEFAULT = "auto";
 
     // =================================================================================================================
     //                                              LOGS CONFIG DEFAULTS
@@ -66,6 +67,21 @@ public final class ConfigDefaults {
 
     public static final List<String> SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_ALLOW_DEFAULT = List.of();
     public static final List<String> SLASH_COMMAND_PERMISSIONS_EXAMPLE_ROLE_DENY_DEFAULT = List.of();
+
+    // =================================================================================================================
+    //                                            ACCOUNT LINKING DEFAULTS
+    // =================================================================================================================
+
+    public static final boolean ACCOUNT_LINKING_ENABLED_DEFAULT = false;
+    public static final int ACCOUNT_LINKING_LINK_CODE_TTL_SECONDS_DEFAULT = 300;
+    public static final int ACCOUNT_LINKING_MAX_ACCOUNTS_PER_DISCORD_USER_DEFAULT = 1;
+    public static final boolean ACCOUNT_LINKING_UNLINK_ON_GUILD_LEAVE_DEFAULT = true;
+    public static final boolean ACCOUNT_LINKING_WHITELIST_LINKED_PLAYERS_DEFAULT = false;
+    public static final String ACCOUNT_LINKING_ROLE_SYNC_DIRECTION_DEFAULT = "DISCORD_TO_MINECRAFT";
+
+    public static final String GUILD_ACCOUNT_LINKING_LINKED_ROLE_DEFAULT = "";
+    public static final boolean GUILD_ACCOUNT_LINKING_NICKNAME_SYNC_DEFAULT = false;
+    public static final String GUILD_ACCOUNT_LINKING_NICKNAME_TEMPLATE_DEFAULT = PLAYER.getPlaceholder();
 
     // =================================================================================================================
     //                                      MINECRAFT CHAT CUSTOMIZATION DEFAULTS

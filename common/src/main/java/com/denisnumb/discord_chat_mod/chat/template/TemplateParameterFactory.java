@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.chat.template;
 
+import com.denisnumb.discord_chat_mod.compat.permissions.IPermissionsCompat;
+import com.denisnumb.discord_chat_mod.compat.permissions.PermissionsCompatProvider;
 import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.denisnumb.discord_chat_mod.utils.PlayerAvatarProvider;
@@ -37,7 +39,7 @@ public final class TemplateParameterFactory {
         else
             result.put(PLAYER_AVATAR_URL, WebhookModeConfig.WEBHOOK_SERVER_AVATAR_URL.get());
 
-        return mergeMaps(result, buildPositionParameters(entity));
+        return mergeMaps(result, buildPositionParameters(entity), buildPermissionParameters(entity));
     }
 
     public static Map<TemplatePlaceholder, Component> buildTimestampParameters(){
@@ -50,7 +52,29 @@ public final class TemplateParameterFactory {
         return result;
     }
 
-    public static Map<TemplatePlaceholder, Component> buildPositionComponentParameters(@Nullable Entity entity){
+    public static Map<TemplatePlaceholder, Component> buildEntityComponentParameters(@Nullable Entity entity){
+        return mergeMaps(buildPositionComponentParameters(entity), buildPermissionComponentParameters(entity));
+    }
+
+    private static Map<TemplatePlaceholder, Component> buildPermissionComponentParameters(@Nullable Entity entity){
+        Map<TemplatePlaceholder, Component> result = new HashMap<>();
+        if (entity instanceof Player player) {
+            IPermissionsCompat permissions = PermissionsCompatProvider.get();
+            result.put(PREFIX, permissions.getPrefix(player).orElse(Component.empty()));
+            result.put(SUFFIX, permissions.getSuffix(player).orElse(Component.empty()));
+        } else {
+            result.put(PREFIX, Component.empty());
+            result.put(SUFFIX, Component.empty());
+        }
+        return result;
+    }
+
+    private static Map<TemplatePlaceholder, String> buildPermissionParameters(@Nullable Entity entity){
+        return buildPermissionComponentParameters(entity).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getString()));
+    }
+
+    private static Map<TemplatePlaceholder, Component> buildPositionComponentParameters(@Nullable Entity entity){
         return buildPositionParameters(entity).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Component.literal(e.getValue())));
     }

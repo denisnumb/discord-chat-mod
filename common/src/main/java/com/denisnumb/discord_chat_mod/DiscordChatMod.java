@@ -14,6 +14,7 @@ import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvi
 import com.denisnumb.discord_chat_mod.discord.data_providers.CustomEmojiProvider;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.linking.AccountLinking;
 import com.mojang.logging.LogUtils;
 import com.neovisionaries.ws.client.ProxySettings;
 import com.neovisionaries.ws.client.WebSocketFactory;
@@ -75,11 +76,14 @@ public final class DiscordChatMod {
         }
 
         CustomChatTypeRegistry.registerChatTypes(server.registryAccess().lookupOrThrow(Registries.CHAT_TYPE));
+        AccountLinking.onServerStarting(server);
     }
 
     public static void onServerStarted() {
         if (LogsConfig.SERVER_LOGS_TO_DISCORD_ENABLED.get())
             ServerLogsRetranslator.start();
+
+        AccountLinking.onServerStarted();
 
         if (server == null || !server.isDedicatedServer())
             return;
@@ -96,6 +100,7 @@ public final class DiscordChatMod {
                 DiscordMessageFormatter.formatServerStopMessage()
         );
         stopJDA();
+        AccountLinking.onServerStopped();
     }
 
     public static void onIntegratedServerStarted(){
@@ -171,6 +176,7 @@ public final class DiscordChatMod {
             DiscordChannelRegistry.initDiscordChannels(DiscordGuildsConfig.discordGuildConfigs);
             initServerStatusController();
             DiscordSlashCommands.register(jda, DiscordChannelRegistry.getAllContexts());
+            AccountLinking.onDiscordReady(jda);
             AvatarUrlStorage.load(server);
 
             if (LogsConfig.SERVER_LOGS_TO_DISCORD_ENABLED.get())
@@ -188,6 +194,7 @@ public final class DiscordChatMod {
     public static void stopJDA() {
         if (jda != null) {
             DiscordSlashCommands.unregister(jda);
+            AccountLinking.onDiscordStopping(jda);
             updateServerStatusMessageToUnavailable();
             ServerLogsRetranslator.stop();
             stopDiscordSendExecutor();

@@ -1,7 +1,9 @@
 package com.denisnumb.discord_chat_mod.discord.model;
 
+import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
 import com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissions;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.jetbrains.annotations.Nullable;
@@ -18,6 +20,7 @@ public class DiscordGuildContext {
     public boolean enableSlashCommands;
     public final Map<String, SlashCommandPermissions> cmdPermissions;
     public final boolean duplicateMessages;
+    public final DiscordGuildsConfig.AccountLinkingGuildConfig accountLinking;
 
     private final Map<ChannelCategory, @Nullable GuildMessageChannel> channels = new EnumMap<>(ChannelCategory.class);
     private final Map<GuildMessageChannel, Webhook> webhooks = new HashMap<>();
@@ -28,13 +31,15 @@ public class DiscordGuildContext {
             boolean duplicateMessages,
             boolean enablePinnedStatusMessage,
             boolean enableSlashCommands,
-            Map<String, SlashCommandPermissions> cmdPermissions
+            Map<String, SlashCommandPermissions> cmdPermissions,
+            DiscordGuildsConfig.AccountLinkingGuildConfig accountLinking
     ) {
         this.guild = guild;
         this.duplicateMessages = duplicateMessages;
         this.enablePinnedStatusMessage = enablePinnedStatusMessage;
         this.enableSlashCommands = enableSlashCommands;
         this.cmdPermissions = cmdPermissions;
+        this.accountLinking = accountLinking;
     }
 
     public void setChannel(ChannelCategory category, @Nullable GuildMessageChannel channel) {
@@ -57,6 +62,11 @@ public class DiscordGuildContext {
 
     public Guild getGuild(){
         return guild;
+    }
+
+    @Nullable
+    public Member getMember(String discordId) {
+        return guild.getMemberById(discordId);
     }
 
     public GuildMessageChannel getDefaultChannel() {

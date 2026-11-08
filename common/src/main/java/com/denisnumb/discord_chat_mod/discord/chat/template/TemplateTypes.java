@@ -289,4 +289,15 @@ public final class TemplateTypes {
             }
         }
     }
+
+    public record LinkedMemberNickname() implements TemplateType {
+        public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, USER);
+        public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
+
+        public record Params(String player, User user) implements ParamsBuilder<LinkedMemberNickname> {
+            public Map<TemplatePlaceholder, String> buildOwnParameters() {
+                return Map.of(PLAYER, player, USER, user.getEffectiveName());
+            }
+        }
+    }
 }

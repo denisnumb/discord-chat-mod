@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.denisnumb.discord_chat_mod.discord.slash_commands.DiscordSlashCommands.*;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.DISCORD_GREEN_COLOR;
 import static com.denisnumb.discord_chat_mod.utils.ColorUtils.Color.DISCORD_RED_COLOR;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.LOGGER;
@@ -70,6 +71,9 @@ public final class SlashCommandListener extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (!DiscordSlashCommands.COMMAND_NAMES.contains(event.getName()))
+            return;
+
         Guild guild = event.getGuild();
 
         if (guild != null){
@@ -85,11 +89,11 @@ public final class SlashCommandListener extends ListenerAdapter {
             }
 
             switch (event.getName()) {
-                case "list" -> handleList(event);
-                case "uptime" -> handleUptime(event);
-                case "tps" -> handleTps(event);
-                case "allowed_commands" -> handleAllowedCommands(event);
-                case "cmd" -> handleCmd(event);
+                case LIST -> handleList(event);
+                case UPTIME -> handleUptime(event);
+                case TPS -> handleTps(event);
+                case ALLOWED_COMMANDS -> handleAllowedCommands(event);
+                case CMD -> handleCmd(event);
             }
         }
     }
@@ -194,7 +198,7 @@ public final class SlashCommandListener extends ListenerAdapter {
             return;
         }
 
-        String command = event.getOption("command").getAsString();
+        String command = event.getOption(OPTION_COMMAND).getAsString();
         String commandName = command.split(" ")[0].replace("/", "");
 
         if (!hasCommandPermission(event.getMember(), commandName)) {

@@ -13,6 +13,8 @@ public enum TemplateParameter implements TemplatePlaceholder {
     MEMBER("{member}"),
     USER("{user}"),
     PLAYER_AVATAR_URL("{player_avatar_url}"),
+    PREFIX("{prefix}"),
+    SUFFIX("{suffix}"),
     X("{x}"),
     Y("{y}"),
     Z("{z}"),

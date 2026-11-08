@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.*;
-import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildPositionComponentParameters;
+import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameterFactory.buildEntityComponentParameters;
 
 public final class MessageTypes {
     private MessageTypes() {}
@@ -33,7 +33,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(PLAYER, ctx.player(), MESSAGE, ctx.content()),
-                        buildPositionComponentParameters(ctx.entity())
+                        buildEntityComponentParameters(ctx.entity())
                 );
             }
         }
@@ -47,7 +47,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(TEAM, ctx.team(), PLAYER, ctx.player(), MESSAGE, ctx.content()),
-                        buildPositionComponentParameters(ctx.entity())
+                        buildEntityComponentParameters(ctx.entity())
                 );
             }
         }
@@ -61,7 +61,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(RECEIVER, ctx.player(), MESSAGE, ctx.content()),
-                        buildPositionComponentParameters(ctx.entity())
+                        buildEntityComponentParameters(ctx.entity())
                 );
             }
         }
@@ -75,7 +75,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(SENDER, ctx.player(), MESSAGE, ctx.content()),
-                        buildPositionComponentParameters(ctx.entity())
+                        buildEntityComponentParameters(ctx.entity())
                 );
             }
         }
@@ -89,7 +89,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(PLAYER, player.getDisplayName()),
-                        buildPositionComponentParameters(player)
+                        buildEntityComponentParameters(player)
                 );
             }
         }
@@ -103,7 +103,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(PLAYER, player.getDisplayName()),
-                        buildPositionComponentParameters(player)
+                        buildEntityComponentParameters(player)
                 );
             }
         }
@@ -117,7 +117,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(DEATH_CAUSE, deathCause),
-                        buildPositionComponentParameters(diedEntity)
+                        buildEntityComponentParameters(diedEntity)
                 );
             }
         }
@@ -131,7 +131,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(PLAYER, displayName),
-                        buildPositionComponentParameters(diedEntity)
+                        buildEntityComponentParameters(diedEntity)
                 );
             }
         }
@@ -167,7 +167,7 @@ public final class MessageTypes {
             public Map<TemplatePlaceholder, Component> buildOwnParameters() {
                 return JavaUtils.mergeMaps(
                         Map.of(PLAYER, player.getDisplayName(), ADVANCEMENT, advancement),
-                        buildPositionComponentParameters(player)
+                        buildEntityComponentParameters(player)
                 );
             }
         }

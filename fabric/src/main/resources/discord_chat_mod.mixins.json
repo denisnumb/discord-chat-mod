@@ -6,6 +6,7 @@
   "mixins": [
     "CommandsMixin",
     "PerformCommandMixin",
+    "PlayerListLoginMixin",
     "chat_style.ServerGamePacketListenerImplMixin",
     "chat_style.TamableAnimalMixin",
     "chat_style.ServerPlayerMixin",

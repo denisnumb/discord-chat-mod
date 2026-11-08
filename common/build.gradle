@@ -6,6 +6,11 @@ architectury {
     common rootProject.enabled_platforms.split(',')
 }
 
+repositories {
+    maven { url = "https://maven.architectury.dev/" }
+    maven { url = "https://maven.ftb.dev/releases" }
+}
+
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
@@ -27,6 +32,10 @@ dependencies {
     implementation("com.electronwill.night-config:toml:3.8.3")
     implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")
     implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+
+    compileOnly("net.luckperms:api:${rootProject.luckperms_api_version}")
+    modCompileOnly("dev.architectury:architectury:${rootProject.architectury_api_version}") { transitive = false }
+    modCompileOnly("dev.ftb.mods:ftb-ranks:${rootProject.ftb_ranks_version}") { transitive = false }
 }
 
 tasks.test {

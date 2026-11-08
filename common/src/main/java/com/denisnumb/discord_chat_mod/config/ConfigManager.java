@@ -68,6 +68,7 @@ public final class ConfigManager {
 
         CommonConfig.load(commonConfig);
         commonConfig.set("guilds", DiscordGuildsConfig.load(commonConfig));
+        commonConfig.set("accountLinking", AccountLinkingConfig.load(commonConfig));
         commonConfig.set("logsConfig", LogsConfig.load(commonConfig));
         commonConfig.set("webhookModeConfig", WebhookModeConfig.load(commonConfig));
         commonConfig.set("discordProxyConfig", DiscordProxyConfig.load(commonConfig));

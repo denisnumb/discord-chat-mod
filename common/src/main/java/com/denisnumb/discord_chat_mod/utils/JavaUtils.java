@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,20 @@ public final class JavaUtils {
         ZoneOffset offset = ZoneOffset.ofHours(offsetHours);
 
         return nowUtc.atOffset(offset);
+    }
+
+    public static <E extends Enum<E>> boolean isEnumValue(Class<E> enumClass, String value) {
+        for (E constant : enumClass.getEnumConstants())
+            if (constant.name().equals(value))
+                return true;
+        return false;
+    }
+
+    public static boolean containsIgnoreCase(Collection<String> values, String value) {
+        for (String v : values)
+            if (v.equalsIgnoreCase(value))
+                return true;
+        return false;
     }
 
     public static InputStream getInputStreamFromUrl(String url) throws IOException, URISyntaxException {

@@ -27,7 +27,7 @@ import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
 public final class DiscordChannelRegistry {
     private DiscordChannelRegistry() {}
 
-    private static final Map<String, DiscordGuildContext> GUILD_CONTEXTS = new HashMap<>();
+    private static volatile Map<String, DiscordGuildContext> guildContexts = Map.of();
     private static Icon webhookAvatar;
 
     private static final List<Permission> requiredPermissions = List.of(
@@ -40,12 +40,13 @@ public final class DiscordChannelRegistry {
             Permission.MESSAGE_HISTORY
     );
 
+    @Nullable
     public static DiscordGuildContext getContext(String guildId) {
-        return GUILD_CONTEXTS.get(guildId);
+        return guildContexts.get(guildId);
     }
 
     public static List<DiscordGuildContext> getAllContexts() {
-        return GUILD_CONTEXTS.values().stream().toList();
+        return List.copyOf(guildContexts.values());
     }
 
     public static boolean isChannelCategoryDisabled(@Nullable GuildMessageChannel channel){
@@ -53,7 +54,7 @@ public final class DiscordChannelRegistry {
     }
 
     public static void initDiscordChannels(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) {
-        GUILD_CONTEXTS.clear();
+        Map<String, DiscordGuildContext> contexts = new LinkedHashMap<>();
 
         String webhookServerAvatarUrl = WebhookModeConfig.WEBHOOK_SERVER_AVATAR_URL.get();
         String webhookAvatarUrl = ImageUtils.isImageUrl(ImageUtils.getMimeType(webhookServerAvatarUrl))
@@ -81,7 +82,8 @@ public final class DiscordChannelRegistry {
                     guildConfig.duplicateMessages(),
                     guildConfig.enablePinnedStatusMessage(),
                     guildConfig.enableSlashCommands(),
-                    guildConfig.slashCommandPermissions()
+                    guildConfig.slashCommandPermissions(),
+                    guildConfig.accountLinking()
             );
             try{
                 context.setDefaultChannel(getDiscordChannel(context, guildConfig.defaultChannelId()));
@@ -107,10 +109,11 @@ public final class DiscordChannelRegistry {
                     context.setChannel(category, channel);
             }
 
-            GUILD_CONTEXTS.put(guildConfig.guildId(), context);
+            contexts.put(guildConfig.guildId(), context);
         }
 
-        if (GUILD_CONTEXTS.isEmpty())
+        guildContexts = Collections.unmodifiableMap(contexts);
+        if (contexts.isEmpty())
             logWarnToServer(MinecraftLocaleProvider.Discord.Warn.noGuildsConfigured());
     }
 

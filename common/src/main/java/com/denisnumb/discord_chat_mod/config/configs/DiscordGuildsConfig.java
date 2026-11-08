@@ -1,5 +1,7 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
+import com.denisnumb.discord_chat_mod.discord.chat.template.StringTemplate;
+import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.slash_commands.permissions.SlashCommandPermissions;
 import com.electronwill.nightconfig.core.CommentedConfig;
@@ -26,7 +28,15 @@ public final class DiscordGuildsConfig {
             boolean enablePinnedStatusMessage,
             boolean enableSlashCommands,
             Map<String, SlashCommandPermissions> slashCommandPermissions,
-            Map<String, String> channelOverrides
+            Map<String, String> channelOverrides,
+            AccountLinkingGuildConfig accountLinking
+    ) { }
+
+    public record AccountLinkingGuildConfig(
+            String linkedRole,
+            boolean nicknameSync,
+            StringTemplate<TemplateTypes.LinkedMemberNickname> nicknameTemplate,
+            Map<String, String> roleSyncMapping
     ) { }
 
     public static List<CommentedConfig> load(CommentedConfig commonConfig){
@@ -52,6 +62,8 @@ public final class DiscordGuildsConfig {
             boolean duplicateMessages = overrides.get("duplicateMessages");
             Map<String, String> channelOverrides = loadChannelOverrides(overrides, guildId);
 
+            AccountLinkingGuildConfig accountLinking = loadAccountLinkingConfig(guildConfig.get("accountLinking"), guildId);
+
             discordGuildConfigs.add(
                     new DiscordGuildConfig(
                             guildId,
@@ -61,7 +73,8 @@ public final class DiscordGuildsConfig {
                             enablePinnedStatusMessage,
                             enableSlashCommands,
                             slashCommandPermissions,
-                            channelOverrides
+                            channelOverrides,
+                            accountLinking
                     )
             );
         }
@@ -105,6 +118,21 @@ public final class DiscordGuildsConfig {
         createFieldIfNotExists(overrides, guildId, "duplicateMessages", DUPLICATE_MESSAGES_DEFAULT, DUPLICATE_MESSAGES_COMMENT);
         for (ChannelCategory category : ChannelCategory.values())
             createFieldIfNotExists(overrides, guildId, category.getConfigName(), OVERRIDE_CHANNEL_ID_DEFAULT, category.getConfigComment());
+
+        if (!guildConfig.contains("accountLinking")) {
+            LOGGER.info("[guildId: {}] Adding missing section \"{}\"", guildId, "accountLinking");
+            guildConfig.set("accountLinking", guildConfig.createSubConfig());
+            guildConfig.setComment("accountLinking", GUILD_ACCOUNT_LINKING_COMMENT);
+        }
+
+        CommentedConfig accountLinking = guildConfig.get("accountLinking");
+        createFieldIfNotExists(accountLinking, guildId, "linkedRole", GUILD_ACCOUNT_LINKING_LINKED_ROLE_DEFAULT, GUILD_ACCOUNT_LINKING_LINKED_ROLE_COMMENT);
+        createFieldIfNotExists(accountLinking, guildId, "nicknameSync", GUILD_ACCOUNT_LINKING_NICKNAME_SYNC_DEFAULT, GUILD_ACCOUNT_LINKING_NICKNAME_SYNC_COMMENT);
+        createFieldIfNotExists(accountLinking, guildId, "nicknameTemplate", GUILD_ACCOUNT_LINKING_NICKNAME_TEMPLATE_DEFAULT, GUILD_ACCOUNT_LINKING_NICKNAME_TEMPLATE_COMMENT);
+        if (!(accountLinking.get("roleSyncMapping") instanceof CommentedConfig)) {
+            accountLinking.set("roleSyncMapping", accountLinking.createSubConfig());
+            accountLinking.setComment("roleSyncMapping", GUILD_ACCOUNT_LINKING_ROLE_SYNC_MAPPING_COMMENT);
+        }
 
         // Migrate from old config versions
         migrateScreenshotChannelId(guildConfig, guildId);
@@ -182,6 +210,30 @@ public final class DiscordGuildsConfig {
         }
 
         return permissions;
+    }
+
+    private static AccountLinkingGuildConfig loadAccountLinkingConfig(CommentedConfig section, String guildId) {
+        String linkedRole = String.valueOf(section.getOrElse("linkedRole", GUILD_ACCOUNT_LINKING_LINKED_ROLE_DEFAULT)).trim();
+        boolean nicknameSync = section.getOrElse("nicknameSync", GUILD_ACCOUNT_LINKING_NICKNAME_SYNC_DEFAULT);
+        String nicknameTemplate = String.valueOf(section.getOrElse("nicknameTemplate", GUILD_ACCOUNT_LINKING_NICKNAME_TEMPLATE_DEFAULT));
+        if (nicknameTemplate.isBlank())
+            nicknameTemplate = GUILD_ACCOUNT_LINKING_NICKNAME_TEMPLATE_DEFAULT;
+
+        Map<String, String> roleSyncMapping = new LinkedHashMap<>();
+        CommentedConfig mapping = section.get("roleSyncMapping");
+        for (CommentedConfig.Entry entry : mapping.entrySet()) {
+            if (entry.getValue() instanceof String group && !group.isBlank())
+                roleSyncMapping.put(entry.getKey().trim(), group.trim());
+            else
+                LOGGER.warn("[guildId: {}] Ignoring \"accountLinking.roleSyncMapping.{}\": the value must be a group name string", guildId, entry.getKey());
+        }
+
+        return new AccountLinkingGuildConfig(
+                linkedRole,
+                nicknameSync,
+                new StringTemplate<>(nicknameTemplate),
+                Collections.unmodifiableMap(roleSyncMapping)
+        );
     }
 
     private static Map<String, String> loadChannelOverrides(CommentedConfig overrides, String guildId) {

@@ -4,6 +4,8 @@ import com.denisnumb.discord_chat_mod.config.core.ConfigParameter;
 import com.denisnumb.discord_chat_mod.config.core.ConfigSection;
 import com.electronwill.nightconfig.core.CommentedConfig;
 
+import java.util.Locale;
+
 import static com.denisnumb.discord_chat_mod.config.ConfigComments.*;
 import static com.denisnumb.discord_chat_mod.config.ConfigDefaults.*;
 
@@ -39,6 +41,14 @@ public final class CommonConfig extends ConfigSection {
             ConfigParameter.ofBoolean("mentionBots")
                     .defaultValue(MENTION_BOTS_DEFAULT)
                     .comment(MENTION_BOTS_COMMENT)
+                    .build();
+
+    public static final ConfigParameter<String, String> PERMISSIONS_PROVIDER =
+            ConfigParameter.ofString("permissionsProvider")
+                    .defaultValue(PERMISSIONS_PROVIDER_DEFAULT)
+                    .comment(PERMISSIONS_PROVIDER_COMMENT)
+                    .normalize(value -> value.trim().toLowerCase(Locale.ROOT))
+                    .validator((value, fallback) -> value.matches("^(auto|luckperms|ftbranks|none)$") ? value : fallback)
                     .build();
 
     public static void load(CommentedConfig commonConfig) {

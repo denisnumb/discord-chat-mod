@@ -36,7 +36,7 @@ public sealed interface MessageType permits
         Set<TemplatePlaceholder> result = new HashSet<>(baseParameters());
         result.addAll(Set.of(HH, MM, SS));
         if (result.contains(PLAYER))
-            result.addAll(Set.of(X, Y, Z, DIMENSION));
+            result.addAll(Set.of(X, Y, Z, DIMENSION, PREFIX, SUFFIX));
         translatable().ifPresent(result::add);
         return result;
     }

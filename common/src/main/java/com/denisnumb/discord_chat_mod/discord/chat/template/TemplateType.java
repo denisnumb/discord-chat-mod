@@ -32,7 +32,8 @@ public sealed interface TemplateType permits
         TemplateTypes.PinnedStatusOnlinePlayers,
         TemplateTypes.GuildForwardedMessage,
         TemplateTypes.GuildForwardedMessageWebhookUsername,
-        TemplateTypes.PlayerListNickname {
+        TemplateTypes.PlayerListNickname,
+        TemplateTypes.LinkedMemberNickname {
     Set<TemplatePlaceholder> baseParameters();
 
     default Optional<Translatable> translatable() {
@@ -46,7 +47,7 @@ public sealed interface TemplateType permits
         Set<TemplatePlaceholder> result = new HashSet<>(baseParameters());
         result.addAll(Set.of(TIMESTAMP, DATETIME));
         if (result.contains(PLAYER))
-            result.addAll(Set.of(X, Y, Z, DIMENSION, PLAYER_AVATAR_URL));
+            result.addAll(Set.of(X, Y, Z, DIMENSION, PLAYER_AVATAR_URL, PREFIX, SUFFIX));
         translatable().ifPresent(result::add);
         return result;
     }

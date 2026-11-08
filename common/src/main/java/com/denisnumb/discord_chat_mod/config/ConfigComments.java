@@ -68,6 +68,29 @@ public final class ConfigComments {
              Set to false to hide bots from the autocomplete and stop resolving "@botname" in player messages into a Discord mention.\
             """;
 
+    public static final String PERMISSIONS_PROVIDER_COMMENT
+            = """
+             Source of player prefixes/suffixes ({prefix} and {suffix} style parameters) and of player groups (role synchronization of accountLinking).\
+
+             Allowed values:\
+
+             "auto" — LuckPerms if it is installed, otherwise FTB Ranks if it is installed, otherwise disabled\
+
+             "luckperms" — LuckPerms groups; prefix and suffix are taken from LuckPerms meta (& color codes and &#RRGGBB are supported)\
+
+             "ftbranks" — FTB Ranks: a "group" is a rank ID (only ranks players are added to, not ranks with conditions).\
+
+                          Prefix and suffix are the text before and after {name} in the ftbranks.name_format node, e.g. "&bVIP {name}".\
+
+                          Note: FTB Ranks already applies ftbranks.name_format to the {player} display name\
+
+             "none" — disabled\
+
+             Without LuckPerms or FTB Ranks the {prefix}/{suffix} parameters are empty and role synchronization does not work.\
+
+             Note: the vanilla {player} display name already contains the scoreboard team prefix/suffix\
+            """;
+
     // =================================================================================================================
     //                                              LOGS CONFIG COMMENTS
     // =================================================================================================================
@@ -192,6 +215,140 @@ public final class ConfigComments {
             """;
 
     // =================================================================================================================
+    //                                            ACCOUNT LINKING COMMENTS
+    // =================================================================================================================
+
+    public static final String ACCOUNT_LINKING_ENABLED_COMMENT
+            = """
+             Linking of Minecraft accounts with Discord accounts.\
+
+             How to link: the player runs /discord link in the game and gets a one-time code, then enters /link code:<code> in Discord.\
+
+             A Minecraft account is linked to a Discord account (not to a member of a particular guild), so linking works in every guild from the [[guilds]] list.\
+
+             The linked role, nicknames and role synchronization are configured for each guild in its [guilds.accountLinking] section.\
+
+             Discord commands /link and /unlink are registered in every guild from the [[guilds]] list, regardless of the guild's enableSlashCommands value.\
+
+             In-game commands: /discord link, /discord unlink, /discord status,\
+
+             /discord admin unlink <player> and /discord admin info <player> (for operators; from Discord they are available via /cmd).\
+            """;
+
+    public static final String ACCOUNT_LINKING_LINK_CODE_TTL_SECONDS_COMMENT
+            = " How long the one-time link code is valid, in seconds.";
+
+    public static final String ACCOUNT_LINKING_MAX_ACCOUNTS_PER_DISCORD_USER_COMMENT
+            = " Maximum number of Minecraft accounts that can be linked to one Discord account.";
+
+    public static final String ACCOUNT_LINKING_UNLINK_ON_GUILD_LEAVE_COMMENT
+            = """
+             If true, accounts are unlinked when the Discord user is no longer a member of any guild from the [[guilds]] list\
+
+             (left, was kicked or banned). Leaving one of several guilds does not unlink the account.\
+
+             Users who left while the server was offline are unlinked on the next Discord connection.\
+            """;
+
+    public static final String ACCOUNT_LINKING_WHITELIST_LINKED_PLAYERS_COMMENT
+            = """
+             If true, the server whitelist is managed by account linking. The whitelist itself must be enabled on the server\
+
+             - the player is added to the whitelist after linking and removed when the account is unlinked (including leaving the guilds)\
+
+             - a player who is not whitelisted and not linked sees a link code instead of the "not whitelisted" message (dedicated server only)\
+
+             Players added manually (/whitelist add <name>, also from Discord via /cmd) can join without linking.\
+            """;
+
+    public static final String ACCOUNT_LINKING_ROLE_SYNC_DIRECTION_COMMENT
+            = """
+             Synchronization of Discord roles with player groups (LuckPerms groups or FTB Ranks ranks, see permissionsProvider).\
+
+             Roles are mapped to groups in the [guilds.accountLinking.roleSyncMapping] section of each guild.\
+
+             Roles and groups are mirrored: a role added/removed in any guild or a group added/removed in the game\
+
+             is added/removed everywhere - on all linked accounts of the user and in all guilds where the group is mapped.\
+
+             A guild without roleSyncMapping is not affected.\
+
+             This setting sets the primary side, the source of truth on full synchronization (server start, Discord connection,\
+
+             config reload, player join, joining/leaving a guild): changes made on the other side while the server was stopped\
+
+             or the bot was disconnected are reverted. A new link merges both sides (nothing is removed).\
+
+             Allowed values:\
+
+             "DISCORD_TO_MINECRAFT" — a group is given if the user has its role in at least one guild. On unlinking the groups are removed from the account\
+
+             "MINECRAFT_TO_DISCORD" — a role is given if at least one linked account has its group. On unlinking the roles follow the remaining accounts\
+
+             [!] Everyone who can manage the mapped roles in any of the guilds or edit player groups can give the privilege everywhere.\
+            """;
+
+
+    // =================================================================================================================
+    //                                         GUILD ACCOUNT LINKING COMMENTS
+    // =================================================================================================================
+
+    public static final String GUILD_ACCOUNT_LINKING_COMMENT
+            = """
+             Account linking settings for this guild (used if accountLinking.enabled = true).\
+
+             [!] linkedRole and roleSyncMapping require the Manage Roles permission, nicknameSync requires Manage Nicknames.\
+
+             [!] The bot's highest role must be above the roles it manages.\
+            """;
+
+    public static final String GUILD_ACCOUNT_LINKING_LINKED_ROLE_COMMENT
+            = """
+             Discord role (ID or name) of this guild that is given to members with a linked account and removed when the account is unlinked.\
+
+             You can use it to hide channels from members who have not linked their account yet (in the Discord channel permissions).\
+
+             Leave blank to disable.\
+            """;
+
+    public static final String GUILD_ACCOUNT_LINKING_NICKNAME_SYNC_COMMENT
+            = """
+             If true, the nickname of linked members in this guild is changed according to nicknameTemplate.\
+
+             The nickname is reset when the account is unlinked. The nickname of the guild owner cannot be changed by bots.\
+            """;
+
+    public static final String GUILD_ACCOUNT_LINKING_NICKNAME_TEMPLATE_COMMENT = String.format(
+            """
+             Discord nickname template (max. 32 characters, longer values are cut)\
+
+             Parameters: %s\
+            """,
+            joinParameters(TemplateTypes.LinkedMemberNickname.BASE_PARAMETERS)
+    );
+
+    public static final String GUILD_ACCOUNT_LINKING_ROLE_SYNC_MAPPING_COMMENT
+            = """
+             Discord role of this guild (ID or name) = player group name. Leave empty to disable role synchronization in this guild.\
+
+             A group mapped in several guilds links their roles: see accountLinking.roleSyncDirection.\
+
+             Only listed roles and groups are changed by the mod. Examples:\
+
+             "123456789012345678" = "vip"\
+
+             "Moderator" = "moderator"\
+
+             One role per group: a role or a group cannot be listed twice in the same guild (such entries are ignored).\
+
+             Roles managed by integrations (Server Booster, bot roles) cannot be given or removed by the bot\
+
+             and are synchronized only from Discord to Minecraft.\
+
+             Requires LuckPerms or FTB Ranks.\
+            """;
+
+    // =================================================================================================================
     //                                              WEBHOOK MODE COMMENTS
     // =================================================================================================================
 
@@ -307,13 +464,16 @@ public final class ConfigComments {
 
              %s, %s, %s, %s — the player's coordinates and dimension name\
 
+             %s, %s — the player's prefix and suffix from the permissions mod (see permissionsProvider). Available wherever the %s parameter is present\
+
              You can read more about this configuration section and see examples here: https://github.com/denisnumb/discord-chat-mod/wiki/Minecraft-Chat-Customization\
 
              [!] If enabled, make sure you don't have any other chat styling mods installed.\
             """,
             HH, MM, SS,
             HH, MM, PLAYER, MESSAGE,
-            X, Y, Z, DIMENSION
+            X, Y, Z, DIMENSION,
+            PREFIX, SUFFIX, PLAYER
     );
 
     public static final String MINECRAFT_CHAT_LINK_COLOR_COMMENT
@@ -509,6 +669,8 @@ public final class ConfigComments {
 
              %s, %s, %s, %s — the player's coordinates and dimension name (available wherever the %s parameter is present)\
 
+             %s, %s — the player's prefix and suffix from the permissions mod without formatting (available wherever the %s parameter is present)\
+
              %s — current number of seconds in the system. It's convenient to substitute when using Discord timestamps, for example: <t:%s:R>\
 
              %s — A string with the current date and time in the format "2025-11-02T10:00:00.000Z". May be useful for embed timestamps.\
@@ -523,6 +685,7 @@ public final class ConfigComments {
             """,
             PLAYER_AVATAR_URL, PLAYER,
             X, Y, Z, DIMENSION, PLAYER,
+            PREFIX, SUFFIX, PLAYER,
             TIMESTAMP, TIMESTAMP,
             DATETIME,
             joinParameters(TemplateTypes.PlayerMessage.BASE_PARAMETERS)

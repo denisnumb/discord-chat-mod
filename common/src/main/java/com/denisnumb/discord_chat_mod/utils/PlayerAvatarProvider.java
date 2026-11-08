@@ -7,11 +7,6 @@ import com.google.gson.JsonParser;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.world.entity.player.Player;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
@@ -37,7 +32,7 @@ public final class PlayerAvatarProvider {
         avatarUrlTemplate = avatarUrlTemplate.replace("<name>", playerName);
 
         if (avatarUrlTemplate.contains("<uuid>")){
-            Optional<String> optionalUUID = getUUIDFromMojangAPI(playerName);
+            Optional<String> optionalUUID = MojangApiUtils.getProfileByName(playerName).map(MojangApiUtils.MojangProfile::rawId);
             if (optionalUUID.isPresent())
                 avatarUrlTemplate = avatarUrlTemplate.replace("<uuid>", optionalUUID.get());
         }
@@ -79,27 +74,6 @@ public final class PlayerAvatarProvider {
 
             return Optional.of(skinUrl.substring(slashIndex + 1));
         } catch (Exception ignored) {}
-
-        return Optional.empty();
-    }
-
-    private static Optional<String> getUUIDFromMojangAPI(String username) {
-        try {
-            URL url = new URI("https://api.mojang.com/users/profiles/minecraft/" + username).toURL();
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            connection.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-            in.close();
-
-            JsonObject json = JsonParser.parseString(response.toString()).getAsJsonObject();
-            return Optional.of(json.get("id").getAsString());
-        } catch (Exception ignored){}
 
         return Optional.empty();
     }

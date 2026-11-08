@@ -10,8 +10,8 @@ import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageComponents;
 import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.discord.data_providers.StickersProvider;
-import com.denisnumb.discord_chat_mod.utils.ColorUtils;
 import com.denisnumb.discord_chat_mod.utils.ComponentUtils;
+import com.denisnumb.discord_chat_mod.utils.NameComponentUtils;
 import com.denisnumb.discord_chat_mod.emoji.EmojiUtils;
 import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
@@ -126,7 +126,7 @@ public final class DiscordEvents extends ListenerAdapter {
 
     private static MessageContext buildMessageContext(Member member, Message message) {
         Component guild = Component.literal(message.getGuild().getName());
-        Component userName = buildUserNameComponent(member);
+        Component userName = NameComponentUtils.discordMember(member, member.getEffectiveName());
         Component replyPrefix = buildReplyPrefix(message.getReferencedMessage());
 
         return new MessageContext(
@@ -134,18 +134,6 @@ public final class DiscordEvents extends ListenerAdapter {
                 userName,
                 replyPrefix
         );
-    }
-
-    private static Component buildUserNameComponent(Member member) {
-        String displayName = ChannelMembersProvider.getMemberDisplayName(member);
-        MutableComponent root = Component.empty().withStyle(style -> style
-                .withInsertion("@" + displayName)
-                .withClickEvent(new ClickEvent.SuggestCommand("/mention " + displayName))
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal(member.getUser().getName())))
-        );
-
-        int[] colors = ColorUtils.parseRoleColors(member.getColors());
-        return root.append(ComponentUtils.buildGradientComponent(member.getEffectiveName(), colors));
     }
 
     private static Component buildReplyPrefix(Message referencedMessage) {

@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "PerformCommandMixin",
+    "PlayerListLoginMixin",
     "chat_style.ServerGamePacketListenerImplMixin",
     "chat_style.TamableAnimalMixin",
     "chat_style.PlayerListMixin",
