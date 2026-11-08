@@ -42,12 +42,44 @@ tasks.test {
     useJUnitPlatform()
 }
 
+import com.denisnumb.buildtools.FillMissingTranslationsTask
+import com.denisnumb.buildtools.GenerateBuildConstantsTask
 import com.denisnumb.buildtools.GenerateLocaleProviderTask
 
+tasks.register("generateBuildConstants", GenerateBuildConstantsTask) {
+    packageName.set("com.denisnumb.discord_chat_mod")
+    constants.put("MINECRAFT_VERSION", rootProject.minecraft_version.toString())
+    constants.put("MOD_VERSION", rootProject.mod_version.toString())
+    outputDirectory.set(layout.buildDirectory.dir("generated/sources/buildConstants"))
+}
+
+sourceSets.main.java.srcDir(tasks.named("generateBuildConstants").map { it.outputDirectory })
+tasks.named("compileJava") { dependsOn("generateBuildConstants") }
+
+def langDir = file("src/main/resources/assets/discord_chat_mod/lang")
+
 tasks.register("generateLocaleProviders", GenerateLocaleProviderTask) {
-    sourceJson.set(file("src/main/resources/assets/discord_chat_mod/lang/en_us.json"))
+    sourceJson.set(new File(langDir, "en_us.json"))
     outputDirectory.set(layout.buildDirectory.dir("generated/sources/localeProvider"))
 }
 
 sourceSets.main.java.srcDir(tasks.named("generateLocaleProviders").map { it.outputDirectory })
 tasks.named("compileJava") { dependsOn("generateLocaleProviders") }
+
+def fillMissingTranslations = tasks.register("fillMissingTranslations", FillMissingTranslationsTask) {
+    sourceJson.set(new File(langDir, "en_us.json"))
+    langDirectory.set(langDir)
+    translator.set(providers.gradleProperty("locale.translator").orElse("google"))
+    apiKey.set(providers.gradleProperty("locale.apiKey")
+            .orElse(providers.environmentVariable("LOCALE_TRANSLATOR_API_KEY")))
+    apiUrl.set(providers.gradleProperty("locale.apiUrl"))
+    failOnError.set(providers.gradleProperty("locale.failOnError").map { it.toBoolean() }.orElse(false))
+    removeObsoleteKeys.set(providers.gradleProperty("locale.removeObsoleteKeys").map { it.toBoolean() }.orElse(false))
+}
+
+if (providers.gradleProperty("locale.autoFill").map { it.toBoolean() }.getOrElse(true)) {
+    // Everything that packs lang files must see the completed versions.
+    tasks.matching { it.name in ["processResources", "sourcesJar"] }.configureEach {
+        dependsOn(fillMissingTranslations)
+    }
+}

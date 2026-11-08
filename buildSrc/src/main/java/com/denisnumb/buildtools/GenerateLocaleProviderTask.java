@@ -32,6 +32,11 @@ public abstract class GenerateLocaleProviderTask extends DefaultTask {
     @OutputDirectory
     public abstract org.gradle.api.file.DirectoryProperty getOutputDirectory();
 
+    public GenerateLocaleProviderTask() {
+        setGroup("localization");
+        setDescription("Generates the Java classes MinecraftLocaleProvider and DiscordLocaleProvider based on the contents of the en_us.json localization file.");
+    }
+
     @TaskAction
     public void generate() throws IOException {
         Path jsonPath = getSourceJson().get().getAsFile().toPath();

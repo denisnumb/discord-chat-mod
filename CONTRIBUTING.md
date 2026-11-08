@@ -22,6 +22,11 @@ Thank you for your interest in the project! Below are some guidelines for contri
 - If a package contains many files, it may be worth separating some of the classes into one common subpackage.
 - Format code before PR
 
+## 🌍 Localization
+- Add new localization keys **only to `en_us.json`**. On build, `:common:fillMissingTranslations` machine-translates them into every other lang file and inserts them in the same place as in `en_us.json`. Existing translations are never overwritten, so feel free to fix auto-translated strings by hand.
+- To add a new language, create an empty `xx_yy.json` (`{}`) next to `en_us.json` and run `./gradlew :common:fillMissingTranslations`.
+- `./gradlew :common:fillMissingTranslations --check` only lists missing keys. Settings (`locale.*`) are in `gradle.properties`.
+
 ---
 
 # Mod update for the new version of the game
