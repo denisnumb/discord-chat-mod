@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -111,9 +112,12 @@ public final class AccountLinkSlashCommands extends ListenerAdapter {
     }
 
     private void replyLinkResult(SlashCommandInteractionEvent event, LinkResult result) {
-        String thumbnailUrl = result.isSuccess() && server != null
-                ? PlayerAvatarProvider.getPlayerAvatarUrl(server.getPlayerList().getPlayer(Objects.requireNonNull(result.link()).uuid()))
-                : null;
+        String thumbnailUrl = null;
+        if (result.isSuccess() && server != null && result.link() != null){
+            Player player = server.getPlayerList().getPlayer(result.link().uuid());
+            if (player != null)
+                thumbnailUrl = PlayerAvatarProvider.getPlayerAvatarUrl(player);
+        }
 
         switch (result.status()) {
             case LINKED -> {

@@ -175,7 +175,7 @@ public abstract class GenerateLocaleProviderTask extends DefaultTask {
                     .append("(").append(paramList).append(") {\n");
             sb.append(indent).append("    return Component.translatableWithFallback(")
                     .append(keyString)
-                    .append(", LocaleStorage.getTranslate(").append(keyString).append(")")
+                    .append(", LocaleStorage.getMinecraftTranslate(").append(keyString).append(")")
                     .append(argListWithLeadingComma)
                     .append(");\n");
             sb.append(indent).append("}\n\n");

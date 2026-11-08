@@ -22,10 +22,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public final class LocaleStorage {
     private LocaleStorage() {}
 
+    private static final Pattern UNSUPPORTED_FORMAT = Pattern.compile("%(\\d+\\$)?[\\d.]*[df]");
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type TYPE = new TypeToken<Map<String, String>>(){}.getType();
@@ -51,6 +53,10 @@ public final class LocaleStorage {
         return LANGUAGE_DATA.containsKey(key)
                 ? LANGUAGE_DATA.get(key)
                 : Language.getInstance().getOrDefault(key);
+    }
+
+    static String getMinecraftTranslate(String key) {
+        return UNSUPPORTED_FORMAT.matcher(getTranslate(key)).replaceAll("%$1s");
     }
 
     public static void loadMinecraftLocale(String locale){
