@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.*;
 
 public final class MentionCommand {
     private MentionCommand() {}

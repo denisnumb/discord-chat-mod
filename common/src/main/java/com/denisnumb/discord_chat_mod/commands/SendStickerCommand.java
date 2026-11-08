@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.sendMessageToAllPlayersFromPlayer;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.*;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromPlayer;
 

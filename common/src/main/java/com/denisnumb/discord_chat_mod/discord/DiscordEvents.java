@@ -61,7 +61,7 @@ public final class DiscordEvents extends ListenerAdapter {
                     .thenAccept(components -> components.forEach(MinecraftMessageSender::sendSystemMessageToAllPlayers));
         }
 
-        DiscordChannelRegistry.getAllContexts().stream()
+        DiscordGuildRegistry.getAllContexts().stream()
                 .filter(ctx -> !ctx.defaultChannel.getId().equals(event.getMessage().getChannelId()))
                 .forEach(ctx -> retranslateGuildMessage(ctx, event));
     }
@@ -252,7 +252,7 @@ public final class DiscordEvents extends ListenerAdapter {
     }
 
     private static boolean isTrackedChannel(String channelId) {
-        return DiscordChannelRegistry.getAllContexts().stream()
+        return DiscordGuildRegistry.getAllContexts().stream()
                 .map(ctx -> ctx.getDefaultChannel().getId())
                 .anyMatch(id -> id.equals(channelId));
     }

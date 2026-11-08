@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.discord.data_providers;
 
 import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
+import com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -43,7 +43,7 @@ public final class ChannelMembersProvider {
     }
 
     public static String getMemberDisplayName(Member member){
-        return DiscordChannelRegistry.getAllContexts().size() > 1
+        return DiscordGuildRegistry.getAllContexts().size() > 1
                 ? member.getUser().getEffectiveName()
                 : member.getEffectiveName();
     }
@@ -53,7 +53,7 @@ public final class ChannelMembersProvider {
             return cachedMembersList;
         lastGetChannelMembers = System.currentTimeMillis();
 
-        List<Member> members = DiscordChannelRegistry.getAllContexts()
+        List<Member> members = DiscordGuildRegistry.getAllContexts()
                 .stream()
                 .flatMap(guildContext -> {
                     var channel = guildContext.getDefaultChannelIfCategoryDisabled(channelCategoryToParseMembers);

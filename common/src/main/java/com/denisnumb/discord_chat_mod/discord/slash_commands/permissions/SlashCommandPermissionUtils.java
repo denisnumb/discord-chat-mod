@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord.slash_commands.permissions;
 
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
+import com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.entities.Member;
 
@@ -64,7 +64,7 @@ public final class SlashCommandPermissionUtils {
         if (member == null)
             return List.of();
 
-        DiscordGuildContext ctx = DiscordChannelRegistry.getContext(member.getGuild().getId());
+        DiscordGuildContext ctx = DiscordGuildRegistry.getContext(member.getGuild().getId());
         if (ctx == null)
             return List.of();
 

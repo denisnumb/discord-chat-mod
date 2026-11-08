@@ -32,7 +32,7 @@ import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 import org.jetbrains.annotations.NotNull;
 
 import static com.denisnumb.discord_chat_mod.utils.AdvancementIconParser.parseAdvancementIcon;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
 

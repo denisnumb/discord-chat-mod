@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord.slash_commands;
 
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
+import com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry;
 import com.denisnumb.discord_chat_mod.discord.ServerStatusController;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
@@ -46,7 +46,7 @@ public final class SlashCommandListener extends ListenerAdapter {
         if (guild == null)
             return;
 
-        DiscordGuildContext ctx = DiscordChannelRegistry.getContext(guild.getId());
+        DiscordGuildContext ctx = DiscordGuildRegistry.getContext(guild.getId());
         String input = event.getFocusedOption().getValue();
         String commandName = input.strip()
                 .split(" ")[0]
@@ -77,7 +77,7 @@ public final class SlashCommandListener extends ListenerAdapter {
         Guild guild = event.getGuild();
 
         if (guild != null){
-            DiscordGuildContext ctx = DiscordChannelRegistry.getContext(guild.getId());
+            DiscordGuildContext ctx = DiscordGuildRegistry.getContext(guild.getId());
             if (ctx == null || !ctx.enableSlashCommands){
                 event.replyEmbeds(new EmbedBuilder()
                                 .setColor(DISCORD_RED_COLOR)

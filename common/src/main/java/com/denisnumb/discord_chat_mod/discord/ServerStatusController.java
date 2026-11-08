@@ -166,7 +166,7 @@ public final class ServerStatusController {
 
     private static Map<DiscordGuildContext, Optional<Message>> findPinnedStatusMessages() {
         try {
-            return DiscordChannelRegistry.getAllContexts()
+            return DiscordGuildRegistry.getAllContexts()
                     .stream()
                     .map(ctx -> {
                         Optional<Message> statusMessage = ctx.getChannel(ChannelCategory.PINNED_STATUS).retrievePinnedMessages()

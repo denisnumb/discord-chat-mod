@@ -1,7 +1,7 @@
 package com.denisnumb.discord_chat_mod.linking.discord;
 
 import com.denisnumb.discord_chat_mod.config.configs.DiscordGuildsConfig;
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
+import com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -30,14 +30,14 @@ public final class LinkingDiscordUtils {
     private static final Set<String> REPORTED_PROBLEMS = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public static List<DiscordGuildContext> getGuilds() {
-        return isDiscordConnected() ? DiscordChannelRegistry.getAllContexts() : List.of();
+        return isDiscordConnected() ? DiscordGuildRegistry.getAllContexts() : List.of();
     }
 
     public static Optional<DiscordGuildContext> getGuild(@Nullable Guild guild) {
         if (guild == null || !isDiscordConnected())
             return Optional.empty();
 
-        return Optional.ofNullable(DiscordChannelRegistry.getContext(guild.getId()));
+        return Optional.ofNullable(DiscordGuildRegistry.getContext(guild.getId()));
     }
 
     public static List<String> getUnavailableGuildIds() {
@@ -47,7 +47,7 @@ public final class LinkingDiscordUtils {
 
         return configs.stream()
                 .map(DiscordGuildsConfig.DiscordGuildConfig::guildId)
-                .filter(id -> !id.isEmpty() && DiscordChannelRegistry.getContext(id) == null)
+                .filter(id -> !id.isEmpty() && DiscordGuildRegistry.getContext(id) == null)
                 .distinct()
                 .toList();
     }

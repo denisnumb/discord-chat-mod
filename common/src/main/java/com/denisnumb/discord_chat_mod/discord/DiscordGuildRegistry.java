@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
 
-public final class DiscordChannelRegistry {
-    private DiscordChannelRegistry() {}
+public final class DiscordGuildRegistry {
+    private DiscordGuildRegistry() {}
 
     private static volatile Map<String, DiscordGuildContext> guildContexts = Map.of();
     private static Icon webhookAvatar;
@@ -53,7 +53,7 @@ public final class DiscordChannelRegistry {
         return channel == null;
     }
 
-    public static void initDiscordChannels(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) {
+    public static void initDiscordGuilds(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) {
         Map<String, DiscordGuildContext> contexts = new LinkedHashMap<>();
 
         String webhookServerAvatarUrl = WebhookModeConfig.WEBHOOK_SERVER_AVATAR_URL.get();

@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.logErrorToServer;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.*;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.*;
 
 
 public final class DiscordMessageSender {

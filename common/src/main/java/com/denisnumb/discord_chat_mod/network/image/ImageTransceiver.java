@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 import static com.denisnumb.discord_chat_mod.chat.MinecraftMessageSender.*;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.LOCAL_RESOURCE_PREFIX;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.getAllContexts;
 
 public final class ImageTransceiver {
     private ImageTransceiver() {}

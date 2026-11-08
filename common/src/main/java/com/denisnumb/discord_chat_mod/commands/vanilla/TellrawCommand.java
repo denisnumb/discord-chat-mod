@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getPlayerListBySelector;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 
 public final class TellrawCommand {

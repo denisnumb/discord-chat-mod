@@ -2,7 +2,7 @@ package com.denisnumb.discord_chat_mod.discord.data_providers;
 
 import com.denisnumb.discord_chat_mod.chat_images.ImageStorage;
 import com.denisnumb.discord_chat_mod.chat_images.model.AbstractImage;
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
+import com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import net.dv8tion.jda.api.entities.sticker.GuildSticker;
 
@@ -50,7 +50,7 @@ public final class StickersProvider {
             return cachedNameToRawStickerDataMap;
         lastGetNameToRawStickerMapGet = System.currentTimeMillis();
 
-        return cachedNameToRawStickerDataMap = DiscordChannelRegistry.getAllContexts()
+        return cachedNameToRawStickerDataMap = DiscordGuildRegistry.getAllContexts()
                 .stream()
                 .map(DiscordGuildContext::getGuild)
                 .flatMap(guild -> guild.getStickers().stream())

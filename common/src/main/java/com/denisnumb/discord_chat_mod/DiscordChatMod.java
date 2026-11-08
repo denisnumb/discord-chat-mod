@@ -55,14 +55,14 @@ public final class DiscordChatMod {
     private static void trySendServerStartMessage() {
         if (!isDiscordConnected())
             return;
-        if (DiscordChannelRegistry.getAllContexts().isEmpty())
+        if (DiscordGuildRegistry.getAllContexts().isEmpty())
             return;
         if (!serverStartPending.compareAndSet(true, false))
             return;
 
         DiscordMessageSender.sendMessageFromServer(
                 ChannelCategory.SERVER_START_STOP,
-                DiscordChannelRegistry.getAllContexts(),
+                DiscordGuildRegistry.getAllContexts(),
                 DiscordMessageFormatter.formatServerStartMessage()
         );
     }
@@ -96,7 +96,7 @@ public final class DiscordChatMod {
         serverStartPending.set(false);
         DiscordMessageSender.sendMessageFromServer(
                 ChannelCategory.SERVER_START_STOP,
-                DiscordChannelRegistry.getAllContexts(),
+                DiscordGuildRegistry.getAllContexts(),
                 DiscordMessageFormatter.formatServerStopMessage()
         );
         stopJDA();
@@ -108,7 +108,7 @@ public final class DiscordChatMod {
             initJDA();
             DiscordMessageSender.sendMessageFromServer(
                     ChannelCategory.SERVER_START_STOP,
-                    DiscordChannelRegistry.getAllContexts(),
+                    DiscordGuildRegistry.getAllContexts(),
                     DiscordMessageFormatter.formatLocalServerStartMessage(server.getPort())
             );
 
@@ -173,9 +173,9 @@ public final class DiscordChatMod {
 
             jda.awaitReady();
             initDiscordSendExecutor();
-            DiscordChannelRegistry.initDiscordChannels(DiscordGuildsConfig.discordGuildConfigs);
+            DiscordGuildRegistry.initDiscordGuilds(DiscordGuildsConfig.discordGuildConfigs);
             initServerStatusController();
-            DiscordSlashCommands.register(jda, DiscordChannelRegistry.getAllContexts());
+            DiscordSlashCommands.register(jda, DiscordGuildRegistry.getAllContexts());
             AccountLinking.onDiscordReady(jda);
             AvatarUrlStorage.load(server);
 

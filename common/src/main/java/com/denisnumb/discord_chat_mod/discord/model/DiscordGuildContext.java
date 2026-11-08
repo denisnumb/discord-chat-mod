@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.isChannelCategoryDisabled;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.isChannelCategoryDisabled;
 
 public class DiscordGuildContext {
     public final Guild guild;

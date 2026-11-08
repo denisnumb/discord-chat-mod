@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import static com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter.formatMessage;
 import static com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry.buildBound;
-import static com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry.getAllContexts;
+import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.handleDiscord;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.sendMessageFromPlayer;
 

@@ -1,6 +1,6 @@
 package com.denisnumb.discord_chat_mod;
 
-import com.denisnumb.discord_chat_mod.discord.DiscordChannelRegistry;
+import com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.DiscordGuildContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -62,7 +62,7 @@ public final class ServerLogsRetranslator {
 
         if (isDiscordConnected()){
             String finalLogs = logs;
-            DiscordChannelRegistry.getAllContexts().stream()
+            DiscordGuildRegistry.getAllContexts().stream()
                     .map(DiscordGuildContext::getServerLogsChannel)
                     .filter(Objects::nonNull)
                     .forEach(logsChannel -> {
