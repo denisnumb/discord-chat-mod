@@ -15,6 +15,8 @@ import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import com.denisnumb.discord_chat_mod.linking.AccountLinking;
 import com.denisnumb.discord_chat_mod.linking.commands.DiscordLinkCommand;
+import com.denisnumb.discord_chat_mod.utils.MinecraftIconParser;
+import com.denisnumb.discord_chat_mod.utils.MinecraftIconParser.MinecraftIcon;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
@@ -31,7 +33,7 @@ import java.util.Optional;
 import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 import org.jetbrains.annotations.NotNull;
 
-import static com.denisnumb.discord_chat_mod.utils.AdvancementIconParser.parseAdvancementIcon;
+import static com.denisnumb.discord_chat_mod.utils.MinecraftIconParser.parseAdvancementIcon;
 import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.getAllContexts;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 import static com.denisnumb.discord_chat_mod.discord.ServerStatusController.updateServerStatusWithDelay;
@@ -88,8 +90,10 @@ public final class MinecraftEvents {
             return Optional.empty();
 
         handleDiscord(() -> {
-            DiscordMessageBody components = DiscordMessageFormatter.formatAdvancementMessage(displayInfo, player, "attachment://icon.png");
-            sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components, parseAdvancementIcon(displayInfo).orElse(null));
+            Optional<MinecraftIcon> icon = parseAdvancementIcon(displayInfo);
+            String iconUrl = icon.map(MinecraftIcon::url).orElse(MinecraftIconParser.DEFAULT_ATTACHMENT_URL);
+            DiscordMessageBody components = DiscordMessageFormatter.formatAdvancementMessage(displayInfo, player, iconUrl);
+            sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components, icon.map(MinecraftIcon::attachment).orElse(null));
         });
 
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
