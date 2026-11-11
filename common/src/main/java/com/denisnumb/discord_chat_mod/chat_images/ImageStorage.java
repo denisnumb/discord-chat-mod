@@ -135,13 +135,16 @@ public final class ImageStorage {
     }
 
     private static void registerImageFromUrl(String imageUrl, String mimeType) throws Exception {
-        try (InputStream input = getImageInputStreamFromUrl(imageUrl)) {
-            registerByMimeType(imageUrl, mimeType, input.readAllBytes());
+        String sourceUrl = getGifPlatformSourceUrl(imageUrl);
+        try (InputStream input = getImageInputStreamFromUrl(sourceUrl)) {
+            byte[] bytes = input.readAllBytes();
+            String detectedMimeType = getMimeType(bytes);
+            registerByMimeType(imageUrl, detectedMimeType.isEmpty() ? mimeType : detectedMimeType, bytes);
         }
     }
 
     private static AbstractImage registerByMimeType(String imageUrl, String mimeType, byte[] bytes) throws Exception {
-        if (isGifPlatformUrl(imageUrl) || isGif(mimeType)) {
+        if (isGif(mimeType)) {
             return registerGif(imageUrl, bytes);
         } else if (isAnimatedWebp(bytes, mimeType)) {
             return registerAnimatedWebp(imageUrl, bytes);
@@ -220,7 +223,7 @@ public final class ImageStorage {
 
                 if (i == 0) {
                     frameSize = new ImageSize(frame.getWidth(), frame.getHeight());
-                    frameDuration = 100;
+                    frameDuration = getFrameDuration(frameMetadata);
 
                     if (isSpoiler)
                         spoilerTextureLocation = buildSpoilerTexture(webpUrl, NativeImage.read(new ByteArrayInputStream(imageBytes)));
@@ -255,12 +258,6 @@ public final class ImageStorage {
     }
 
     private static AbstractImage registerGif(String gifUrl, byte[] gifData) throws Exception {
-        String cacheKey = gifUrl;
-        if (isGiphyGifUrl(gifUrl))
-            gifUrl = getGiphyGifSourceUrl(gifUrl);
-        if (isTenorGifUrl(gifUrl))
-            gifUrl = getTenorGifSourceUrl(gifUrl);
-
         List<Identifier> frames = new ArrayList<>();
         ImageSize frameSize = null;
         int frameDuration = -1;
@@ -332,7 +329,7 @@ public final class ImageStorage {
 
             if (!frames.isEmpty()) {
                 AnimatedImage image = new AnimatedImage(
-                        cacheKey,
+                        gifUrl,
                         frames,
                         getImageScaledSize(frameSize.width(), frameSize.height()),
                         frameSize,
@@ -340,7 +337,7 @@ public final class ImageStorage {
                         isSpoiler,
                         spoilerTextureLocation
                 );
-                IMAGE_CACHE.put(cacheKey, image);
+                IMAGE_CACHE.put(gifUrl, image);
                 return image;
             }
 

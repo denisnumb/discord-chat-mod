@@ -16,7 +16,14 @@ import java.util.List;
 public final class WebpUtils {
     private WebpUtils() {}
 
-    public record FrameMetadata(int xOffset, int yOffset, int width, int height) { }
+    private static final int MIN_FRAME_DURATION_MS = 10;
+    public static final int DEFAULT_FRAME_DURATION_MS = 100;
+
+    public record FrameMetadata(int xOffset, int yOffset, int width, int height, int duration) {
+        public FrameMetadata(int xOffset, int yOffset, int width, int height) {
+            this(xOffset, yOffset, width, height, DEFAULT_FRAME_DURATION_MS);
+        }
+    }
 
     private static int readLittleEndian3Bytes(byte[] data, int offset) {
         return (data[offset] & 0xFF)
@@ -35,21 +42,30 @@ public final class WebpUtils {
                     .order(ByteOrder.LITTLE_ENDIAN)
                     .getInt();
 
-            if (chunkId.equals("ANMF")) {
-                byte[] frameData = Arrays.copyOfRange(data, offset + 8, offset + 20);
+            if (chunkId.equals("ANMF") && offset + 8 + 16 <= data.length) {
+                byte[] frameData = Arrays.copyOfRange(data, offset + 8, offset + 8 + 16);
 
                 int xOffset = readLittleEndian3Bytes(frameData, 0) * 2;
                 int yOffset = readLittleEndian3Bytes(frameData, 3) * 2;
                 int width = readLittleEndian3Bytes(frameData, 6) + 1;
                 int height = readLittleEndian3Bytes(frameData, 9) + 1;
+                int duration = readLittleEndian3Bytes(frameData, 12);
 
-                frames.add(new FrameMetadata(xOffset, yOffset, width, height));
+                frames.add(new FrameMetadata(xOffset, yOffset, width, height, duration));
             }
 
             offset += 8 + chunkSize + (chunkSize % 2);
         }
 
         return frames;
+    }
+
+    public static int getFrameDuration(List<FrameMetadata> frames) {
+        if (frames.isEmpty())
+            return DEFAULT_FRAME_DURATION_MS;
+
+        int duration = frames.getFirst().duration();
+        return duration <= MIN_FRAME_DURATION_MS ? DEFAULT_FRAME_DURATION_MS : duration;
     }
 
     public static boolean isAnimatedWebp(byte[] bytes, String mimeType) {

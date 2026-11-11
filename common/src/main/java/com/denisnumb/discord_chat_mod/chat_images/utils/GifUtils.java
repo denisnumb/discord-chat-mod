@@ -18,7 +18,15 @@ import java.io.IOException;
 public final class GifUtils {
     private GifUtils() {}
 
-    public static String getGiphyGifSourceUrl(String giphyUrl) throws IllegalArgumentException {
+    public static String getGifPlatformSourceUrl(String url) throws IOException {
+        if (ImageUtils.isGiphyGifUrl(url))
+            return getGiphyGifSourceUrl(url);
+        if (ImageUtils.isTenorGifUrl(url))
+            return getTenorGifSourceUrl(url);
+        return url;
+    }
+
+    private static String getGiphyGifSourceUrl(String giphyUrl) throws IllegalArgumentException {
         String url = giphyUrl.stripTrailing();
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
@@ -38,7 +46,7 @@ public final class GifUtils {
         return "https://i.giphy.com/" + gifId + ".gif";
     }
 
-    public static String getTenorGifSourceUrl(String tenorUrl) throws IOException {
+    private static String getTenorGifSourceUrl(String tenorUrl) throws IOException {
         Document doc = Jsoup.connect(tenorUrl)
                 .userAgent("Mozilla/5.0")
                 .get();

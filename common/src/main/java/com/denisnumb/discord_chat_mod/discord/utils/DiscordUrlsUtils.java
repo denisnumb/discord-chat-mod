@@ -7,10 +7,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
+import java.time.Duration;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class DiscordUrlsUtils {
@@ -26,12 +29,20 @@ public final class DiscordUrlsUtils {
      */
     private static final Set<String> DISCORD_HOSTS = Set.of("cdn.discordapp.com", "media.discordapp.net");
 
+    private static final Set<String> KLIPY_HOSTS = Set.of("klipy.com", "www.klipy.com", "klipy.co", "www.klipy.co");
+    private static final Pattern KLIPY_MEDIA_HOST = Pattern.compile("^static\\d*\\.klipy\\.com$");
+
     /**
-     * Retrieves refreshed Discord attachment links asynchronously via message embeds.
+     * Embeds for links sent for the first time may be added later, so wait a bit before each refetch.
+     */
+    private static final Duration REFETCH_DELAY = Duration.ofMillis(700);
+
+    /**
+     * Retrieves refreshed Discord attachment links and direct media links of GIF providers asynchronously
+     * via message embeds.
      *
      * @param message The message to retrieve the refreshed URLs from.
-     *
-     * @return A future that resolves to a mapping of URLs in the message text to the corresponding refreshed URL.
+     * @return A future that resolves to a mapping of URLs in the message text to the corresponding media URL.
      */
     public static @NotNull CompletableFuture<Map<String, String>> retrieveMessageEmbedUrls(Message message) {
         return retrieveMessageEmbedUrls(message, 3);
@@ -48,6 +59,7 @@ public final class DiscordUrlsUtils {
             if (retries > 0 && embedUrls.isEmpty() && hasUrls(message.getContentRaw())) {
                 return message.getChannel()
                         .retrieveMessageById(message.getId())
+                        .delay(REFETCH_DELAY)
                         .submit()
                         .exceptionally(ignored -> message)
                         .thenCompose(refetchedMessage -> retrieveMessageEmbedUrls(refetchedMessage, retries - 1));
@@ -64,16 +76,25 @@ public final class DiscordUrlsUtils {
                     String url = embed.getUrl();
                     if (url == null)
                         return null;
-                    String mediaUrl = getMessageEmbedMediaUrl(embed);
-                    if (mediaUrl == null)
-                        return null;
-                    URI uri = URI.create(url);
-                    if (!DISCORD_HOSTS.contains(uri.getHost()))
-                        return null;
-                    return Map.entry(url, mediaUrl);
+                    String mediaUrl = getEmbedMediaUrl(embed);
+                    return mediaUrl == null ? null : Map.entry(url, mediaUrl);
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (first, second) -> first));
+    }
+
+    /**
+     * @return the media URL that should replace the embed's link, or {@code null} to keep the link as is.
+     */
+    public static @Nullable String getEmbedMediaUrl(MessageEmbed embed) {
+        String host = getHost(embed.getUrl());
+        if (host == null)
+            return null;
+        if (DISCORD_HOSTS.contains(host))
+            return getMessageEmbedMediaUrl(embed);
+        if (KLIPY_HOSTS.contains(host))
+            return getKlipyEmbedMediaUrl(embed);
+        return null;
     }
 
     private static @Nullable String getMessageEmbedMediaUrl(MessageEmbed embed) {
@@ -86,13 +107,42 @@ public final class DiscordUrlsUtils {
         return null;
     }
 
+    private static @Nullable String getKlipyEmbedMediaUrl(MessageEmbed embed) {
+        if (embed.getThumbnail() != null && isKlipyAnimatedImageUrl(embed.getThumbnail().getUrl()))
+            return embed.getThumbnail().getUrl();
+        if (embed.getImage() != null && isKlipyAnimatedImageUrl(embed.getImage().getUrl()))
+            return embed.getImage().getUrl();
+        return null;
+    }
+
+    private static boolean isKlipyAnimatedImageUrl(@Nullable String url) {
+        String host = getHost(url);
+        if (host == null || !KLIPY_MEDIA_HOST.matcher(host).matches())
+            return false;
+
+        String path = URI.create(url).getPath().toLowerCase(Locale.ROOT);
+        return path.endsWith(".webp") || path.endsWith(".gif");
+    }
+
+    private static @Nullable String getHost(@Nullable String url) {
+        if (url == null)
+            return null;
+
+        try {
+            String host = URI.create(url).getHost();
+            return host == null ? null : host.toLowerCase(Locale.ROOT);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     /**
-     * Checks if the {@code text} contains any Discord CDN URLs.
+     * Checks if the {@code text} contains any URLs whose embeds this class handles.
      */
     private static boolean hasUrls(String text) {
         return MarkdownPattern.URL.matcher(text).results().anyMatch(matchResult -> {
-            URI uri = URI.create(matchResult.group());
-            return DISCORD_HOSTS.contains(uri.getHost());
+            String host = getHost(matchResult.group());
+            return host != null && (DISCORD_HOSTS.contains(host) || KLIPY_HOSTS.contains(host));
         });
     }
 }
