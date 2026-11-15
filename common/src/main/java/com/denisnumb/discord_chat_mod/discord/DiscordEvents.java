@@ -38,7 +38,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.jda;
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.server;
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.getServerPlayerCount;
 import static com.denisnumb.discord_chat_mod.discord.utils.DiscordUrlsUtils.retrieveMessageEmbedUrls;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 
@@ -56,7 +55,7 @@ public final class DiscordEvents extends ListenerAdapter {
                     event.getMessage().getContentDisplay());
         }
 
-        if (getServerPlayerCount(server) > 0){
+        if (server != null && server.getPlayerList() != null && !server.getPlayerList().getPlayers().isEmpty()){
             prepareComponents(event.getMessage())
                     .thenAccept(components -> components.forEach(MinecraftMessageSender::sendSystemMessageToAllPlayers));
         }

@@ -3,6 +3,7 @@ package com.denisnumb.discord_chat_mod.commands.vanilla;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender;
@@ -32,17 +33,20 @@ public final class EmoteCommand {
                 CommonMessageFormatter.FormattedMessage chatMessage
                         = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.ME_COMMAND);
 
-                handleDiscord(() -> DiscordMessageSender.sendMessageFromPlayer(
-                        ChannelCategory.ME_COMMAND,
-                        getAllContexts(),
-                        source.getPlayer(),
-                        DiscordMessageFormatter.formatMeCommandMessage(source, chatMessage.forDiscord())
-                ));
+                if (!VanishCompatProvider.isVanished(source.getPlayer())) {
+                    handleDiscord(() -> DiscordMessageSender.sendMessageFromPlayer(
+                            ChannelCategory.ME_COMMAND,
+                            getAllContexts(),
+                            source.getPlayer(),
+                            DiscordMessageFormatter.formatMeCommandMessage(source, chatMessage.forDiscord())
+                    ));
+                }
+
 
                 Component senderComponent = source.getDisplayName();
                 Component messageContent = chatMessage.forMinecraft();
 
-                MinecraftEvents.handleChatMessage(
+                MinecraftEvents.handleBoundChatMessage(
                         CustomChatTypeRegistry.EMOTE_COMMAND,
                         new MinecraftMessageContext(senderComponent, messageContent, null, source.getEntity())
                 ).ifPresentOrElse(

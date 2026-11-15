@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord.chat;
 
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageComponents;
@@ -89,6 +90,8 @@ public final class DiscordMessageSender {
             FileUpload imageData
     ) {
         Optional<String> optionalImageUrl = Optional.empty();
+        if (VanishCompatProvider.isVanished(player))
+            return optionalImageUrl;
 
         for (DiscordGuildContext guildContext : guildContexts) {
             GuildMessageChannel channel = guildContext.getChannel(channelCategory);
@@ -207,6 +210,9 @@ public final class DiscordMessageSender {
             @Nullable StickersProvider.StickerData stickerData,
             @Nullable FileUpload imageData
     ) {
+        if (VanishCompatProvider.isVanished(player))
+            return;
+
         for (DiscordGuildContext guildContext : guildContexts) {
             GuildMessageChannel channel = guildContext.getChannel(channelCategory);
 

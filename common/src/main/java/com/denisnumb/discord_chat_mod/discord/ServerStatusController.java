@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord;
 
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
@@ -13,6 +14,7 @@ import com.mojang.logging.LogUtils;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.restaction.pagination.PinnedMessagePaginationAction;
+import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -26,7 +28,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
-import static com.denisnumb.discord_chat_mod.utils.MinecraftUtils.*;
 import static com.denisnumb.discord_chat_mod.chat.template.TemplateParameter.PLAYER;
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.*;
 
@@ -89,15 +90,16 @@ public final class ServerStatusController {
     }
 
     public static DiscordMessageBody createServerStatusMessageBody() {
-        return getServerPlayerCount(server) == 0
+        int visiblePlayerCount = VanishCompatProvider.getVisiblePlayerCount(server);
+        return visiblePlayerCount == 0
                 ? DiscordMessageFormatter.formatPinnedStatusAvailableMessage()
-                : DiscordMessageFormatter.formatPinnedStatusOnlinePlayersMessage(buildPlayerList(), getServerPlayerCount(server), getServerMaxPlayers(server));
+                : DiscordMessageFormatter.formatPinnedStatusOnlinePlayersMessage(buildPlayerList(), visiblePlayerCount, getServerMaxPlayers(server));
     }
 
     private static String buildPlayerList(){
         int maxNicknames = 50;
 
-        String[] players = getServerPlayerNames(server);
+        String[] players = VanishCompatProvider.getVisiblePlayerNames(server);
         String delimiter = DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_PLAYER_LIST_DELIMITER.get();
         StringTemplate<TemplateTypes.PlayerListNickname> nicknameStyle = DiscordChatStyleConfig.PINNED_STATUS_MESSAGE_PLAYER_LIST_NICKNAME_TEMPLATE.get();
         boolean escapeUnderscore = shouldEscape(nicknameStyle.rawTemplate());
@@ -152,9 +154,16 @@ public final class ServerStatusController {
 
     private static String getOnlineCountString() {
         return DiscordLocaleProvider.Server.Status.onlinePlayers(
-                getServerPlayerCount(server),
+                VanishCompatProvider.getVisiblePlayerCount(server),
                 getServerMaxPlayers(server)
         );
+    }
+
+    private static int getServerMaxPlayers(@Nullable MinecraftServer server) {
+        if (server != null && server.getPlayerList() != null)
+            return server.getMaxPlayers();
+
+        return 20;
     }
 
     public static Optional<Message> sendPinnedStatusMessage(DiscordGuildContext guildContext, DiscordMessageBody body) {

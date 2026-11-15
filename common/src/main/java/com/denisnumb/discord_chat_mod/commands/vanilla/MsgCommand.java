@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands.vanilla;
 
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
@@ -56,12 +57,21 @@ public final class MsgCommand {
     }
 
     private static void sendMessage(CommandSourceStack commandSourceStack, Collection<ServerPlayer> collection, PlayerChatMessage playerChatMessage) {
+        ServerPlayer sender = commandSourceStack.getPlayer();
+        if (sender != null) {
+            Optional<Component> denial = VanishCompatProvider.getPrivateMessageDenial(sender);
+            if (denial.isPresent()) {
+                sender.sendSystemMessage(denial.get());
+                return;
+            }
+        }
+
         CommonMessageFormatter.FormattedMessage chatMessage
                 = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.PLAYER_CHAT);
 
         PlayerChatMessage playerChatMessageStyled = playerChatMessage.withUnsignedContent(chatMessage.forMinecraft());
 
-        MinecraftEvents.handleChatMessage(
+        MinecraftEvents.handleBoundChatMessage(
                 CustomChatTypeRegistry.MSG_COMMAND_INCOMING,
                 new MinecraftMessageContext(commandSourceStack.getDisplayName(), playerChatMessageStyled.decoratedContent(), null, commandSourceStack.getEntity())
         ).ifPresentOrElse(
@@ -81,7 +91,7 @@ public final class MsgCommand {
         boolean bl = false;
 
         for (ServerPlayer serverPlayer : collection) {
-            Optional<Component> styledOutgoingContentOptional = MinecraftEvents.handleChatMessage(
+            Optional<Component> styledOutgoingContentOptional = MinecraftEvents.handleBoundChatMessage(
                     CustomChatTypeRegistry.MSG_COMMAND_OUTGOING,
                     new MinecraftMessageContext(serverPlayer.getDisplayName(), playerChatMessage.decoratedContent(), null, commandSourceStack.getEntity())
             );

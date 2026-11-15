@@ -30,7 +30,9 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Optional;
-import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import static com.denisnumb.discord_chat_mod.utils.MinecraftIconParser.parseAdvancementIcon;
@@ -58,6 +60,13 @@ public final class MinecraftEvents {
             DiscordLinkCommand.register(dispatcher);
     }
 
+    public static Optional<Component> handleBoundChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components) {
+        if (VanishCompatProvider.isVanished(components.entity()))
+            return Optional.empty();
+
+        return handleChatMessage(chatType, components);
+    }
+
     public static Optional<Component> handleChatMessage(ResourceKey<@NotNull ChatType> chatType, MinecraftMessageContext components) {
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
             return Optional.ofNullable(MinecraftMessageFormatter.getStyledChatMessage(chatType, components));
@@ -66,6 +75,9 @@ public final class MinecraftEvents {
 
     public static Optional<Component> handlePlayerOrPetDie(Component originalMessage, LivingEntity entity) {
         if (!(entity instanceof Player) && !(entity instanceof TamableAnimal a && a.isTame()))
+            return Optional.empty();
+
+        if (VanishCompatProvider.isVanished(entity))
             return Optional.empty();
 
         DeathMessageComponents components = DeathMessageComponents.fromOriginalMessage(originalMessage);
@@ -87,6 +99,9 @@ public final class MinecraftEvents {
 
         DisplayInfo displayInfo = advancementHolder.value().display().get();
         if (!displayInfo.shouldAnnounceChat())
+            return Optional.empty();
+
+        if (VanishCompatProvider.isVanished(player))
             return Optional.empty();
 
         handleDiscord(() -> {
@@ -137,7 +152,7 @@ public final class MinecraftEvents {
         if (isJoin)
             AccountLinking.onPlayerJoin(player);
 
-        if (VanishCompatProvider.get().isVanished(player))
+        if (VanishCompatProvider.isVanished(player))
             return Optional.empty();
 
         handleDiscord(() -> {
@@ -153,5 +168,29 @@ public final class MinecraftEvents {
             return Optional.of(MinecraftMessageFormatter.getStyledJoinedLeftMessage(player, isJoin));
         return Optional.empty();
     }
-}
 
+    public static Optional<Component> handleVanishFakeJoinLeave(Player player, boolean isJoin) {
+        if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
+            return Optional.of(MinecraftMessageFormatter.getStyledJoinedLeftMessage(player, isJoin));
+        return Optional.empty();
+    }
+
+    public static void handleVanishStatusChange(ServerPlayer player, boolean vanished) {
+        MinecraftServer srv = player.level().getServer();
+        if (srv == null || !srv.getPlayerList().getPlayers().contains(player))
+            return;
+
+        boolean announce = VanishCompatProvider.announcesFakeJoinLeave();
+
+        handleDiscord(() -> {
+            if (announce) {
+                DiscordMessageBody body = vanished
+                        ? DiscordMessageFormatter.formatPlayerLeftMessage(player)
+                        : DiscordMessageFormatter.formatPlayerJoinedMessage(player);
+
+                sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), body);
+            }
+            updateServerStatusWithDelay();
+        });
+    }
+}

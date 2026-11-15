@@ -3,6 +3,7 @@
   "package": "com.denisnumb.discord_chat_mod.neoforge.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "compat.VanishmodVanishingHandlerMixin"
   ],
   "client": [
     "EditBoxMixin",

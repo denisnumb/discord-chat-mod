@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.chat;
 
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.template.MessageTemplate;
@@ -65,8 +66,10 @@ public final class MinecraftMessageSender {
                 .orElseGet(() -> PLAYER_MESSAGE_TEMPLATE.applyParameters(new MessageTypes.PlayerMessage.Params(ctx)));
 
         try {
-            for (ServerPlayer serverPlayer : playerList.getPlayers())
-                serverPlayer.sendSystemMessage(preparedContent);
+            for (ServerPlayer serverPlayer : playerList.getPlayers()) {
+                if (VanishCompatProvider.canSeePlayer(player, serverPlayer))
+                    serverPlayer.sendSystemMessage(preparedContent);
+            }
         } catch (Exception ignored) {}
     }
 
@@ -123,7 +126,7 @@ public final class MinecraftMessageSender {
 
         for (String playerName : team.getPlayers()){
             ServerPlayer serverPlayer = playerList.getPlayerByName(playerName);
-            if (serverPlayer == null || player.equals(serverPlayer))
+            if (serverPlayer == null || player.equals(serverPlayer) || !VanishCompatProvider.canSeePlayer(player, serverPlayer))
                 continue;
 
             serverPlayer.sendSystemMessage(preparedContent);

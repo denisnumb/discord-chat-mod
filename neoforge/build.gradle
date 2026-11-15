@@ -31,6 +31,17 @@ repositories {
         name = 'NeoForged'
         url = 'https://maven.neoforged.net/releases'
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "CurseMaven"
+                url = "https://cursemaven.com"
+            }
+        }
+        filter {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -56,6 +67,9 @@ dependencies {
     shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-webp:3.12.0")) { transitive = false }
     shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0"))
     compileOnly("org.apache.logging.log4j:log4j-core:2.20.0")
+
+    // Optional integrations (compile only)
+    modCompileOnly("curse.maven:vanishmod-423535:${rootProject.vanishmod_curseforge_file_id}") { transitive = false }
 
     minecraftRuntimeLibraries "net.dv8tion:JDA:6.7.0"
     minecraftRuntimeLibraries "org.json:json:20231013"

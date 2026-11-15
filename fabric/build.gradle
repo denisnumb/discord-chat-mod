@@ -26,6 +26,20 @@ configurations {
     }
 }
 
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
@@ -53,6 +67,9 @@ dependencies {
     shadowBundle(implementation("com.twelvemonkeys.imageio:imageio-core:3.12.0"))
     compileOnly("org.apache.logging.log4j:log4j-core:2.20.0")
 
+    // Optional integrations (compile only)
+    modCompileOnly("maven.modrinth:vanish:${rootProject.melius_vanish_version}") { transitive = false }
+
 
     minecraftRuntimeLibraries "net.dv8tion:JDA:6.7.0"
     minecraftRuntimeLibraries "org.json:json:20231013"
@@ -73,9 +90,6 @@ shadowJar {
     archiveClassifier = 'dev-shadow'
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     mergeServiceFiles()
-
-    // Exclude Vanish API stubs - the real Vanish mod provides these at runtime
-    exclude 'me/drex/vanish/**'
 
     relocate("com.squareup", "com.shadow.com.squareup")
     relocate("com.neovisionaries", "com.shadow.com.neovisionaries")

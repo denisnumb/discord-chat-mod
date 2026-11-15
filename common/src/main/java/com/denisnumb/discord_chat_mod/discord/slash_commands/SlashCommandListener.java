@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.discord.slash_commands;
 
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry;
 import com.denisnumb.discord_chat_mod.discord.ServerStatusController;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
@@ -276,7 +277,9 @@ public final class SlashCommandListener extends ListenerAdapter {
                 Suggestions suggestions = dispatcher.getCompletionSuggestions(parsed)
                         .get(100, TimeUnit.MILLISECONDS);
 
+                Set<String> vanishedNames = VanishCompatProvider.getVanishedPlayerNames(srv);
                 List<String> result = suggestions.getList().stream()
+                        .filter(s -> vanishedNames.isEmpty() || !vanishedNames.contains(s.getText().toLowerCase(Locale.ROOT)))
                         .map(s -> {
                             int start = s.getRange().getStart();
                             String prefix = rawInput.substring(0, start);

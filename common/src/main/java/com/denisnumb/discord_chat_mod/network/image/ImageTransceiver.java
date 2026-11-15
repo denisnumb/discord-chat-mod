@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.network.image;
 
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
 import com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
@@ -112,7 +113,10 @@ public final class ImageTransceiver {
     }
 
     private static void sendImageToAllPlayers(ImagePartPacketPayload payload, ServerPlayer fromPlayer) {
-        List<ServerPlayer> players = getServerPlayerList(fromPlayer);
+        List<ServerPlayer> players = getServerPlayerList(fromPlayer).stream()
+                .filter(p -> VanishCompatProvider.canSeePlayer(fromPlayer, p))
+                .toList();
+
         sendImageDataToPlayers(payload, fromPlayer, players, localResourceUrl -> {
             Component imageComponent = makeImageComponent(payload.displayName(), localResourceUrl);
             sendMessageToAllPlayersFromPlayer(fromPlayer, imageComponent);
@@ -123,6 +127,7 @@ public final class ImageTransceiver {
         SendTarget.Players target = (SendTarget.Players) payload.sendTarget();
         List<ServerPlayer> players = getServerPlayerList(fromPlayer).stream()
                 .filter(p -> target.nicknames().contains(p.getGameProfile().name()))
+                .filter(p -> VanishCompatProvider.canSeePlayer(p, fromPlayer))
                 .toList();
 
         sendImageDataToPlayers(payload, fromPlayer, players, localResourceUrl -> {
@@ -137,6 +142,7 @@ public final class ImageTransceiver {
         Collection<String> teamNicknames = team.getPlayers();
         List<ServerPlayer> players = getServerPlayerList(fromPlayer).stream()
                 .filter(p -> teamNicknames.contains(p.getGameProfile().name()))
+                .filter(p -> VanishCompatProvider.canSeePlayer(fromPlayer, p))
                 .toList();
 
         sendImageDataToPlayers(payload, fromPlayer, players, localResourceUrl -> {

@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.commands.vanilla;
 
+import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
@@ -34,16 +35,18 @@ public final class SayCommand {
                                         CommonMessageFormatter.FormattedMessage chatMessage
                                                 = formatMessage(resolvedMessage.decoratedContent().getString(), ChannelCategory.SAY_COMMAND);
 
-                                        handleDiscord(() -> DiscordMessageSender.sendMessageFromServer(
-                                                ChannelCategory.SAY_COMMAND,
-                                                getAllContexts(),
-                                                DiscordMessageFormatter.formatSayCommandMessage(source, chatMessage.forDiscord())
-                                        ));
+                                        if (!VanishCompatProvider.isVanished(source.getEntity())) {
+                                            handleDiscord(() -> DiscordMessageSender.sendMessageFromServer(
+                                                    ChannelCategory.SAY_COMMAND,
+                                                    getAllContexts(),
+                                                    DiscordMessageFormatter.formatSayCommandMessage(source, chatMessage.forDiscord())
+                                            ));
+                                        }
 
                                         Component senderComponent = source.getDisplayName();
                                         Component messageContent = chatMessage.forMinecraft();
 
-                                        MinecraftEvents.handleChatMessage(
+                                        MinecraftEvents.handleBoundChatMessage(
                                                 CustomChatTypeRegistry.SAY_COMMAND,
                                                 new MinecraftMessageContext(senderComponent, messageContent, null, source.getEntity())
                                         ).ifPresentOrElse(

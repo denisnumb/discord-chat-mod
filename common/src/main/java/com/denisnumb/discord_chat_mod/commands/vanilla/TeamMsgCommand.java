@@ -53,7 +53,7 @@ public final class TeamMsgCommand {
                 = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.PLAYER_CHAT);
 
         PlayerChatMessage playerChatMessageStyled = playerChatMessage.withUnsignedContent(chatMessage.forMinecraft());
-        MinecraftEvents.handleChatMessage(
+        MinecraftEvents.handleBoundChatMessage(
                 CustomChatTypeRegistry.TEAM_MSG_COMMAND_INCOMING,
                 new MinecraftMessageContext(
                         commandSourceStack.getDisplayName(),
@@ -75,7 +75,7 @@ public final class TeamMsgCommand {
             PlayerChatMessage playerChatMessage,
             Component styledIncomingContent
     ) {
-        Optional<Component> styledOutgoungContentOptional = MinecraftEvents.handleChatMessage(
+        Optional<Component> styledOutgoungContentOptional = MinecraftEvents.handleBoundChatMessage(
                 CustomChatTypeRegistry.TEAM_MSG_COMMAND_OUTGOING,
                 new MinecraftMessageContext(
                         commandSourceStack.getDisplayName(),

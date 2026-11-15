@@ -9,12 +9,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-
-import com.denisnumb.discord_chat_mod.compat.VanishCompatProvider;
 
 import java.util.*;
 
@@ -53,22 +49,6 @@ public final class MinecraftUtils {
         LOGGER.warn(message.getString());
         if (LogsConfig.LOG_DISCORD_ERRORS_TO_SERVER_CHAT.get())
             sendSystemMessageToPlayersBySelector(buildLogMessageComponent(message, ChatFormatting.YELLOW.getColor()), LogsConfig.DISCORD_ERRORS_CHAT_PLAYER_SELECTOR.get());
-    }
-
-    public static int getServerPlayerCount(@Nullable MinecraftServer server) {
-        return VanishCompatProvider.get().getVisiblePlayerCount(server);
-    }
-
-    public static int getServerMaxPlayers(@Nullable MinecraftServer server) {
-        if (server != null && server.getPlayerList() != null)
-            return server.getMaxPlayers();
-        return 20;
-    }
-
-    public static String[] getServerPlayerNames(@Nullable MinecraftServer server) {
-        if (server != null && server.getPlayerList() != null)
-            return VanishCompatProvider.get().filterVanishedPlayers(server, server.getPlayerNames());
-        return new String[0];
     }
 
     private static Component buildLogMessageComponent(Component message, int color) {
