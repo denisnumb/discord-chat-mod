@@ -513,4 +513,5 @@ public final class ConfigDefaults {
     public static final boolean ENABLE_ATTACH_IMAGE_BUTTON_DEFAULT = true;
     public static final boolean ENABLE_CLIPBOARD_IMAGE_PASTE_DEFAULT = true;
     public static final boolean ENABLE_EMOJI_PICKER_BUTTON_DEFAULT = true;
+    public static final boolean ENABLE_MARKDOWN_PREVIEW_DEFAULT = true;
 }

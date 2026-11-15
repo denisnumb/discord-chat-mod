@@ -56,6 +56,12 @@ public final class ClientConfig extends ConfigSection {
                     .comment(ENABLE_EMOJI_PICKER_BUTTON_COMMENT)
                     .build();
 
+    public static final ConfigParameter<Boolean, Boolean> ENABLE_MARKDOWN_PREVIEW =
+            ConfigParameter.ofBoolean("enableMarkdownPreview")
+                    .defaultValue(ENABLE_MARKDOWN_PREVIEW_DEFAULT)
+                    .comment(ENABLE_MARKDOWN_PREVIEW_COMMENT)
+                    .build();
+
     public static void load(CommentedConfig clientConfig) {
         ConfigSection.loadAll(ClientConfig.class, clientConfig, clientConfig);
     }

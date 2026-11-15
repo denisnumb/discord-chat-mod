@@ -955,4 +955,7 @@ public final class ConfigComments {
 
     public static final String ENABLE_EMOJI_PICKER_BUTTON_COMMENT
             = " When set to \"true\" it adds a button to the right corner of the chat that opens a window for searching and inserting emojis and sending Discord stickers.";
+
+    public static final String ENABLE_MARKDOWN_PREVIEW_COMMENT
+            = " When set to \"true\", it displays a preview of Markdown styles while typing a message in the chat.";
 }

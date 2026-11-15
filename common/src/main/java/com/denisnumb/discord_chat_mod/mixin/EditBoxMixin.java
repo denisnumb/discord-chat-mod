@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.mixin;
 
+import com.denisnumb.discord_chat_mod.config.configs.ClientConfig;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownEditBoxParser;
 import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -43,7 +44,7 @@ public abstract class EditBoxMixin {
             )
     )
     private void prepareMarkdown(GuiGraphics guiGraphics, int i, int j, float f, CallbackInfo ci, @Local String string) {
-        if (!string.isEmpty() && !value.startsWith("/")) {
+        if (ClientConfig.ENABLE_MARKDOWN_PREVIEW.get() && !string.isEmpty() && !value.startsWith("/")) {
             if (!string.equals(discord_chat_mod$lastInput)){
                 discord_chat_mod$lastInput = string;
                 Component markdown = MarkdownToComponentConverter.convertTokens(MarkdownEditBoxParser.parseMarkdown(string));
@@ -67,6 +68,10 @@ public abstract class EditBoxMixin {
             require = 0
     )
     public FormattedCharSequence modifyBeforeCursorDrawString(FormattedCharSequence formattedCharSequence){
+        if (!ClientConfig.ENABLE_MARKDOWN_PREVIEW.get()){
+            return formattedCharSequence;
+        }
+
         String currentInput = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
         int stringLenBeforeCursor = this.cursorPos - this.displayPos;
         boolean cursorInBounds = stringLenBeforeCursor >= 0 && stringLenBeforeCursor <= currentInput.length();
@@ -88,6 +93,10 @@ public abstract class EditBoxMixin {
             require = 0
     )
     public FormattedCharSequence modifyAfterCursorDrawString(FormattedCharSequence formattedCharSequence){
+        if (!ClientConfig.ENABLE_MARKDOWN_PREVIEW.get()){
+            return formattedCharSequence;
+        }
+
         String currentInput = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
         int stringLenBeforeCursor = this.cursorPos - this.displayPos;
 
