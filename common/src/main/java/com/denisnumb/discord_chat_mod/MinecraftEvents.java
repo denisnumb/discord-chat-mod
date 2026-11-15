@@ -155,14 +155,16 @@ public final class MinecraftEvents {
         if (VanishCompatProvider.isVanished(player))
             return Optional.empty();
 
-        handleDiscord(() -> {
-            DiscordMessageBody components = isJoin
-                    ? DiscordMessageFormatter.formatPlayerJoinedMessage(player)
-                    : DiscordMessageFormatter.formatPlayerLeftMessage(player);
+        if (!(isJoin && DiscordChatMod.announceSingleplayerJoin(player))) {
+            handleDiscord(() -> {
+                DiscordMessageBody components = isJoin
+                        ? DiscordMessageFormatter.formatPlayerJoinedMessage(player)
+                        : DiscordMessageFormatter.formatPlayerLeftMessage(player);
 
-            sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), components);
-            updateServerStatusWithDelay();
-        });
+                sendMessageFromServer(ChannelCategory.PLAYER_JOIN_LEAVE, getAllContexts(), components);
+                updateServerStatusWithDelay();
+            });
+        }
 
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())
             return Optional.of(MinecraftMessageFormatter.getStyledJoinedLeftMessage(player, isJoin));

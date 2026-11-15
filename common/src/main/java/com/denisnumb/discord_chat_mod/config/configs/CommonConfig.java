@@ -43,6 +43,12 @@ public final class CommonConfig extends ConfigSection {
                     .comment(MENTION_BOTS_COMMENT)
                     .build();
 
+    public static final ConfigParameter<Boolean, Boolean> CONNECT_DISCORD_IN_SINGLEPLAYER =
+            ConfigParameter.ofBoolean("connectDiscordInSingleplayer")
+                    .defaultValue(CONNECT_DISCORD_IN_SINGLEPLAYER_DEFAULT)
+                    .comment(CONNECT_DISCORD_IN_SINGLEPLAYER_COMMENT)
+                    .build();
+
     public static final ConfigParameter<String, String> PERMISSIONS_PROVIDER =
             ConfigParameter.ofString("permissionsProvider")
                     .defaultValue(PERMISSIONS_PROVIDER_DEFAULT)

@@ -13,6 +13,7 @@ public final class ConfigDefaults {
     public static final int UTC_OFFSET_HOURS_DEFAULT = 0;
     public static final boolean ENABLE_BOT_PRESENCE_STATUS_DEFAULT = true;
     public static final boolean MENTION_BOTS_DEFAULT = true;
+    public static final boolean CONNECT_DISCORD_IN_SINGLEPLAYER_DEFAULT = false;
     public static final String PERMISSIONS_PROVIDER_DEFAULT = "auto";
 
     // =================================================================================================================

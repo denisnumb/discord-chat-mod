@@ -68,6 +68,9 @@ public final class ConfigComments {
              Set to false to hide bots from the autocomplete and stop resolving "@botname" in player messages into a Discord mention.\
             """;
 
+    public static final String CONNECT_DISCORD_IN_SINGLEPLAYER_COMMENT
+            = " If \"true\", the Discord bot connects as soon as a singleplayer world is loaded, without requiring \"Open to LAN\"";
+
     public static final String PERMISSIONS_PROVIDER_COMMENT
             = """
              Source of player prefixes/suffixes ({prefix} and {suffix} style parameters) and of player groups (role synchronization of accountLinking).\
