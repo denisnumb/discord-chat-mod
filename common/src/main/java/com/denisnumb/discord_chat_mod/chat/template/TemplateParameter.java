@@ -25,6 +25,7 @@ public enum TemplateParameter implements TemplatePlaceholder {
     DEATH_CAUSE("{death_cause}"),
     SECOND_ENTITY("{second_entity}"),
     ITEM("{item}"),
+    ENCHANTMENTS("{enchantments}"),
     DEATH_MESSAGE("{death_message}"),
     ADVANCEMENT("{advancement}"),
     DESCRIPTION("{description}"),

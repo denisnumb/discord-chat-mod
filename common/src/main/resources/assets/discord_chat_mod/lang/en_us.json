@@ -27,6 +27,7 @@
   "discord_chat_mod.command.set_avatar_url.success": "The avatar was installed using the link: %s",
   "discord_chat_mod.command.remove_avatar_url.success": "Avatar removed",
   "discord_chat_mod.command.send_sticker.error.unknown_sticker": "There is no sticker with name %s",
+  "discord_chat_mod.command.show_item.error.empty_hand": "You are not holding an item",
   "discord_chat_mod.command.reload_config.success": "Configuration reloaded",
 
   "discord_chat_mod.send_image.sending": "Sending image...",

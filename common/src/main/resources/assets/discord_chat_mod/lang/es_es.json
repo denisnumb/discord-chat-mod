@@ -25,6 +25,7 @@
   "discord_chat_mod.command.set_avatar_url.success": "El avatar se ha establecido usando el enlace: %s",
   "discord_chat_mod.command.remove_avatar_url.success": "Avatar eliminado",
   "discord_chat_mod.command.send_sticker.error.unknown_sticker": "No existe ningún sticker con el nombre %s",
+  "discord_chat_mod.command.show_item.error.empty_hand": "No tienes ningún objeto en la mano",
   "discord_chat_mod.command.reload_config.success": "Configuración recargada",
   "discord_chat_mod.send_image.sending": "Enviando imagen...",
   "discord_chat_mod.send_image.cooldown": "Espere unos segundos antes de enviar la imagen.",

@@ -46,6 +46,7 @@ public final class MinecraftEvents {
     public static void handleRegisterCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
         MentionCommand.register(dispatcher);
         SendStickerCommand.register(dispatcher);
+        ShowItemCommand.register(dispatcher);
         ReloadConfigCommand.register(dispatcher);
         SayCommand.register(dispatcher);
         TellrawCommand.register(dispatcher, context);
@@ -107,8 +108,9 @@ public final class MinecraftEvents {
         handleDiscord(() -> {
             Optional<MinecraftIcon> icon = parseAdvancementIcon(displayInfo);
             String iconUrl = icon.map(MinecraftIcon::url).orElse(MinecraftIconParser.DEFAULT_ATTACHMENT_URL);
-            DiscordMessageBody components = DiscordMessageFormatter.formatAdvancementMessage(displayInfo, player, iconUrl);
-            sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), components, icon.map(MinecraftIcon::attachment).orElse(null));
+            DiscordMessageBody body = DiscordMessageFormatter.formatAdvancementMessage(displayInfo, player, iconUrl)
+                    .withAttachment(icon.map(MinecraftIcon::attachment).orElse(null));
+            sendMessageFromServer(ChannelCategory.ADVANCEMENTS, getAllContexts(), body);
         });
 
         if (MinecraftChatStyleConfig.ENABLE_MINECRAFT_CHAT_CUSTOMIZATION.get())

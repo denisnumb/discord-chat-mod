@@ -17,12 +17,41 @@ public final class MarkdownToComponentConverter {
     }
 
     public static MutableComponent convertTokens(List<MarkdownToken> tokens, Map<String, DiscordMentionData> mentions) {
+        return convertTokens(tokens, mentions, Map.of());
+    }
+
+    public static MutableComponent convertTokens(List<MarkdownToken> tokens, Map<String, DiscordMentionData> mentions, Map<Character, Component> inlineComponents) {
         MutableComponent result = Component.empty();
 
-        for (MarkdownToken token : tokens)
-            result.append(convertToken(token, mentions));
+        for (MarkdownToken token : tokens) {
+            if (inlineComponents.isEmpty()) {
+                result.append(convertToken(token, mentions));
+                continue;
+            }
+
+            StringBuilder part = new StringBuilder();
+            for (char c : token.text.toCharArray()) {
+                Component inline = inlineComponents.get(c);
+                if (inline == null) {
+                    part.append(c);
+                    continue;
+                }
+
+                appendTokenPart(result, token, part.toString(), mentions);
+                part.setLength(0);
+                result.append(inline.copy());
+            }
+            appendTokenPart(result, token, part.toString(), mentions);
+        }
 
         return result;
+    }
+
+    private static void appendTokenPart(MutableComponent result, MarkdownToken token, String text, Map<String, DiscordMentionData> mentions) {
+        if (text.equals(token.text))
+            result.append(convertToken(token, mentions));
+        else if (!text.isEmpty())
+            result.append(convertToken(token.copyWithText(text, text), mentions));
     }
 
     public static MutableComponent convertToken(MarkdownToken token) {

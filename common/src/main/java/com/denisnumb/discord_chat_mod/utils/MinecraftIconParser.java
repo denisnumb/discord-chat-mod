@@ -7,7 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import net.dv8tion.jda.api.utils.FileUpload;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordAttachment;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class MinecraftIconParser {
     private MinecraftIconParser() {}
@@ -69,7 +70,11 @@ public final class MinecraftIconParser {
 
     private static final float[] CUBE_FACE_LIGHT = {1.0f, 0.6505f, 0.4f};
 
-    public record MinecraftIcon(String url, @Nullable FileUpload attachment) { }
+    private static final int[] GLINT_COLOR = {0x8C, 0x4C, 0xE6};
+
+    private static final Map<String, byte[]> GLINT_VANILLA_ICONS = new ConcurrentHashMap<>();
+
+    public record MinecraftIcon(String url, @Nullable DiscordAttachment attachment) { }
 
     private record ResolvedModel(Map<String, JsonElement> textures, @Nullable String template, boolean hasElements) { }
 
@@ -86,20 +91,79 @@ public final class MinecraftIconParser {
             return Optional.empty();
 
         Identifier model = getItemModel(stack);
+        boolean withGlint = stack.hasFoil();
 
         if (model.getNamespace().equals("minecraft"))
-            return Optional.of(new MinecraftIcon(VANILLA_ICONS_URL + model.getPath() + ".png", null));
+            return Optional.of(parseVanillaIcon(model, withGlint, attachmentName));
 
         try {
             BufferedImage icon = renderModdedIcon(model.getNamespace(), model.getPath());
             if (icon != null)
-                return Optional.of(new MinecraftIcon(getAttachmentUrl(attachmentName), FileUpload.fromData(toPng(icon), attachmentName)));
+                return Optional.of(toAttachmentIcon(toPng(withGlint ? applyGlint(icon) : icon), attachmentName));
             LOGGER.debug("No icon for item model [{}]", model);
         } catch (Exception e) {
             LOGGER.error("MinecraftIconParseError [{}]: {}", model, e.getMessage());
         }
 
         return Optional.empty();
+    }
+
+
+    private static MinecraftIcon parseVanillaIcon(Identifier model, boolean withGlint, String attachmentName) {
+        String url = VANILLA_ICONS_URL + model.getPath() + ".png";
+        if (!withGlint)
+            return new MinecraftIcon(url, null);
+
+        try {
+            byte[] png = GLINT_VANILLA_ICONS.get(url);
+            if (png == null) {
+                BufferedImage icon;
+                try (InputStream input = JavaUtils.getInputStreamFromUrl(url)) {
+                    icon = ImageIO.read(input);
+                }
+                if (icon == null)
+                    return new MinecraftIcon(url, null);
+
+                png = toPng(applyGlint(icon));
+                GLINT_VANILLA_ICONS.put(url, png);
+            }
+            return toAttachmentIcon(png, attachmentName);
+        } catch (Exception e) {
+            LOGGER.debug("Failed to apply enchantment glint to [{}]: {}", url, e.getMessage());
+            return new MinecraftIcon(url, null);
+        }
+    }
+
+    private static MinecraftIcon toAttachmentIcon(byte[] png, String attachmentName) {
+        return new MinecraftIcon(getAttachmentUrl(attachmentName), new DiscordAttachment(attachmentName, png));
+    }
+
+    private static BufferedImage applyGlint(BufferedImage source) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int argb = source.getRGB(x, y);
+                int alpha = argb >>> 24;
+                if (alpha == 0) {
+                    result.setRGB(x, y, argb);
+                    continue;
+                }
+
+                double diagonal = (double) x / width + (double) y / height;
+                double stripe = Math.pow((1 + Math.cos(diagonal * Math.PI * 2.5)) / 2, 3);
+                double strength = 0.12 + 0.5 * stripe;
+
+                int r = Math.min(255, (argb >> 16 & 0xFF) + (int) (GLINT_COLOR[0] * strength));
+                int g = Math.min(255, (argb >> 8 & 0xFF) + (int) (GLINT_COLOR[1] * strength));
+                int b = Math.min(255, (argb & 0xFF) + (int) (GLINT_COLOR[2] * strength));
+                result.setRGB(x, y, alpha << 24 | r << 16 | g << 8 | b);
+            }
+        }
+
+        return result;
     }
 
     public static String getAttachmentUrl(String attachmentName) {

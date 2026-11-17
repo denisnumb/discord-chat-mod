@@ -2,6 +2,7 @@ package com.denisnumb.discord_chat_mod.mixin.chat_style;
 
 import com.denisnumb.discord_chat_mod.MinecraftEvents;
 import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
+import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholderValues;
 import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.compat.vanish.VanishCompatProvider;
 import com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageFormatter;
@@ -57,14 +58,15 @@ public class PlayerListMixin {
         Component playerComponent = player.getDisplayName();
         Component originalContent = originalMessage.decoratedContent();
 
-        CommonMessageFormatter.FormattedMessage chatMessage = formatMessage(originalContent.getString(), ChannelCategory.PLAYER_CHAT);
+        ChatPlaceholderValues placeholderValues = ChatPlaceholderValues.capture(player);
+        CommonMessageFormatter.FormattedMessage chatMessage = formatMessage(originalContent.getString(), ChannelCategory.PLAYER_CHAT, placeholderValues);
 
         if (!VanishCompatProvider.isVanished(player)) {
             handleDiscord(() -> sendMessageFromPlayer(
                     ChannelCategory.PLAYER_CHAT,
                     getAllContexts(),
                     player,
-                    DiscordMessageFormatter.formatPlayerChatMessage(player, chatMessage.forDiscord())
+                    DiscordMessageFormatter.formatPlayerChatMessage(player, chatMessage.forDiscord(), placeholderValues)
             ));
         }
 

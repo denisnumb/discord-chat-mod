@@ -829,6 +829,17 @@ public final class ConfigComments {
             joinParameters(TemplateTypes.ImageMessage.BASE_PARAMETERS)
     );
 
+    public static final String DISCORD_ITEM_DISPLAY_STYLE_COMMENT = String.format(
+            """
+             Item shown by a player with the /show_item command or the [i] placeholder in a chat message\
+
+             For the [i] placeholder: "content" (if set) replaces [i] in the message text, "embed" (if set) is attached to the message.\
+
+             Parameters: %s\
+            """,
+            joinParameters(TemplateTypes.ItemDisplay.BASE_PARAMETERS)
+    );
+
     public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_COMMENT = String.format(
             """
              Server started message\

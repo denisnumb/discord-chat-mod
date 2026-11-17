@@ -63,7 +63,7 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
     }
 
     public final DiscordRequestSender<T> withFiles(FileUpload... files) {
-        if (Arrays.stream(files).allMatch(Objects::nonNull)) {
+        if (files != null && files.length > 0 && Arrays.stream(files).allMatch(Objects::nonNull)) {
             if (request != null) {
                 request.addFiles(files);
             } else {

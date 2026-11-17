@@ -158,6 +158,13 @@ public final class DiscordChatStyleConfig extends ConfigSection {
                             value -> value.replace("{screenshot_url}", TemplateParameter.IMAGE_URL.getPlaceholder())
             ).build();
 
+    public static final ConfigParameter<String, JsonTemplate<TemplateTypes.ItemDisplay>> ITEM_DISPLAY_TEMPLATE =
+            jsonTemplate("discordItemDisplayStyle",
+                    DISCORD_ITEM_DISPLAY_STYLE_DEFAULT,
+                    DISCORD_ITEM_DISPLAY_STYLE_COMMENT,
+                    new TemplateTypes.ItemDisplay()
+            ).build();
+
     public static final ConfigParameter<String, JsonTemplate<TemplateTypes.ServerStarted>> SERVER_STARTED_MESSAGE_TEMPLATE =
             jsonTemplate("discordServerStartedMessageStyle",
                     DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT,

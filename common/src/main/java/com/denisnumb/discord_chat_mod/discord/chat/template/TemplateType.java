@@ -33,7 +33,8 @@ public sealed interface TemplateType permits
         TemplateTypes.GuildForwardedMessage,
         TemplateTypes.GuildForwardedMessageWebhookUsername,
         TemplateTypes.PlayerListNickname,
-        TemplateTypes.LinkedMemberNickname {
+        TemplateTypes.LinkedMemberNickname,
+        TemplateTypes.ItemDisplay {
     Set<TemplatePlaceholder> baseParameters();
 
     default Optional<Translatable> translatable() {

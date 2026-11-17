@@ -8,9 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public record DiscordMessageBody(Optional<String> content, List<MessageEmbed> embeds) {
+public record DiscordMessageBody(Optional<String> content, List<MessageEmbed> embeds, List<DiscordAttachment> attachments) {
     public DiscordMessageBody {
         embeds = List.copyOf(embeds);
+        attachments = List.copyOf(attachments);
+    }
+
+    public DiscordMessageBody(Optional<String> content, List<MessageEmbed> embeds) {
+        this(content, embeds, List.of());
     }
 
     public boolean hasContentAndEmbeds() {
@@ -34,6 +39,26 @@ public record DiscordMessageBody(Optional<String> content, List<MessageEmbed> em
         List<MessageEmbed> merged = new ArrayList<>(embeds);
         extra.stream().limit(free).forEach(merged::add);
 
-        return new DiscordMessageBody(content, merged);
+        return new DiscordMessageBody(content, merged, attachments);
+    }
+
+    public DiscordMessageBody withAttachment(@Nullable DiscordAttachment attachment) {
+        if (attachment == null || attachments.size() >= Message.MAX_FILE_AMOUNT) {
+            return this;
+        }
+
+        List<DiscordAttachment> merged = new ArrayList<>(attachments);
+        merged.add(attachment);
+
+        return new DiscordMessageBody(content, embeds, merged);
+    }
+
+    public DiscordMessageBody withAppended(DiscordMessageBody other) {
+        DiscordMessageBody result = withAdditionalEmbeds(other.embeds);
+
+        for (DiscordAttachment attachment : other.attachments)
+            result = result.withAttachment(attachment);
+
+        return result;
     }
 }

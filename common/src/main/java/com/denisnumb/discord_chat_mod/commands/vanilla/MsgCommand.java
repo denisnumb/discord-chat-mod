@@ -6,6 +6,7 @@ import com.denisnumb.discord_chat_mod.chat.CommonMessageFormatter;
 import com.denisnumb.discord_chat_mod.chat.model.MinecraftMessageContext;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
+import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholderValues;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.commands.CommandSourceStack;
@@ -67,7 +68,7 @@ public final class MsgCommand {
         }
 
         CommonMessageFormatter.FormattedMessage chatMessage
-                = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.PLAYER_CHAT);
+                = formatMessage(playerChatMessage.decoratedContent().getString(), ChannelCategory.PLAYER_CHAT, ChatPlaceholderValues.capture(sender));
 
         PlayerChatMessage playerChatMessageStyled = playerChatMessage.withUnsignedContent(chatMessage.forMinecraft());
 

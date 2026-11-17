@@ -18,7 +18,7 @@ import com.denisnumb.discord_chat_mod.network.image.model.SendTarget;
 import com.denisnumb.discord_chat_mod.network.image.model.SendTargetAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.dv8tion.jda.api.utils.FileUpload;
+import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordAttachment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -197,13 +197,13 @@ public final class ImageTransceiver {
 
     private static void sendImageToDiscord(ImagePartPacketPayload payload, ServerPlayer fromPlayer) {
         String imageUrl = String.format("attachment://%s", payload.fileName());
-        DiscordMessageComponents components = DiscordMessageFormatter.formatImageMessage(fromPlayer, imageUrl);
+        DiscordAttachment image = payload.isSpoiler()
+                ? new DiscordAttachment(ImageUtils.SPOILER_PREFIX + payload.fileName(), payload.imageData(), true)
+                : new DiscordAttachment(payload.fileName(), payload.imageData());
 
-        FileUpload imageFile = payload.isSpoiler()
-                ? FileUpload.fromData(payload.imageData(), ImageUtils.SPOILER_PREFIX + payload.fileName()).asSpoiler()
-                : FileUpload.fromData(payload.imageData(), payload.fileName());
+        DiscordMessageComponents components = DiscordMessageFormatter.formatImageMessage(fromPlayer, imageUrl).withAttachment(image);
 
-        DiscordMessageSender.sendMessageFromPlayer(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, components, imageFile)
+        DiscordMessageSender.sendMessageFromPlayerAndGetAttachmentUrl(ChannelCategory.IMAGES, getAllContexts(), fromPlayer, components)
                 .ifPresentOrElse(
                         discordUrl -> handleSuccessfulDiscordSend(payload.displayName(), discordUrl, fromPlayer),
                         () -> sendImageToAllPlayers(payload, fromPlayer)

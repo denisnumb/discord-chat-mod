@@ -406,6 +406,24 @@ public final class ConfigDefaults {
             }
             """;
 
+    public static final String DISCORD_ITEM_DISPLAY_STYLE_DEFAULT = String.format(
+            """
+            {
+                "embed": {
+                    "title": "%s",
+                    "description": "%s",
+                    "color": "#9B59B6",
+                    "thumbnail": {
+                        "url": "%s"
+                    }
+                }
+            }
+            """,
+            ITEM,
+            ENCHANTMENTS,
+            ICON_URL
+    );
+
     public static final String DISCORD_SERVER_STARTED_MESSAGE_STYLE_DEFAULT = String.format(
             """
             {

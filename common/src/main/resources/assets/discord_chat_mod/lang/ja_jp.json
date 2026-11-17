@@ -25,6 +25,7 @@
   "discord_chat_mod.command.set_avatar_url.success": "次のリンクでアバターを設定しました: %s",
   "discord_chat_mod.command.remove_avatar_url.success": "アバターを削除しました",
   "discord_chat_mod.command.send_sticker.error.unknown_sticker": "%sという名前のステッカーはありません",
+  "discord_chat_mod.command.show_item.error.empty_hand": "アイテムを手に持っていません",
   "discord_chat_mod.command.reload_config.success": "設定が再読み込みされました",
   "discord_chat_mod.send_image.sending": "画像を送信中...",
   "discord_chat_mod.send_image.cooldown": "画像を送信する前に数秒待ってください",

@@ -25,6 +25,7 @@
   "discord_chat_mod.command.set_avatar_url.success": "Avatar został zainstalowany za pomocą linku: %s",
   "discord_chat_mod.command.remove_avatar_url.success": "Awatar usunięty",
   "discord_chat_mod.command.send_sticker.error.unknown_sticker": "Nie ma naklejki z imieniem %s",
+  "discord_chat_mod.command.show_item.error.empty_hand": "Nie trzymasz żadnego przedmiotu",
   "discord_chat_mod.command.reload_config.success": "Konfiguracja została załadowana ponownie",
   "discord_chat_mod.send_image.sending": "Wysyłanie obrazu...",
   "discord_chat_mod.send_image.cooldown": "Poczekaj kilka sekund przed wysłaniem obrazu",

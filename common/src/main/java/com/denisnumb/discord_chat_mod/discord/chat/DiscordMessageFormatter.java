@@ -1,6 +1,9 @@
 package com.denisnumb.discord_chat_mod.discord.chat;
 
 
+import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholder;
+import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholderValues;
+import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholders;
 import com.denisnumb.discord_chat_mod.chat.model.DeathMessageComponents;
 import com.denisnumb.discord_chat_mod.config.configs.DiscordChatStyleConfig;
 import com.denisnumb.discord_chat_mod.discord.chat.model.DiscordMessageBody;
@@ -9,6 +12,9 @@ import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateType;
 import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.markdown.ComponentToMarkdownConverter;
 import com.denisnumb.discord_chat_mod.locale.DiscordLocaleProvider;
+import com.denisnumb.discord_chat_mod.utils.ItemDisplayUtils;
+import com.denisnumb.discord_chat_mod.utils.MinecraftIconParser;
+import com.denisnumb.discord_chat_mod.utils.MinecraftIconParser.MinecraftIcon;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.minecraft.advancements.DisplayInfo;
@@ -18,9 +24,15 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public final class DiscordMessageFormatter {
@@ -62,6 +74,24 @@ public final class DiscordMessageFormatter {
             case CHALLENGE -> DiscordChatStyleConfig.ADVANCEMENT_CHALLENGE_TEMPLATE.get().applyParameters(paramsBuilder);
             case GOAL -> DiscordChatStyleConfig.ADVANCEMENT_GOAL_TEMPLATE.get().applyParameters(paramsBuilder);
         };
+    }
+
+    public static DiscordMessageBody formatItemDisplayMessage(Player player, ItemStack stack) {
+        Optional<MinecraftIcon> icon = MinecraftIconParser.parseItemIcon(stack);
+
+        String item = ComponentToMarkdownConverter.componentToDiscordMarkdown(stack.getHoverName());
+        String enchantments = ItemDisplayUtils.getEnchantmentNames(stack, player.level().registryAccess()).stream()
+                .map(ComponentToMarkdownConverter::componentToDiscordMarkdown)
+                .collect(Collectors.joining("\n"));
+        String iconUrl = icon.map(MinecraftIcon::url).orElse(MinecraftIconParser.DEFAULT_ATTACHMENT_URL);
+
+        DiscordMessageBody body = DiscordChatStyleConfig.ITEM_DISPLAY_TEMPLATE.get().applyParameters(
+                new TemplateTypes.ItemDisplay.Params(player, item, enchantments, iconUrl)
+        );
+
+        return body.embeds().isEmpty()
+                ? body
+                : body.withAttachment(icon.map(MinecraftIcon::attachment).orElse(null));
     }
 
     public static DiscordMessageBody formatPlayerJoinedMessage(Player player) {
@@ -119,6 +149,40 @@ public final class DiscordMessageFormatter {
                 DiscordChatStyleConfig.PLAYER_MESSAGE_WEBHOOK_TEMPLATE.get().applyParameters(params),
                 DiscordChatStyleConfig.PLAYER_MESSAGE_TEMPLATE.get().applyParameters(params)
         );
+    }
+
+    public static DiscordMessageComponents formatPlayerChatMessage(Player player, String message, ChatPlaceholderValues placeholderValues) {
+        Map<ChatPlaceholder, DiscordMessageBody> values = formatChatPlaceholders(player, placeholderValues, ChatPlaceholders.find(message));
+
+        Map<ChatPlaceholder, String> inlineValues = new EnumMap<>(ChatPlaceholder.class);
+        values.forEach((placeholder, value) -> inlineValues.put(placeholder, Objects.requireNonNullElse(value.getContent(), "")));
+
+        DiscordMessageComponents components = formatPlayerChatMessage(player, ChatPlaceholders.replaceForDiscord(message, inlineValues));
+        for (DiscordMessageBody value : values.values())
+            components = components.withAppended(value);
+
+        return components;
+    }
+
+    private static Map<ChatPlaceholder, DiscordMessageBody> formatChatPlaceholders(
+            Player player,
+            ChatPlaceholderValues placeholderValues,
+            Set<ChatPlaceholder> placeholders
+    ) {
+        Map<ChatPlaceholder, DiscordMessageBody> result = new EnumMap<>(ChatPlaceholder.class);
+
+        for (ChatPlaceholder placeholder : placeholders) {
+            DiscordMessageBody value = switch (placeholder) {
+                case ITEM -> placeholderValues.heldItem().isEmpty()
+                        ? null
+                        : formatItemDisplayMessage(player, placeholderValues.heldItem());
+            };
+
+            if (value != null)
+                result.put(placeholder, value);
+        }
+
+        return result;
     }
 
     public static DiscordMessageComponents formatMeCommandMessage(CommandSourceStack source, String message) {

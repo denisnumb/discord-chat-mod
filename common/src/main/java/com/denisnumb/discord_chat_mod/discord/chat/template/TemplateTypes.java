@@ -167,6 +167,20 @@ public final class TemplateTypes {
         }
     }
 
+    public record ItemDisplay() implements TemplateType {
+        public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(PLAYER, ITEM, ENCHANTMENTS, ICON_URL);
+        public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
+
+        public record Params(Entity player, String item, String enchantments, String iconUrl) implements ParamsBuilder<ItemDisplay> {
+            public Map<TemplatePlaceholder, String> buildOwnParameters() {
+                return JavaUtils.mergeMaps(
+                        Map.of(ITEM, item, ENCHANTMENTS, enchantments, ICON_URL, iconUrl),
+                        TemplateParameterFactory.buildPlayerParameters(player)
+                );
+            }
+        }
+    }
+
     public sealed interface AdvancementTemplateType extends TemplateType permits
             AdvancementTask,
             AdvancementGoal,

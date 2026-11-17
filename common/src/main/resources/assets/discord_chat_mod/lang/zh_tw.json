@@ -25,6 +25,7 @@
   "discord_chat_mod.command.set_avatar_url.success": "已設定頭像，連結：%s",
   "discord_chat_mod.command.remove_avatar_url.success": "頭像已移除",
   "discord_chat_mod.command.send_sticker.error.unknown_sticker": "沒有名為 %s 的貼圖",
+  "discord_chat_mod.command.show_item.error.empty_hand": "你手中沒有物品",
   "discord_chat_mod.command.reload_config.success": "設定已重新載入",
   "discord_chat_mod.send_image.sending": "正在發送圖像...",
   "discord_chat_mod.send_image.cooldown": "請等待幾秒鐘再發送圖像",
