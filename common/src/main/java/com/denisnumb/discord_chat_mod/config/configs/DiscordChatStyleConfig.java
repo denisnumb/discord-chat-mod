@@ -235,6 +235,14 @@ public final class DiscordChatStyleConfig extends ConfigSection {
                     new TemplateTypes.GuildForwardedMessage()
             ).build();
 
+    public static final ConfigParameter<String, StringTemplate<TemplateTypes.SharedWaypoint>> XAERO_WAYPOINT_TEMPLATE =
+            ConfigParameter.ofString("discordXaeroWaypointStyle")
+                    .defaultValue(DISCORD_XAERO_WAYPOINT_STYLE_DEFAULT)
+                    .comment(DISCORD_XAERO_WAYPOINT_STYLE_COMMENT)
+                    .validator((value, fallback) -> value.isBlank() ? fallback : value)
+                    .transform(t -> new StringTemplate<TemplateTypes.SharedWaypoint>(t))
+                    .build();
+
     private static <T extends TemplateType> ConfigParameterBuilder<String, JsonTemplate<T>> jsonTemplate(
             String key,
             String defaultValue,

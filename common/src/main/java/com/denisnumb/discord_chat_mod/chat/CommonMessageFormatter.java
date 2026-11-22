@@ -1,29 +1,28 @@
 package com.denisnumb.discord_chat_mod.chat;
 
-import com.denisnumb.discord_chat_mod.discord.data_providers.ChannelMembersProvider;
-import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
-import com.denisnumb.discord_chat_mod.discord.model.DiscordMentionData;
-import com.denisnumb.discord_chat_mod.discord.model.DiscordUserData;
-import com.denisnumb.discord_chat_mod.markdown.MarkdownParser;
-import com.denisnumb.discord_chat_mod.markdown.MarkdownToComponentConverter;
-import com.denisnumb.discord_chat_mod.markdown.MinecraftFormattingConverter;
-import com.denisnumb.discord_chat_mod.emoji.EmojiUtils;
-import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholder;
+import com.denisnumb.discord_chat_mod.chat.message_part.MessageFormatContext;
+import com.denisnumb.discord_chat_mod.chat.message_part.MessagePart;
+import com.denisnumb.discord_chat_mod.chat.message_part.MessagePartFinder;
+import com.denisnumb.discord_chat_mod.chat.message_part.TextPart;
 import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholderValues;
-import com.denisnumb.discord_chat_mod.chat.placeholder.ChatPlaceholders;
+import com.denisnumb.discord_chat_mod.compat.xaero.XaeroWaypoint;
+import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-
-import static com.denisnumb.discord_chat_mod.DiscordChatMod.isDiscordConnected;
 
 public final class CommonMessageFormatter {
     private CommonMessageFormatter() {}
 
     public record FormattedMessage(Component forMinecraft, String forDiscord) {}
+
+    private static final List<MessagePartFinder> PART_FINDERS = List.of(
+            XaeroWaypoint.FINDER
+    );
 
     public static FormattedMessage formatMessage(String message, ChannelCategory chatCategoryToParseMembers) {
         return format(message, chatCategoryToParseMembers, null);
@@ -34,41 +33,53 @@ public final class CommonMessageFormatter {
     }
 
     private static FormattedMessage format(String message, ChannelCategory chatCategoryToParseMembers, @Nullable ChatPlaceholderValues placeholderValues) {
-        Map<String, DiscordMentionData> mentions = Map.of();
-        String forDiscord = message;
+        MessageFormatContext context = MessageFormatContext.create(chatCategoryToParseMembers, placeholderValues);
 
-        if (isDiscordConnected()) {
-            List<DiscordUserData> memberData
-                    = ChannelMembersProvider.getMemberData(chatCategoryToParseMembers);
+        List<FormattedMessage> formattedParts = splitIntoParts(message).stream()
+                .map(part -> part.format(context))
+                .toList();
 
-            for (DiscordUserData member : memberData)
-                if (message.contains(member.prettyMention))
-                    message = message.replace(member.prettyMention, member.mentionString);
+        return join(formattedParts);
+    }
 
-            mentions = new HashMap<>();
-            for (DiscordUserData member : memberData)
-                mentions.put(member.mentionString, new DiscordMentionData(member));
+    private static List<MessagePart> splitIntoParts(String message) {
+        List<MessagePartFinder.Match> matches = PART_FINDERS.stream()
+                .flatMap(finder -> finder.find(message).stream())
+                .sorted(Comparator.comparingInt(MessagePartFinder.Match::start))
+                .toList();
 
-            forDiscord = MinecraftFormattingConverter.toDiscordMarkdown(
-                    MarkdownParser.removeColorTags(
-                            EmojiUtils.replaceEmojiCodesToDiscordMentions(message)
-                    )
-            );
+        List<MessagePart> parts = new ArrayList<>();
+        int position = 0;
+
+        for (MessagePartFinder.Match match : matches) {
+            if (match.start() < position)
+                continue;
+
+            if (match.start() > position)
+                parts.add(new TextPart(message.substring(position, match.start())));
+
+            parts.add(match.part());
+            position = match.end();
         }
 
-        String forMinecraftText = message;
-        Map<Character, Component> placeholderComponents = new HashMap<>();
+        if (position < message.length() || parts.isEmpty())
+            parts.add(new TextPart(message.substring(position)));
 
-        if (placeholderValues != null) {
-            Map<ChatPlaceholder, Component> values = placeholderValues.forMinecraft(ChatPlaceholders.find(message));
-            values.forEach((placeholder, value) -> placeholderComponents.put(placeholder.marker(), value));
-            forMinecraftText = ChatPlaceholders.markForMinecraft(message, values.keySet());
+        return parts;
+    }
+
+    private static FormattedMessage join(List<FormattedMessage> parts) {
+        if (parts.size() == 1)
+            return parts.getFirst();
+
+        MutableComponent forMinecraft = Component.empty();
+        StringBuilder forDiscord = new StringBuilder();
+
+        for (FormattedMessage part : parts) {
+            forMinecraft.append(part.forMinecraft());
+            forDiscord.append(part.forDiscord());
         }
 
-        Component forMinecraft = MarkdownToComponentConverter.convertTokens(
-                MarkdownParser.parseMarkdown(forMinecraftText), mentions, placeholderComponents
-        );
-
-        return new FormattedMessage(forMinecraft, forDiscord);
+        return new FormattedMessage(forMinecraft, forDiscord.toString());
     }
 }

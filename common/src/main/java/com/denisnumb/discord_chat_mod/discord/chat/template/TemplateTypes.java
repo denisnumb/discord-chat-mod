@@ -314,4 +314,37 @@ public final class TemplateTypes {
             }
         }
     }
+
+    public record SharedWaypoint() implements TemplateType {
+        public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(WAYPOINT, DIMENSION, X, Y, Z);
+        public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
+
+        public record Params(String waypoint, String dimension, String x, String y, String z) implements ParamsBuilder<SharedWaypoint> {
+            public Map<TemplatePlaceholder, String> buildOwnParameters() {
+                return Map.of(
+                        WAYPOINT, waypoint,
+                        DIMENSION, dimension,
+                        X, x,
+                        Y, y,
+                        Z, z
+                );
+            }
+        }
+    }
+
+    public record WebMapLink() implements TemplateType {
+        public static final Set<TemplatePlaceholder> BASE_PARAMETERS = Set.of(WORLD, X, Y, Z);
+        public Set<TemplatePlaceholder> baseParameters() { return BASE_PARAMETERS; }
+
+        public record Params(String world, int x, int y, int z) implements ParamsBuilder<WebMapLink> {
+            public Map<TemplatePlaceholder, String> buildOwnParameters() {
+                return Map.of(
+                        WORLD, world,
+                        X, String.valueOf(x),
+                        Y, String.valueOf(y),
+                        Z, String.valueOf(z)
+                );
+            }
+        }
+    }
 }

@@ -40,7 +40,9 @@ public enum TemplateParameter implements TemplatePlaceholder {
     DATETIME("{datetime}"),
     GUILD("{guild}"),
     COUNTER("{counter}"),
-    COMMAND("{command}");
+    COMMAND("{command}"),
+    WAYPOINT("{waypoint}"),
+    WORLD("{world}");
 
     private final String placeholder;
     private final String markdownSafePlaceholder;

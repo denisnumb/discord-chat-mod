@@ -72,6 +72,7 @@ public final class ConfigManager {
         commonConfig.set("logsConfig", LogsConfig.load(commonConfig));
         commonConfig.set("webhookModeConfig", WebhookModeConfig.load(commonConfig));
         commonConfig.set("discordProxyConfig", DiscordProxyConfig.load(commonConfig));
+        commonConfig.set("webMap", WebMapConfig.load(commonConfig));
         commonConfig.set("minecraftChatStyle", MinecraftChatStyleConfig.load(commonConfig));
         commonConfig.set("discordChatStyle", DiscordChatStyleConfig.load(commonConfig));
         removeDeprecatedParameters(commonConfig);

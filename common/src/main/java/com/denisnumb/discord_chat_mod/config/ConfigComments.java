@@ -402,6 +402,40 @@ public final class ConfigComments {
             = " Leave blank if no certificate required.";
 
     // =================================================================================================================
+    //                                                WEB MAP COMMENTS
+    // =================================================================================================================
+
+    public static final String FORMAT_XAERO_WAYPOINTS_COMMENT
+            = """
+             If true, waypoints shared to the chat by Xaero's Minimap ("xaero-waypoint:Home:H:957:65:4616:...") are sent to Discord as readable text:\
+
+             [Overworld] Home (957, 65, 4616)\
+
+             If webMapLinkTemplate is set, the text becomes a link to this place on the web map.\
+
+             The text is set by discordXaeroWaypointStyle in the [discordChatStyle] section.\
+
+             Messages in the game are not changed, so Xaero's Minimap still recognizes shared waypoints.\
+            """;
+
+    public static final String WEB_MAP_LINK_TEMPLATE_COMMENT = String.format(
+            """
+             Link to a place on the web map. Leave blank to send waypoints to Discord without links\
+
+             Parameters: %s\
+
+             Examples:\
+
+             BlueMap: "https://map.example.com/#{world}:{x}:{y}:{z}:200:0:0:0:1:flat"\
+
+             squaremap: "https://map.example.com/?world={world}&zoom=3&x={x}&z={z}"\
+
+             Dynmap: "https://map.example.com/?worldname={world}&mapname=flat&zoom=6&x={x}&y={y}&z={z}"\
+            """,
+            joinParameters(TemplateTypes.WebMapLink.BASE_PARAMETERS)
+    );
+
+    // =================================================================================================================
     //                                             CHANNEL OVERRIDES COMMENTS
     // =================================================================================================================
 
@@ -925,6 +959,17 @@ public final class ConfigComments {
               Parameters: %s\
              """,
             joinParameters(TemplateTypes.GuildForwardedMessage.BASE_PARAMETERS)
+    );
+
+    public static final String DISCORD_XAERO_WAYPOINT_STYLE_COMMENT = String.format(
+            """
+             Style of a waypoint shared by Xaero's Minimap in messages sent to Discord (see the [webMap] section)\
+
+             If there is a link to the web map, the whole text becomes a link\
+
+             Parameters: %s\
+            """,
+            joinParameters(TemplateTypes.SharedWaypoint.BASE_PARAMETERS)
     );
 
     // =================================================================================================================

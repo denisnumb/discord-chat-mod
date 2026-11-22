@@ -51,6 +51,13 @@ public final class ConfigDefaults {
     public static final String  PROXY_PASSWORD_DEFAULT = "";
 
     // =================================================================================================================
+    //                                                WEB MAP DEFAULTS
+    // =================================================================================================================
+
+    public static final boolean FORMAT_XAERO_WAYPOINTS_DEFAULT = true;
+    public static final String WEB_MAP_LINK_TEMPLATE_DEFAULT = "";
+
+    // =================================================================================================================
     //                                          DISCORD GUILD CONFIG DEFAULTS
     // =================================================================================================================
 
@@ -519,6 +526,11 @@ public final class ConfigDefaults {
             """,
             FORWARDED_MESSAGE,
             MESSAGE
+    );
+
+    public static final String DISCORD_XAERO_WAYPOINT_STYLE_DEFAULT = String.format(
+            "[%s] %s (%s, %s, %s)",
+            DIMENSION, WAYPOINT, X, Y, Z
     );
 
     // =================================================================================================================

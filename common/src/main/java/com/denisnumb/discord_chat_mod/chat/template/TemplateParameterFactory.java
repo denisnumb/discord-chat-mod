@@ -99,7 +99,7 @@ public final class TemplateParameterFactory {
         return result;
     }
 
-    private static String getDimensionName(ResourceKey<@NotNull Level> dimension){
+    public static String getDimensionName(ResourceKey<@NotNull Level> dimension){
         if (dimension == Level.OVERWORLD)
             return "Overworld";
         if (dimension == Level.NETHER)
@@ -107,6 +107,15 @@ public final class TemplateParameterFactory {
         if (dimension == Level.END)
             return "End";
         return prettifyDimensionPath(dimension.identifier().getPath());
+    }
+
+    public static String getDimensionName(String dimensionId){
+        return switch (dimensionId) {
+            case "minecraft:overworld" -> "Overworld";
+            case "minecraft:the_nether" -> "Nether";
+            case "minecraft:the_end" -> "End";
+            default -> prettifyDimensionPath(dimensionId.substring(dimensionId.indexOf(':') + 1));
+        };
     }
 
     private static String prettifyDimensionPath(String path){
