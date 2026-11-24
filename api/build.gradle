@@ -1,19 +1,18 @@
 import com.denisnumb.buildtools.GenerateBuildConstantsTask
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
 
 plugins {
     id 'java-library'
-    id 'maven-publish'
+    id 'com.vanniktech.maven.publish' version '0.37.0'
 }
 
 version = rootProject.api_version
+def apiGroup = 'io.github.denisnumb'
 
 base {
     archivesName = "$rootProject.archives_name-api"
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -27,6 +26,8 @@ javadoc {
     options.addBooleanOption('Xdoclint:all,-missing', true)
 }
 
+// ApiVersion is package-private on purpose: a public constant would be inlined into other mods at compile time
+// and report the version they were built against, not the installed one
 def generateApiVersion = tasks.register('generateApiVersion', GenerateBuildConstantsTask) {
     packageName.set('com.denisnumb.discord_chat_mod.api')
     className.set('ApiVersion')
@@ -36,19 +37,59 @@ def generateApiVersion = tasks.register('generateApiVersion', GenerateBuildConst
 }
 
 sourceSets.main.java.srcDir(generateApiVersion.flatMap { it.outputDirectory })
-tasks.named('compileJava') { dependsOn(generateApiVersion) }
-tasks.named('sourcesJar') { dependsOn(generateApiVersion) }
-tasks.named('javadoc') { dependsOn(generateApiVersion) }
+tasks.named { it in ['compileJava', 'sourcesJar', 'javadoc'] }.configureEach {
+    dependsOn(generateApiVersion)
+}
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = base.archivesName.get()
-            from components.java
-        }
+def signingConfigured = providers.gradleProperty('signingInMemoryKey').isPresent() || providers.gradleProperty('signing.keyId').isPresent()
+
+def publishingToCentral = gradle.startParameter.taskNames.any {
+    def task = it.toLowerCase()
+    task.contains('mavencentral') || task == 'publish' || task.endsWith(':publish')
+}
+
+if (publishingToCentral && !signingConfigured) {
+    throw new GradleException('No configured signingInMemoryKey or signing.keyId')
+}
+
+mavenPublishing {
+    configure(new JavaLibrary(new JavadocJar.Javadoc(), new SourcesJar.Sources()))
+    coordinates(apiGroup, base.archivesName.get(), project.version.toString())
+
+    publishToMavenCentral()
+
+    if (signingConfigured) {
+        signAllPublications()
     }
 
-    repositories {
+    pom {
+        name = 'Discord & Chat Images API'
+        description = 'API for sending messages to Discord through the Discord & Chat Images Minecraft mod'
+        url = 'https://github.com/denisnumb/discord-chat-mod'
+        inceptionYear = '2026'
 
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
+        developers {
+            developer {
+                id = 'denisnumb'
+                name = 'denisnumb'
+                url = 'https://github.com/denisnumb'
+            }
+        }
+        scm {
+            url = 'https://github.com/denisnumb/discord-chat-mod'
+            connection = 'scm:git:https://github.com/denisnumb/discord-chat-mod.git'
+            developerConnection = 'scm:git:ssh://git@github.com/denisnumb/discord-chat-mod.git'
+        }
+        issueManagement {
+            system = 'GitHub'
+            url = 'https://github.com/denisnumb/discord-chat-mod/issues'
+        }
     }
 }
