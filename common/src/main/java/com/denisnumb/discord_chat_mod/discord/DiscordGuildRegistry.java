@@ -53,7 +53,7 @@ public final class DiscordGuildRegistry {
         return channel == null;
     }
 
-    public static void initDiscordGuilds(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) {
+    public static synchronized void initDiscordGuilds(List<DiscordGuildsConfig.DiscordGuildConfig> guildConfigs) {
         Map<String, DiscordGuildContext> contexts = new LinkedHashMap<>();
 
         String webhookServerAvatarUrl = WebhookModeConfig.WEBHOOK_SERVER_AVATAR_URL.get();
@@ -93,6 +93,7 @@ public final class DiscordGuildRegistry {
             }
 
             context.setServerLogsChannel(getDiscordChannel(context, guildConfig.serverLogsChannelId()));
+            context.setModChannelIds(guildConfig.modChannels());
 
             for (var entry : guildConfig.channelOverrides().entrySet()) {
                 ChannelCategory category = ChannelCategory.fromConfigName(entry.getKey());
@@ -115,6 +116,16 @@ public final class DiscordGuildRegistry {
         guildContexts = Collections.unmodifiableMap(contexts);
         if (contexts.isEmpty())
             logWarnToServer(MinecraftLocaleProvider.Discord.Warn.noGuildsConfigured());
+    }
+
+    public static synchronized @Nullable GuildMessageChannel resolveChannel(DiscordGuildContext context, String channelId) {
+        return getDiscordChannel(context, channelId);
+    }
+
+    public static boolean isChannelResolutionFailed(DiscordGuildContext context, String channelId) {
+        synchronized (context.CHANNEL_CACHE) {
+            return context.CHANNEL_CACHE.containsKey(channelId) && context.CHANNEL_CACHE.get(channelId) == null;
+        }
     }
 
     static class InvalidChannelException extends IllegalStateException {
@@ -153,6 +164,10 @@ public final class DiscordGuildRegistry {
             } catch (Exception e) {
                 logErrorToServer(Component.literal(e.getMessage()));
             }
+
+            // Failures are cached too: an invalid channel is reported once, not on every lazy resolution
+            if (context != null)
+                context.CHANNEL_CACHE.put(channelId, null);
         }
 
         return null;

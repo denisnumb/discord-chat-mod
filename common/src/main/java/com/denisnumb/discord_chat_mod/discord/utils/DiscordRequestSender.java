@@ -15,9 +15,12 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateRequest;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.downloadStickerFile;
@@ -25,6 +28,7 @@ import static com.denisnumb.discord_chat_mod.discord.chat.DiscordMessageSender.d
 
 public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & RestAction<Message>> {
     protected T request;
+    private @Nullable EnumSet<Message.MentionType> allowedMentions;
 
     private final Function<String, T> contentStarter;
     private final Function<List<MessageEmbed>, T> embedsStarter;
@@ -73,12 +77,26 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
         return this;
     }
 
+    public final DiscordRequestSender<T> withAllowedMentions(@Nullable Collection<Message.MentionType> allowedMentions) {
+        this.allowedMentions = allowedMentions == null
+                ? null
+                : allowedMentions.isEmpty() ? EnumSet.noneOf(Message.MentionType.class) : EnumSet.copyOf(allowedMentions);
+        return this;
+    }
+
     public abstract DiscordRequestSender<T> withSticker(@Nullable StickersProvider.StickerData stickerData);
 
     public abstract void beforeSend();
 
-    public final Optional<Message> send(boolean complete) {
+    private void prepareRequest() {
         beforeSend();
+
+        if (request != null && allowedMentions != null)
+            request.setAllowedMentions(allowedMentions);
+    }
+
+    public final Optional<Message> send(boolean complete) {
+        prepareRequest();
 
         if (complete)
             return Optional.of(request.complete());
@@ -87,7 +105,18 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
         return Optional.empty();
     }
 
+    public final CompletableFuture<Message> submit() {
+        prepareRequest();
+
+        if (request == null)
+            return CompletableFuture.failedFuture(new IllegalStateException("Message is empty"));
+
+        return request.submit();
+    }
+
     public static class WebhookBuilder extends DiscordRequestSender<WebhookMessageCreateAction<Message>> {
+        private static final int MAX_USER_NAME_LENGTH = 80;
+
         private String avatarUrl;
         private String userName;
         private ThreadChannel thread;
@@ -123,9 +152,24 @@ public abstract class DiscordRequestSender<T extends MessageCreateRequest<T> & R
             return this;
         }
 
-        public WebhookBuilder withUserName(String userName) {
-            this.userName = userName;
+        public WebhookBuilder withUserName(@Nullable String userName) {
+            this.userName = sanitizeUserName(userName);
             return this;
+        }
+
+        private static @Nullable String sanitizeUserName(@Nullable String userName) {
+            if (userName == null)
+                return null;
+
+            String result = userName
+                    .replaceAll("(?i)discord", "DC")
+                    .replaceAll("(?i)clyde", "C1yde")
+                    .strip();
+
+            if (result.length() > MAX_USER_NAME_LENGTH)
+                result = result.substring(0, MAX_USER_NAME_LENGTH);
+
+            return result.isEmpty() ? null : result;
         }
 
         public WebhookBuilder withThread(GuildMessageChannel channel) {

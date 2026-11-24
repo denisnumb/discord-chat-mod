@@ -12,6 +12,9 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.data.DataObject;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public final class JsonTemplate<T extends TemplateType> {
     private static final Gson GSON = new Gson();
@@ -38,11 +41,12 @@ public final class JsonTemplate<T extends TemplateType> {
                 ? setConfigTemplateTranslatableParameters(rawJsonTemplate, translatableParam)
                 : rawJsonTemplate;
 
+        Map<String, String> replacements = new HashMap<>();
         for (TemplatePlaceholder param : presentPlaceholders) {
-            if (params.containsKey(param)){
-                jsonTemplate = jsonTemplate.replace(param.getPlaceholder(), escapeSpecialCharacters(params.get(param)));
-            }
+            if (params.containsKey(param))
+                replacements.put(param.getPlaceholder(), escapeSpecialCharacters(params.get(param)));
         }
+        jsonTemplate = replacePlaceholders(jsonTemplate, replacements);
 
 
         JsonObject parsedTemplate = GSON.fromJson(jsonTemplate, JsonObject.class);
@@ -84,9 +88,45 @@ public final class JsonTemplate<T extends TemplateType> {
         return text.replaceAll("%s|:|«|»", "").trim();
     }
 
+    private static String replacePlaceholders(String template, Map<String, String> replacements) {
+        if (replacements.isEmpty())
+            return template;
+
+        Pattern pattern = Pattern.compile(replacements.keySet().stream()
+                .sorted(Comparator.comparingInt(String::length).reversed())
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|")));
+
+        Matcher matcher = pattern.matcher(template);
+        StringBuilder result = new StringBuilder(template.length() + 64);
+        while (matcher.find())
+            matcher.appendReplacement(result, Matcher.quoteReplacement(replacements.get(matcher.group())));
+        matcher.appendTail(result);
+
+        return result.toString();
+    }
+
     private static String escapeSpecialCharacters(String text){
-        return text.replace("\\", "\\\\")
-                .replace("\"", "\\\"");
+        StringBuilder result = new StringBuilder(text.length() + 16);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '\\' -> result.append("\\\\");
+                case '"' -> result.append("\\\"");
+                case '\n' -> result.append("\\n");
+                case '\r' -> result.append("\\r");
+                case '\t' -> result.append("\\t");
+                case '\b' -> result.append("\\b");
+                case '\f' -> result.append("\\f");
+                default -> {
+                    if (c < 0x20)
+                        result.append(String.format("\\u%04x", (int) c));
+                    else
+                        result.append(c);
+                }
+            }
+        }
+        return result.toString();
     }
 
     private static Set<TemplatePlaceholder> scanPresentPlaceholders(String rawTemplate, Set<TemplatePlaceholder> availablePlaceholders) {

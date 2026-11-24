@@ -56,6 +56,10 @@ public final class AccountLinkService {
         LISTENERS.add(listener);
     }
 
+    public static void removeListener(AccountLinkListener listener) {
+        LISTENERS.remove(listener);
+    }
+
     // =================================================================================================================
     //                                                   QUERIES
     // =================================================================================================================

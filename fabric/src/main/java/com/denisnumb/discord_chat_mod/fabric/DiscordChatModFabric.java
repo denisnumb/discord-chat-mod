@@ -1,6 +1,7 @@
 package com.denisnumb.discord_chat_mod.fabric;
 
 import com.denisnumb.discord_chat_mod.DiscordChatMod;
+import com.denisnumb.discord_chat_mod.api_impl.DiscordChatApiImpl;
 import com.denisnumb.discord_chat_mod.config.configs.CommonConfig;
 import com.denisnumb.discord_chat_mod.locale.LocaleStorage;
 import com.denisnumb.discord_chat_mod.config.ConfigManager;
@@ -21,6 +22,7 @@ public final class DiscordChatModFabric implements ModInitializer{
     @Override
     public void onInitialize() {
         ConfigManager.load(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
+        DiscordChatApiImpl.install();
         UnicodeEmojis.preloadAsync();
         FabricNetworking.init();
         LocaleStorage.setLocaleLoader(new FabricLocaleLoader());

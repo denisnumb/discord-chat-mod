@@ -25,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -143,7 +144,11 @@ public final class DiscordMessageFormatter {
     }
 
     public static DiscordMessageComponents formatPlayerChatMessage(Player player, String message) {
-        TemplateTypes.PlayerMessage.Params params = TemplateTypes.PlayerMessage.ofParams(player, message);
+        return formatPlayerChatMessage(player, player.getDisplayName().getString(), message);
+    }
+
+    public static DiscordMessageComponents formatPlayerChatMessage(@Nullable Entity player, String displayName, String message) {
+        TemplateTypes.PlayerMessage.Params params = new TemplateTypes.PlayerMessage.Params(player, displayName, message);
 
         return new DiscordMessageComponents(
                 DiscordChatStyleConfig.PLAYER_MESSAGE_WEBHOOK_TEMPLATE.get().applyParameters(params),

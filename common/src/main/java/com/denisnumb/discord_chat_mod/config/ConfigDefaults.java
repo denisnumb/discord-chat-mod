@@ -534,6 +534,16 @@ public final class ConfigDefaults {
     );
 
     // =================================================================================================================
+    //                                                PUBLIC API DEFAULTS
+    // =================================================================================================================
+
+    public static final boolean API_ENABLED_DEFAULT = true;
+    public static final List<String> API_DISABLED_MODS_DEFAULT = List.of();
+    public static final int API_MAX_MESSAGES_PER_MINUTE_DEFAULT = 30;
+    public static final boolean API_ALLOW_EVERYONE_MENTIONS_DEFAULT = false;
+    public static final boolean API_LOG_MESSAGES_DEFAULT = false;
+
+    // =================================================================================================================
     //                                             CLIENT CONFIG DEFAULTS
     // =================================================================================================================
 

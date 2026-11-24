@@ -9,6 +9,7 @@ pluginManagement {
 
 rootProject.name = 'discord_chat_mod'
 
+include 'api'
 include 'common'
 include 'fabric'
 include 'neoforge'

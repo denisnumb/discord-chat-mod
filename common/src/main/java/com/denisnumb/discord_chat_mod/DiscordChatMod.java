@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod;
 
+import com.denisnumb.discord_chat_mod.api_impl.DiscordChatApiImpl;
 import com.denisnumb.discord_chat_mod.chat.CustomChatTypeRegistry;
 import com.denisnumb.discord_chat_mod.commands.ReloadConfigCommand;
 import com.denisnumb.discord_chat_mod.commands.set_avatar.AvatarUrlStorage;
@@ -227,6 +228,7 @@ public final class DiscordChatMod {
             }
 
             LOGGER.info("Discord connected");
+            DiscordChatApiImpl.onDiscordConnected();
             trySendStartAnnouncement();
         } catch (Exception e) {
             logErrorToServer(Component.literal(String.format("DiscordConnectError: %s", e.getMessage())));
@@ -237,6 +239,7 @@ public final class DiscordChatMod {
 
     public static void stopJDA() {
         if (jda != null) {
+            DiscordChatApiImpl.onDiscordDisconnecting();
             DiscordSlashCommands.unregister(jda);
             AccountLinking.onDiscordStopping(jda);
             updateServerStatusMessageToUnavailable();

@@ -1,5 +1,6 @@
 package com.denisnumb.discord_chat_mod.config.configs;
 
+import com.denisnumb.discord_chat_mod.api_impl.ApiRegistry;
 import com.denisnumb.discord_chat_mod.discord.chat.template.StringTemplate;
 import com.denisnumb.discord_chat_mod.discord.chat.template.TemplateTypes;
 import com.denisnumb.discord_chat_mod.discord.model.ChannelCategory;
@@ -29,7 +30,8 @@ public final class DiscordGuildsConfig {
             boolean enableSlashCommands,
             Map<String, SlashCommandPermissions> slashCommandPermissions,
             Map<String, String> channelOverrides,
-            AccountLinkingGuildConfig accountLinking
+            AccountLinkingGuildConfig accountLinking,
+            Map<String, String> modChannels
     ) { }
 
     public record AccountLinkingGuildConfig(
@@ -63,6 +65,7 @@ public final class DiscordGuildsConfig {
             Map<String, String> channelOverrides = loadChannelOverrides(overrides, guildId);
 
             AccountLinkingGuildConfig accountLinking = loadAccountLinkingConfig(guildConfig.get("accountLinking"), guildId);
+            Map<String, String> modChannels = loadModChannels(guildConfig.get("modChannels"), guildId);
 
             discordGuildConfigs.add(
                     new DiscordGuildConfig(
@@ -74,7 +77,8 @@ public final class DiscordGuildsConfig {
                             enableSlashCommands,
                             slashCommandPermissions,
                             channelOverrides,
-                            accountLinking
+                            accountLinking,
+                            modChannels
                     )
             );
         }
@@ -134,6 +138,8 @@ public final class DiscordGuildsConfig {
             accountLinking.setComment("roleSyncMapping", GUILD_ACCOUNT_LINKING_ROLE_SYNC_MAPPING_COMMENT);
         }
 
+        ensureModChannels(guildConfig, guildId);
+
         // Migrate from old config versions
         migrateScreenshotChannelId(guildConfig, guildId);
     }
@@ -186,6 +192,31 @@ public final class DiscordGuildsConfig {
         commonConfig.add("guilds", guildList);
 
         return guildList;
+    }
+
+    public static void ensureModChannels(CommentedConfig guildConfig, String guildId) {
+        if (!(guildConfig.get("modChannels") instanceof CommentedConfig)) {
+            guildConfig.set("modChannels", guildConfig.createSubConfig());
+            guildConfig.setComment("modChannels", MOD_CHANNELS_COMMENT);
+        }
+
+        CommentedConfig modChannels = guildConfig.get("modChannels");
+        for (ApiRegistry.ChannelDefinition channel : ApiRegistry.getChannels())
+            createFieldIfNotExists(modChannels, guildId, channel.key().toString(), OVERRIDE_CHANNEL_ID_DEFAULT, channel.configComment());
+    }
+
+    private static Map<String, String> loadModChannels(CommentedConfig section, String guildId) {
+        Map<String, String> result = new HashMap<>();
+
+        for (CommentedConfig.Entry entry : section.entrySet()) {
+            Object value = entry.getValue();
+            if (value instanceof String || value instanceof Number)
+                result.put(entry.getKey(), String.valueOf(value).trim());
+            else
+                LOGGER.warn("[guildId: {}] Ignoring \"{}.{}\": the value must be a channel id string", guildId, "modChannels", entry.getKey());
+        }
+
+        return result;
     }
 
     private static boolean isEveryoneKey(String key, String guildId) {

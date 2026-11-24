@@ -24,8 +24,14 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.denisnumb.discord_chat_mod.DiscordChatMod.*;
@@ -38,6 +44,19 @@ public final class DiscordMessageSender {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static ExecutorService EXECUTOR;
+    private static final Set<CompletableFuture<?>> PENDING_TASKS = ConcurrentHashMap.newKeySet();
+
+    public static final class NotConnectedException extends IllegalStateException {
+        public NotConnectedException() {
+            super("Discord is not connected");
+        }
+    }
+
+    public record CategoryTargets(GuildMessageChannel channel, @Nullable GuildMessageChannel duplicate) {
+        public List<GuildMessageChannel> all() {
+            return duplicate == null ? List.of(channel) : List.of(channel, duplicate);
+        }
+    }
 
     public static void initDiscordSendExecutor() {
         EXECUTOR = Executors.newFixedThreadPool(5);
@@ -48,11 +67,40 @@ public final class DiscordMessageSender {
             EXECUTOR.shutdownNow();
             EXECUTOR = null;
         }
+
+        for (CompletableFuture<?> future : List.copyOf(PENDING_TASKS))
+            future.completeExceptionally(new NotConnectedException());
     }
 
     public static void handleDiscord(Runnable prepareMessageFunc) {
         if (isDiscordConnected() && EXECUTOR != null)
             EXECUTOR.submit(prepareMessageFunc);
+    }
+
+    public static <T> CompletableFuture<T> supplyAsync(Supplier<T> task) {
+        ExecutorService executor = EXECUTOR;
+        if (!isDiscordConnected() || executor == null)
+            return CompletableFuture.failedFuture(new NotConnectedException());
+
+        CompletableFuture<T> future = new CompletableFuture<>();
+        PENDING_TASKS.add(future);
+        future.whenComplete((result, error) -> PENDING_TASKS.remove(future));
+
+        try {
+            executor.execute(() -> {
+                if (future.isDone())
+                    return;
+                try {
+                    future.complete(task.get());
+                } catch (Throwable e) {
+                    future.completeExceptionally(e);
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            future.completeExceptionally(new NotConnectedException());
+        }
+
+        return future;
     }
 
     @Nullable
@@ -64,6 +112,19 @@ public final class DiscordMessageSender {
             );
         } catch (Exception ignored) {
             return null;
+        }
+    }
+
+    public static void editMessage(Message message, DiscordMessageBody body) {
+        try {
+            if (body.hasContentAndEmbeds())
+                message.editMessage(body.getContent()).setEmbeds(body.embeds()).queue();
+            else if (body.hasOnlyContent())
+                message.editMessage(body.getContent()).queue();
+            else
+                message.editMessageEmbeds(body.embeds()).queue();
+        } catch (Exception e) {
+            LOGGER.error("EditMessageError", e);
         }
     }
 
@@ -86,18 +147,16 @@ public final class DiscordMessageSender {
             return optionalImageUrl;
 
         for (DiscordGuildContext guildContext : guildContexts) {
-            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
-
-            if (isChannelCategoryDisabled(channel))
+            Optional<CategoryTargets> targets = getCategoryTargets(guildContext, channelCategory);
+            if (targets.isEmpty())
                 continue;
 
-            Optional<String> optionalNewUrl = sendMessageAndGetAttachmentUrl(guildContext, channel, player, messageComponents);
+            Optional<String> optionalNewUrl = sendMessageAndGetAttachmentUrl(guildContext, targets.get().channel(), player, messageComponents);
             if (optionalImageUrl.isEmpty())
                 optionalImageUrl = optionalNewUrl;
 
-            duplicateMessageToDefaultChannel(guildContext, channelCategory,
-                    () -> sendMessageAndGetAttachmentUrl(guildContext, guildContext.defaultChannel, player, messageComponents)
-            );
+            if (targets.get().duplicate() != null)
+                sendMessageAndGetAttachmentUrl(guildContext, targets.get().duplicate(), player, messageComponents);
         }
 
         return optionalImageUrl;
@@ -127,7 +186,7 @@ public final class DiscordMessageSender {
             Webhook webhook,
             boolean complete,
             @Nullable String avatarUrl,
-            String userName,
+            @Nullable String userName,
             DiscordMessageBody body,
             @Nullable StickersProvider.StickerData stickerData,
             @Nullable FileUpload... files
@@ -135,15 +194,7 @@ public final class DiscordMessageSender {
         if (!isDiscordConnected())
             return Optional.empty();
         try {
-            return new DiscordRequestSender.WebhookBuilder(webhook)
-                    .withThread(channel)
-                    .withAvatarUrl(avatarUrl)
-                    .withUserName(userName)
-                    .withContent(body.getContent())
-                    .withEmbeds(body.embeds())
-                    .withSticker(stickerData)
-                    .withFiles(collectFiles(body, files))
-                    .send(complete);
+            return webhookRequest(channel, webhook, avatarUrl, userName, body, stickerData, files).send(complete);
         } catch (Exception e) {
             LOGGER.error("SendWebhookError", e);
         }
@@ -161,17 +212,9 @@ public final class DiscordMessageSender {
         if (!isDiscordConnected())
             return Optional.empty();
         try {
-            return new DiscordRequestSender.ChannelBuilder(channel)
-                    .withContent(body.getContent())
-                    .withEmbeds(body.embeds())
-                    .withSticker(stickerData)
-                    .withFiles(collectFiles(body, files))
-                    .send(complete);
-        } catch (InsufficientPermissionException e) {
-            logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMessage()));
-            LOGGER.error("", e);
-        } catch (ErrorResponseException e) {
-            logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), e.getMeaning()));
+            return channelRequest(channel, body, stickerData, files).send(complete);
+        } catch (InsufficientPermissionException | ErrorResponseException e) {
+            logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessageWithCause(channel.getName(), describeSendError(e)));
             LOGGER.error("", e);
         } catch (Exception e) {
             logErrorToServer(MinecraftLocaleProvider.Discord.Error.sendMessage(channel.getName()));
@@ -181,17 +224,56 @@ public final class DiscordMessageSender {
         return Optional.empty();
     }
 
-    public static void editMessage(Message message, DiscordMessageBody body) {
+    public static CompletableFuture<Message> submitMessage(
+            DiscordGuildContext guildContext,
+            GuildMessageChannel channel,
+            @Nullable String userName,
+            @Nullable String avatarUrl,
+            DiscordMessageComponents messageComponents,
+            Collection<Message.MentionType> allowedMentions
+    ) {
         try {
-            if (body.hasContentAndEmbeds())
-                message.editMessage(body.getContent()).setEmbeds(body.embeds()).queue();
-            else if (body.hasOnlyContent())
-                message.editMessage(body.getContent()).queue();
-            else
-                message.editMessageEmbeds(body.embeds()).queue();
+            DiscordRequestSender<?> request = guildContext.getWebhook(channel)
+                    .<DiscordRequestSender<?>>map(webhook -> webhookRequest(
+                            channel, webhook, avatarUrl, userName, messageComponents.webhook(), null, null))
+                    .orElseGet(() -> channelRequest(channel, messageComponents.regular(), null, null));
+
+            return request.withAllowedMentions(allowedMentions).submit();
         } catch (Exception e) {
-            LOGGER.error("EditMessageError", e);
+            return CompletableFuture.failedFuture(e);
         }
+    }
+
+    private static DiscordRequestSender<?> webhookRequest(
+            GuildMessageChannel channel,
+            Webhook webhook,
+            @Nullable String avatarUrl,
+            @Nullable String userName,
+            DiscordMessageBody body,
+            @Nullable StickersProvider.StickerData stickerData,
+            @Nullable FileUpload[] files
+    ) {
+        return new DiscordRequestSender.WebhookBuilder(webhook)
+                .withThread(channel)
+                .withAvatarUrl(avatarUrl)
+                .withUserName(userName)
+                .withContent(body.getContent())
+                .withEmbeds(body.embeds())
+                .withSticker(stickerData)
+                .withFiles(collectFiles(body, files));
+    }
+
+    private static DiscordRequestSender<?> channelRequest(
+            GuildMessageChannel channel,
+            DiscordMessageBody body,
+            @Nullable StickersProvider.StickerData stickerData,
+            @Nullable FileUpload[] files
+    ) {
+        return new DiscordRequestSender.ChannelBuilder(channel)
+                .withContent(body.getContent())
+                .withEmbeds(body.embeds())
+                .withSticker(stickerData)
+                .withFiles(collectFiles(body, files));
     }
 
     private static void sendMessageToGuilds(
@@ -205,16 +287,14 @@ public final class DiscordMessageSender {
             return;
 
         for (DiscordGuildContext guildContext : guildContexts) {
-            GuildMessageChannel channel = guildContext.getChannel(channelCategory);
-
-            if (isChannelCategoryDisabled(channel))
+            Optional<CategoryTargets> targets = getCategoryTargets(guildContext, channelCategory);
+            if (targets.isEmpty())
                 continue;
 
-            duplicateMessageToDefaultChannel(guildContext, channelCategory,
-                    () -> sendMessage(guildContext, guildContext.defaultChannel, player, messageComponents, stickerData)
-            );
+            if (targets.get().duplicate() != null)
+                sendMessage(guildContext, targets.get().duplicate(), player, messageComponents, stickerData);
 
-            sendMessage(guildContext, channel, player, messageComponents, stickerData);
+            sendMessage(guildContext, targets.get().channel(), player, messageComponents, stickerData);
         }
     }
 
@@ -262,17 +342,31 @@ public final class DiscordMessageSender {
         );
     }
 
-    private static void duplicateMessageToDefaultChannel(DiscordGuildContext context, ChannelCategory category, Runnable sendMessageFunction) {
-        if (isDiscordConnected()
-                && context.duplicateMessages
-                && !context.defaultChannel.equals(context.getChannel(category))) {
-            sendMessageFunction.run();
-        }
+    public static Optional<CategoryTargets> getCategoryTargets(DiscordGuildContext guildContext, ChannelCategory category) {
+        GuildMessageChannel channel = guildContext.getChannel(category);
+        if (isChannelCategoryDisabled(channel))
+            return Optional.empty();
+
+        boolean duplicate = isDiscordConnected()
+                && guildContext.duplicateMessages
+                && !guildContext.defaultChannel.equals(channel);
+
+        return Optional.of(new CategoryTargets(channel, duplicate ? guildContext.defaultChannel : null));
     }
 
-    private static String getWebhookServerName() {
+    public static String describeSendError(Throwable error) {
+        Throwable cause = error;
+        while ((cause instanceof CompletionException || cause instanceof ExecutionException) && cause.getCause() != null)
+            cause = cause.getCause();
+
+        if (cause instanceof ErrorResponseException response)
+            return response.getMeaning();
+        return cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
+    }
+
+    public static @Nullable String getWebhookServerName() {
         String configValue = WebhookModeConfig.WEBHOOK_SERVER_NAME.get();
-        return configValue.isBlank() ? null : configValue.replaceAll("(?i)discord", "DC");
+        return configValue.isBlank() ? null : configValue;
     }
 
     private static String getStickerFileName(String stickerUrl) {

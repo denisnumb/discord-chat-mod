@@ -1,0 +1,54 @@
+import com.denisnumb.buildtools.GenerateBuildConstantsTask
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+version = rootProject.api_version
+
+base {
+    archivesName = "$rootProject.archives_name-api"
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // Java 17, not 21: the same artifact is used by the Minecraft 1.20.1 branch
+    it.options.release = 17
+    it.options.encoding = 'UTF-8'
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+    options.addBooleanOption('Xdoclint:all,-missing', true)
+}
+
+def generateApiVersion = tasks.register('generateApiVersion', GenerateBuildConstantsTask) {
+    packageName.set('com.denisnumb.discord_chat_mod.api')
+    className.set('ApiVersion')
+    publicAccess.set(false)
+    constants.put('VALUE', project.version.toString())
+    outputDirectory.set(layout.buildDirectory.dir('generated/sources/apiVersion'))
+}
+
+sourceSets.main.java.srcDir(generateApiVersion.flatMap { it.outputDirectory })
+tasks.named('compileJava') { dependsOn(generateApiVersion) }
+tasks.named('sourcesJar') { dependsOn(generateApiVersion) }
+tasks.named('javadoc') { dependsOn(generateApiVersion) }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = base.archivesName.get()
+            from components.java
+        }
+    }
+
+    repositories {
+
+    }
+}

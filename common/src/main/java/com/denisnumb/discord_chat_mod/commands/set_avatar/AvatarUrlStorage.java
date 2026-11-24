@@ -69,7 +69,12 @@ public final class AvatarUrlStorage {
 
     @Nullable
     public static String getUrl(Player player) {
-        return urlMap.getOrDefault(player.getUUID(), null);
+        return getUrl(player.getUUID());
+    }
+
+    @Nullable
+    public static String getUrl(UUID uuid) {
+        return urlMap.getOrDefault(uuid, null);
     }
 
     @Nullable

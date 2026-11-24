@@ -49,6 +49,8 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 
+    shadowBundle(implementation(project(':api')))
+
     shadowBundle(implementation("net.dv8tion:JDA:6.7.0")) {transitive = false }
     shadowBundle(implementation("com.squareup.okhttp3:okhttp:4.12.0")) {transitive = false }
     shadowBundle(implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")) {transitive = false }
@@ -71,6 +73,7 @@ dependencies {
     modCompileOnly("maven.modrinth:vanish:${rootProject.melius_vanish_version}") { transitive = false }
 
 
+    minecraftRuntimeLibraries project(':api')
     minecraftRuntimeLibraries "net.dv8tion:JDA:6.7.0"
     minecraftRuntimeLibraries "org.json:json:20231013"
     minecraftRuntimeLibraries "com.twelvemonkeys.imageio:imageio-webp:3.12.0"

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Consumer;
 
 public final class ConfigManager {
     private ConfigManager() {}
@@ -17,6 +18,8 @@ public final class ConfigManager {
     private static final String CONFIG_DIR_NAME = "config";
     private static final String COMMON_PATH = "discord_chat_mod-common.toml";
     private static final String CLIENT_PATH = "discord_chat_mod-client.toml";
+    private static final Object COMMON_LOCK = new Object();
+    private static @Nullable CommentedFileConfig loadedCommonConfig;
 
     public static void load(boolean loadClient) {
         loadCommon();
@@ -57,7 +60,23 @@ public final class ConfigManager {
         config.remove("enableSlashCommands");
     }
 
+    public static void editCommon(Consumer<CommentedConfig> editor) {
+        synchronized (COMMON_LOCK) {
+            if (loadedCommonConfig == null)
+                return;
+
+            editor.accept(loadedCommonConfig);
+            loadedCommonConfig.save();
+        }
+    }
+
     private static void loadCommon() {
+        synchronized (COMMON_LOCK) {
+            loadedCommonConfig = loadCommonFile();
+        }
+    }
+
+    private static CommentedFileConfig loadCommonFile() {
         CommentedFileConfig commonConfig = CommentedFileConfig.builder(getConfigFile(COMMON_PATH))
                 .autosave()
                 .preserveInsertionOrder()
@@ -75,9 +94,12 @@ public final class ConfigManager {
         commonConfig.set("webMap", WebMapConfig.load(commonConfig));
         commonConfig.set("minecraftChatStyle", MinecraftChatStyleConfig.load(commonConfig));
         commonConfig.set("discordChatStyle", DiscordChatStyleConfig.load(commonConfig));
+        commonConfig.set(ApiConfig.SECTION_KEY, ApiConfig.load(commonConfig));
+        commonConfig.setComment(ApiConfig.SECTION_KEY, ConfigComments.API_SECTION_COMMENT);
         removeDeprecatedParameters(commonConfig);
 
         commonConfig.save();
+        return commonConfig;
     }
 
     private static void loadClient() {

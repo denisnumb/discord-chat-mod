@@ -13,7 +13,7 @@ allprojects {
     version = rootProject.mod_version
 }
 
-subprojects {
+configure(subprojects.findAll { it.name != 'api' }) {
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'

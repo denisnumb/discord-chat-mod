@@ -436,6 +436,39 @@ public final class ConfigComments {
     );
 
     // =================================================================================================================
+    //                                                 PUBLIC API COMMENTS
+    // =================================================================================================================
+
+    public static final String API_SECTION_COMMENT
+            = """
+             Public API: other mods can send messages to Discord through this mod.\
+
+             Their channels are set per guild in [guilds.modChannels].\
+            """;
+
+    public static final String API_ENABLED_COMMENT
+            = " If false, messages of other mods are not sent to Discord.";
+
+    public static final String API_DISABLED_MODS_COMMENT
+            = " Ids of mods whose messages are not sent to Discord, e.g. [\"mymod\"].";
+
+    public static final String API_MAX_MESSAGES_PER_MINUTE_COMMENT
+            = " Maximum number of messages one mod can send per minute. Excess messages are dropped. 0 - unlimited.";
+
+    public static final String API_ALLOW_EVERYONE_MENTIONS_COMMENT
+            = " If false, @everyone and @here in messages of other mods never notify anyone, even if the mod allows it.";
+
+    public static final String API_LOG_MESSAGES_COMMENT
+            = " If true, every message of other mods is logged to the server console with its result.";
+
+    public static final String MOD_CHANNELS_COMMENT
+            = """
+             Channels of other mods (public API). Keys are added automatically when a mod registers a channel.\
+
+             Empty: the mod's default (the default channel or disabled, see the comment of the key). -1: disabled.\
+            """;
+
+    // =================================================================================================================
     //                                             CHANNEL OVERRIDES COMMENTS
     // =================================================================================================================
 

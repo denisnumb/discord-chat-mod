@@ -4,13 +4,16 @@ import com.denisnumb.discord_chat_mod.commands.set_avatar.AvatarUrlStorage;
 import com.denisnumb.discord_chat_mod.config.configs.WebhookModeConfig;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.getMimeType;
 import static com.denisnumb.discord_chat_mod.chat_images.utils.ImageUtils.isImageUrl;
@@ -19,15 +22,18 @@ public final class PlayerAvatarProvider {
     private PlayerAvatarProvider() {}
 
     public static String getPlayerAvatarUrl(Player player){
+        return getPlayerAvatarUrl(player.getUUID(), player.getName().getString(), player.getGameProfile());
+    }
+
+    public static String getPlayerAvatarUrl(UUID uuid, String playerName, @Nullable GameProfile profile){
         if (WebhookModeConfig.ENABLE_SET_AVATAR_URL_COMMAND.get()){
-            String customAvatarUrl = AvatarUrlStorage.getUrl(player);
+            String customAvatarUrl = AvatarUrlStorage.getUrl(uuid);
             if (customAvatarUrl != null)
                 return customAvatarUrl;
         }
 
         String avatarUrlTemplate = WebhookModeConfig.WEBHOOK_PLAYER_AVATAR_URL.get();
         String defaultAvatarUrl = WebhookModeConfig.WEBHOOK_PLAYER_DEFAULT_AVATAR_URL.get();
-        String playerName = player.getName().getString();
 
         avatarUrlTemplate = avatarUrlTemplate.replace("<name>", playerName);
 
@@ -38,7 +44,7 @@ public final class PlayerAvatarProvider {
         }
 
         if (avatarUrlTemplate.contains("<texture>")){
-            Optional<String> optionalTexture = getPlayerTextureHash(player);
+            Optional<String> optionalTexture = profile == null ? Optional.empty() : getPlayerTextureHash(profile);
             if (optionalTexture.isPresent())
                 avatarUrlTemplate = avatarUrlTemplate.replace("<texture>", optionalTexture.get());
         }
@@ -51,9 +57,9 @@ public final class PlayerAvatarProvider {
                 : "https://mc-heads.net/avatar/steve_head_png";
     }
 
-    private static Optional<String> getPlayerTextureHash(Player player) {
+    private static Optional<String> getPlayerTextureHash(GameProfile profile) {
         try {
-            Collection<Property> textures = player.getGameProfile().properties().get("textures");
+            Collection<Property> textures = profile.properties().get("textures");
             if (textures.isEmpty())
                 return Optional.empty();
 

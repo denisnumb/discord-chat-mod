@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.denisnumb.discord_chat_mod.discord.DiscordGuildRegistry.isChannelCategoryDisabled;
 
@@ -23,8 +24,9 @@ public class DiscordGuildContext {
     public final DiscordGuildsConfig.AccountLinkingGuildConfig accountLinking;
 
     private final Map<ChannelCategory, @Nullable GuildMessageChannel> channels = new EnumMap<>(ChannelCategory.class);
-    private final Map<GuildMessageChannel, Webhook> webhooks = new HashMap<>();
-    public final Map<String, @Nullable GuildMessageChannel> CHANNEL_CACHE = new HashMap<>();
+    private final Map<GuildMessageChannel, Webhook> webhooks = new ConcurrentHashMap<>();
+    public final Map<String, @Nullable GuildMessageChannel> CHANNEL_CACHE = Collections.synchronizedMap(new HashMap<>());
+    private volatile Map<String, String> modChannelIds = Map.of();
 
     public DiscordGuildContext(
             Guild guild,
@@ -87,6 +89,14 @@ public class DiscordGuildContext {
     @Nullable
     public GuildMessageChannel getServerLogsChannel() {
         return serverLogsChannel;
+    }
+
+    public Map<String, String> getModChannelIds() {
+        return modChannelIds;
+    }
+
+    public void setModChannelIds(Map<String, String> modChannelIds) {
+        this.modChannelIds = Map.copyOf(modChannelIds);
     }
 
     public Optional<Webhook> getWebhook(GuildMessageChannel channel) {
